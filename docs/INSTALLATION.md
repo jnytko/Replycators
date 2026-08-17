@@ -30,15 +30,22 @@ All build tools live at `[current project root folder]\Runtime\NodeJS`. Do NOT r
 
 ## Quick Start
 
-Load the pre-built extension without building:
+Clone the repository and load the extension without building:
+
+```powershell
+git clone https://github.com/jnytko/Replycators.git
+cd Replycators
+```
+
+Then load it in Edge:
 
 1. Open `edge://extensions/`
 2. Enable **Developer mode**
 3. Click **Load unpacked**
-4. Select the **project root** (the folder containing `manifest.json`)
+4. Select the **project root** - the folder containing `manifest.json`
 5. ReplyCators icon appears in the toolbar
 
-Load the project root, not `src/` or `dist/`.
+> Load the project root, not `src/` or `dist/`.
 
 ---
 
@@ -46,18 +53,22 @@ Load the project root, not `src/` or `dist/`.
 
 Required for the Salesforce Case Extractor Execute feature. **Windows only.**
 
+> **Access requirement:** Steps 5-10 require **IBM internal access**. The IBM Bob CLI is only available through IBM internal channels and is not accessible to external contributors. Steps 1-3 (loading the extension) have no access gate and work for anyone.
+
 | # | Step | Command / Location | Verify |
 |---|------|--------------------|--------|
-| 1 | Install Edge 120+ | edge.microsoft.com | `edge://version/` |
-| 2 | Clone project | `git clone <repo>` | Root has `manifest.json` |
+| 1 | Install Edge 120+ | https://www.microsoft.com/edge | `edge://version/` |
+| 2 | Clone project | `git clone https://github.com/jnytko/Replycators.git` | Root has `manifest.json` |
 | 3 | Load extension | `edge://extensions/` - Load unpacked - project root | Icon in toolbar |
-| 4 | Install Node.js 18+ | nodejs.org | `node --version` |
-| 5 | Install IBM Bob CLI | IBM internal channels | `bob --version` |
+| 4 | Install Node.js 18+ | https://nodejs.org | `node --version` |
+| 5 | Install IBM Bob CLI | IBM internal channels (IBM employees only) | `bob --version` |
 | 6 | Run pre-flight | `powershell -ExecutionPolicy Bypass -File tools\bob-helper.ps1 check` | All checks show [PASS] |
 | 7 | Register auto-start (optional) | `powershell -ExecutionPolicy Bypass -File tools\bob-helper.ps1 install` | Task Scheduler entry created |
 | 8 | Start Bob Helper | `powershell -ExecutionPolicy Bypass -File tools\bob-helper.ps1 start` | Terminal: `Bob helper listening on http://127.0.0.1:47123` |
-| 9 | Set Working Directory | Settings -> Salesforce Case Extractor -> Bob Working Directory | Diagnostics: Bob Working Directory Pass |
+| 9 | Set Working Directory | Settings -> Salesforce Case Extractor -> Bob Working Directory - enter the absolute path where Bob runs on this machine (e.g. `C:\Users\<you>\bob-workspace`) | Diagnostics: Bob Working Directory Pass |
 | 10 | Validate | Maintenance Center -> Diagnostics -> System Checks | Bob Helper Server and Bob Working Directory both Pass |
+
+> **Note:** The Bob Working Directory (step 9) is machine-specific and is stored in browser storage only. It is never committed to the repository and must be re-entered on every new machine.
 
 **Common first-run failures:**
 
