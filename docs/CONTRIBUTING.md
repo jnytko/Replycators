@@ -1,15 +1,15 @@
 # ReplyCators - Contributing Guide
 
-## Sections
+## Table of Contents
 
-- Before you start
-- Making a code change
-- Adding a new plugin
-- Icon system rules
-- Design system rules
-- Versioning
-- Commit message format
-- Documentation maintenance
+- [Before you start](#before-you-start)
+- [Making a code change](#making-a-code-change)
+- [Adding a new plugin](#adding-a-new-plugin)
+- [Icon system rules](#icon-system-rules)
+- [Design system rules](#design-system-rules)
+- [Versioning](#versioning)
+- [Commit message format](#commit-message-format)
+- [Documentation maintenance](#documentation-maintenance)
 
 ---
 
@@ -18,10 +18,11 @@
 Read [`AGENTS.md`](../AGENTS.md) in full before making any change. It is the authoritative briefing for all contributors and AI agents.
 
 Key rules:
+
 - The active runtime is at the **repository root** - not `src/`, not `dist/`
 - Never edit `dist/` files directly
 - Every change to root files must be mirrored to `dist/` via `npm run sync` or `npm run build`
-- Validation is manual QA only - see `AGENTS.md §26`
+- Validation is manual QA only - see `AGENTS.md` §26
 
 ---
 
@@ -30,7 +31,7 @@ Key rules:
 ### 1. Identify the right file
 
 | Change | File |
-|---|---|
+|--------|------|
 | UI change | `dashboard.html` |
 | Platform logic | `dashboard.js` |
 | Plugin change | `plugins/<name>.js` |
@@ -60,14 +61,14 @@ Load at `edge://extensions/` and reload, then:
 A change is **not done** if documentation still describes the old behavior.
 
 | Change type | Files to update |
-|---|---|
-| New plugin | `AGENTS.md §8`, `docs/ARCHITECTURE.md`, `CHANGELOG.md`, create `docs/plugins/<name>.md` |
-| Plugin behavior change | `AGENTS.md §8`, `docs/ARCHITECTURE.md`, plugin doc, `CHANGELOG.md` |
-| Storage key added | `docs/STORAGE.md`, `docs/ARCHITECTURE.md`, `AGENTS.md §9` |
-| Settings change | `docs/SETTINGS.md`, `CHANGELOG.md` |
-| UI / navigation change | `docs/ARCHITECTURE.md`, `AGENTS.md §10` |
-| Startup flow change | `docs/STARTUP-FLOW.md` |
-| Theme change | `docs/THEMES.md` |
+|-------------|-----------------|
+| New plugin | `AGENTS.md` §8, [`docs/ARCHITECTURE.md`](ARCHITECTURE.md), [`CHANGELOG.md`](../CHANGELOG.md), create `docs/plugins/<name>.md` |
+| Plugin behavior change | `AGENTS.md` §8, [`docs/ARCHITECTURE.md`](ARCHITECTURE.md), plugin doc, [`CHANGELOG.md`](../CHANGELOG.md) |
+| Storage key added | [`docs/STORAGE.md`](STORAGE.md), [`docs/ARCHITECTURE.md`](ARCHITECTURE.md), `AGENTS.md` §9 |
+| Settings change | [`docs/SETTINGS.md`](SETTINGS.md), [`CHANGELOG.md`](../CHANGELOG.md) |
+| UI / navigation change | [`docs/ARCHITECTURE.md`](ARCHITECTURE.md), `AGENTS.md` §10 |
+| Startup flow change | [`docs/STARTUP-FLOW.md`](STARTUP-FLOW.md) |
+| Theme change | [`docs/THEMES.md`](THEMES.md) |
 
 ### 5. Update version numbers
 
@@ -139,10 +140,10 @@ Forbidden:
 See `AGENTS.md §12` for the complete policy.
 
 | Segment | When |
-|---|---|
-| PATCH | Bug fixes, non-visible changes |
-| MINOR | New features, new plugins, new settings (additive, non-breaking) |
-| MAJOR | Breaking changes, storage schema changes, architecture overhauls |
+|---------|------|
+| `PATCH` | Bug fixes, non-visible changes |
+| `MINOR` | New features, new plugins, new settings (additive, non-breaking) |
+| `MAJOR` | Breaking changes, storage schema changes, architecture overhauls |
 
 ---
 

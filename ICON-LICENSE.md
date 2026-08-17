@@ -1,23 +1,26 @@
 # Icon License
 
-## Sections
+## Table of Contents
 
-- Attribution
-- License Summary
-- Permitted Uses
+- [Attribution](#attribution)
+- [License Summary](#license-summary)
+- [Permitted Uses](#permitted-uses)
 
 ---
 
 ## Attribution
 
-**Pack:** Streamline Ultimate Colors - Free
-**Creator:** Webalys / Streamline HQ
-**License:** Creative Commons Attribution 4.0 International (CC BY 4.0)
-**Official source:** https://www.streamlinehq.com/icons/ultimate-colos-free
-**GitHub:** https://github.com/webalys-hq/streamline-vectors (path: `ultimate/colors/`)
-**Downloaded:** 2025-07-15
+| Field | Value |
+|-------|-------|
+| **Pack** | Streamline Ultimate Colors - Free |
+| **Creator** | Webalys / Streamline HQ |
+| **License** | [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/) |
+| **Official source** | https://www.streamlinehq.com/icons/ultimate-colos-free |
+| **GitHub** | https://github.com/webalys-hq/streamline-vectors (path: `ultimate/colors/`) |
+| **Downloaded** | 2025-07-15 |
 
 **Required attribution text:**
+
 > Icons by [Streamline](http://streamlinehq.com)
 
 This attribution must appear in the application About/Credits section and in any distributed notices.

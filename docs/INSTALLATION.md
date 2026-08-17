@@ -122,18 +122,25 @@ Or: `npm run sync`
 |------------|---------|
 | `storage` | Plugin settings and data persistence |
 | `tabs` | Detect Salesforce and Cloudability tabs |
-| `activeTab` | Access currently active page |
+| `tabGroups` | Create and name tab groups (Workspace Starter) |
 | `scripting` | Inject content scripts |
 | `contextMenus` | Right-click menu actions |
-| `notifications` | Native OS notifications |
 | `alarms` | Scheduled background tasks |
+| `bookmarks` | Edge Bookmark Finder |
+| `sidePanel` | Side panel mode support |
+| `windows` | Enumerate windows for Cloudability tab detection |
+| `downloads` | Salesforce case data download |
 
 Host permissions:
-- `https://*.salesforce.com/*` - Salesforce Case Extractor
-- `https://*.lightning.force.com/*` - Salesforce Case Extractor
-- `https://*.apptio.com/*` - Cloudability OrgID
-- `https://*.apps.papt.to/*` - Cloudability OrgID
-- `https://www.ibm.com/*` - Apptio Documentation Finder
+
+| Host | Purpose |
+|------|---------|
+| `https://*.salesforce.com/*` | Salesforce Case Extractor |
+| `https://*.lightning.force.com/*` | Salesforce Case Extractor |
+| `https://*.apptio.com/*` | Cloudability OrgID |
+| `https://*.apps.papt.to/*` | Cloudability OrgID |
+| `https://community.ibm.com/*` | Apptio Planning Upgrade Calculator |
+| `https://www.ibm.com/*` | Apptio Documentation Finder |
 
 ---
 

@@ -34,7 +34,7 @@ Platform is generic. Domain-specific behavior lives in plugin modules that self-
 ## Architectural principles
 
 | Principle | Implementation |
-|---|---|
+|-----------|----------------|
 | Single Responsibility | Each module has one reason to change |
 | Open/Closed | Platform is open for extension (plugins) but closed for modification |
 | Liskov Substitution | All plugins satisfy the `IPlugin` interface contract |
@@ -64,7 +64,7 @@ CORE LAYER:      EventBus | StorageManager | Logger | NotificationCenter
 ### Core Layer (src/core/)
 
 | Component | File | Purpose |
-|---|---|---|
+|-----------|------|---------|
 | EventBus | `events/EventBus.ts` | Pub/sub event system. Tracks up to 500 events. |
 | StorageManager | `storage/StorageManager.ts` | Namespaced Chrome storage wrapper. |
 | Logger | `logging/Logger.ts` | Structured leveled plugin-scoped logging. 2000-entry ring buffer. |
@@ -76,7 +76,7 @@ CORE LAYER:      EventBus | StorageManager | Logger | NotificationCenter
 ### Platform Layer (src/platform/)
 
 | Component | File | Purpose |
-|---|---|---|
+|-----------|------|---------|
 | PluginRegistry | `registry/PluginRegistry.ts` | Manifests, health, capabilities. |
 | PluginLoader | `loader/PluginLoader.ts` | Factory-based instantiation, lifecycle orchestration. |
 | PluginManager | `manager/PluginManager.ts` | Enable/disable persistence, startup initialization. |
@@ -85,7 +85,7 @@ CORE LAYER:      EventBus | StorageManager | Logger | NotificationCenter
 ### SDK Layer (src/sdk/)
 
 | File | Purpose |
-|---|---|
+|------|---------|
 | `types.ts` | All TypeScript interfaces. Plugin contract. |
 | `PluginBase.ts` | Abstract base class with lifecycle defaults. |
 | `index.ts` | Public exports. |
@@ -93,7 +93,7 @@ CORE LAYER:      EventBus | StorageManager | Logger | NotificationCenter
 ### Popup Runtime (dashboard.html + plugins/*.js + dashboard.js)
 
 | Component | Purpose |
-|---|---|
+|-----------|---------|
 | `dashboard.html` | Full popup HTML shell. All views and plugin containers pre-declared. |
 | `dashboard.js` | Application shell and orchestrator. Owns startup, plugin registry, navigation, settings, visibility/order, diagnostics, logging, and notifications. |
 | `plugins/` | Runtime plugin implementations. Each self-registers on `window.ReplyCatorsPlugins`. |
@@ -103,7 +103,7 @@ CORE LAYER:      EventBus | StorageManager | Logger | NotificationCenter
 ## Platform views
 
 | View | data-view ID | Nav section | Description |
-|---|---|---|---|
+|------|-------------|------------|-------------|
 | Dashboard | `dashboard` | Core | Overview: stats, widgets, quick actions |
 | Plugin Manager | `plugins` | Plugins | Enable/disable/reorder installed plugins |
 | Marketplace | `marketplace` | Plugins | Preview of planned future plugins |
@@ -168,8 +168,8 @@ The feedback workflow uses **no backend or direct email transport**.
 ## Plugin descriptions
 
 | Plugin | Version | Description |
-|---|---|---|
-| Salesforce Case Extractor | 4.9.1 | Extracts Salesforce case data from Lightning pages. Multi-signal detection, field cleanup, feed posts, content script: `sf-content.js` |
+|--------|---------|-------------|
+| Salesforce Case Extractor | 4.12.2 | Extracts Salesforce case data from Lightning pages. Multi-signal detection, field cleanup, feed posts, content script: `sf-content.js` |
 | Cloudability OrgID | 4.0.3 | Background enrichment service. Resolves OrgID via proactive push (MAIN-world XHR intercept) or pull (SPA navigation). 24h TTL cache, exponential retry. No-erase policy on failure. |
 | Edge Bookmark Finder | 1.0.2 | Searches Microsoft Edge bookmarks. Recursive scan, real-time multi-word search, domain analytics, duplicate detection. |
 | Apptio Planning Upgrade Calculator | 1.0.3 | Calculates upgrade dates. Dynamic release discovery via IBM Community. Three-tier retrieval: live fetch, 24h cache, bundled fallback. |

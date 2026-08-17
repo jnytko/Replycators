@@ -1,10 +1,10 @@
-# ReplyCators — Changelog
+# ReplyCators - Changelog
 
 All notable changes to the ReplyCators platform and its plugins are recorded here.
 
 > **Structure:** Full verbose entries appear in reverse-chronological order below for the most recent releases.
-> A complete **Version History Reference** summary table covering all versions is at the bottom of this file.
-> Verbose entries for releases older than ~90 days are archived in **`docs/CHANGELOG-ARCHIVE.md`**.
+> A complete **Version History Reference** summary table is at the bottom of this file.
+> Verbose entries for releases older than ~90 days are archived in [`docs/CHANGELOG-ARCHIVE.md`](docs/CHANGELOG-ARCHIVE.md).
 
 ---
 
