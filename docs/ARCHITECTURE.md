@@ -1,5 +1,10 @@
 # ReplyCators - Architecture Documentation
 
+> **Active runtime:** The root flat-deployment (`dashboard.html`, `dashboard.js`, `plugins/*.js`, `background.js`).
+> The TypeScript `src/` layer described in the Component Descriptions section below is **inactive scaffolding**
+> for a future migration (RC-015 Phase 2). Editing `src/` files has **no effect on the running extension**.
+> See `AGENTS.md §3 Dual Implementation Map` and `ADR-002`.
+
 ## Sections
 
 - Overview
@@ -61,9 +66,12 @@ CORE LAYER:      EventBus | StorageManager | Logger | NotificationCenter
 
 ## Component descriptions
 
-### Core Layer (src/core/)
+### Core Layer (src/core/) - INACTIVE - future TypeScript migration only
 
-| Component | File | Purpose |
+> These files exist as scaffolding for RC-015 Phase 2. They are **not loaded by the active runtime**.
+> The active equivalents are implemented inline in `dashboard.js` and `plugins/*.js`.
+
+| Component | File | Purpose (planned) |
 |-----------|------|---------|
 | EventBus | `events/EventBus.ts` | Pub/sub event system. Tracks up to 500 events. |
 | StorageManager | `storage/StorageManager.ts` | Namespaced Chrome storage wrapper. |
@@ -73,18 +81,18 @@ CORE LAYER:      EventBus | StorageManager | Logger | NotificationCenter
 | MessagingService | `messaging/MessagingService.ts` | Unified Chrome runtime messaging abstraction. |
 | DiagnosticsCenter | `diagnostics/DiagnosticsCenter.ts` | Health monitoring, storage usage, browser info. |
 
-### Platform Layer (src/platform/)
+### Platform Layer (src/platform/) - INACTIVE - future TypeScript migration only
 
-| Component | File | Purpose |
+| Component | File | Purpose (planned) |
 |-----------|------|---------|
 | PluginRegistry | `registry/PluginRegistry.ts` | Manifests, health, capabilities. |
 | PluginLoader | `loader/PluginLoader.ts` | Factory-based instantiation, lifecycle orchestration. |
 | PluginManager | `manager/PluginManager.ts` | Enable/disable persistence, startup initialization. |
 | Bootstrap | `bootstrap.ts` | Initializes all services; imports plugin registrations. |
 
-### SDK Layer (src/sdk/)
+### SDK Layer (src/sdk/) - INACTIVE - future TypeScript migration only
 
-| File | Purpose |
+| File | Purpose (planned) |
 |------|---------|
 | `types.ts` | All TypeScript interfaces. Plugin contract. |
 | `PluginBase.ts` | Abstract base class with lifecycle defaults. |
@@ -157,7 +165,7 @@ Sidebar right-edge divider (RC-NAV-BDR001 v3): `.rc-sidebar::after` is an absolu
 
 The feedback workflow uses **no backend or direct email transport**.
 
-- Recipients are fixed in `src/popup/feedback-config.ts` as an immutable allowlisted configuration
+- Recipients are configured in `dashboard.html` (`#feedback-recipients` or equivalent hardcoded `mailto:` target) - **not** in `src/popup/feedback-config.ts`, which is an inactive TypeScript stub
 - The mail handoff uses a `mailto:` URI with To recipients, subject, user message, and a plain-text diagnostic summary
 - ReplyCators never sends email directly and cannot confirm delivery
 - The downloadable diagnostics report is generated only after explicit user action and must be attached manually

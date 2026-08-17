@@ -1,0 +1,609 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bob Helper - Temp File Architecture Analysis</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
+    color: #1f2328;
+    background: #ffffff;
+  }
+
+  .page { max-width: 760px; margin: 0 auto; padding: 40px 24px 60px; }
+
+  h1 { font-size: 22px; font-weight: 700; color: #1f2328; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #57606a; margin-bottom: 32px; }
+
+  h2 {
+    font-size: 15px; font-weight: 700; color: #1f2328;
+    margin-top: 40px; margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  h3 {
+    font-size: 13px; font-weight: 700; color: #1f2328;
+    margin-top: 20px; margin-bottom: 8px;
+  }
+
+  p { margin-bottom: 12px; }
+
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px;
+    vertical-align: middle; margin-left: 6px;
+  }
+  .badge-green  { background: #dcfce7; color: #166534; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-amber  { background: #fef9c3; color: #854d0e; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-purple { background: #ede9fe; color: #5b21b6; }
+
+  .verdict-box {
+    background: #f0fdf4; border-left: 4px solid #22c55e;
+    padding: 14px 16px; border-radius: 0 6px 6px 0;
+    margin-bottom: 16px;
+  }
+  .verdict-box.amber {
+    background: #fffbeb; border-left-color: #f59e0b;
+  }
+  .verdict-box.red {
+    background: #fef2f2; border-left-color: #ef4444;
+  }
+  .verdict-box p { margin-bottom: 0; }
+
+  .flow-diagram {
+    background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px;
+    padding: 16px; font-family: "Consolas","Courier New",monospace;
+    font-size: 12px; line-height: 1.8; overflow-x: auto;
+    margin-bottom: 16px;
+  }
+
+  .flow-step { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 4px; }
+  .flow-num {
+    background: #3b82d4; color: white; border-radius: 50%;
+    width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+  }
+  .flow-note {
+    background: #fef9c3; border: 1px solid #fcd34d; border-radius: 4px;
+    padding: 4px 8px; font-size: 12px; color: #78350f;
+    margin-bottom: 4px;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px; }
+  th {
+    background: #f7f8fa; text-align: left; font-weight: 600;
+    padding: 8px 10px; border-bottom: 2px solid #e5e7eb;
+    color: #57606a; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  td { padding: 8px 10px; border-bottom: 1px solid #f0f2f5; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  ul, ol { padding-left: 20px; margin-bottom: 12px; }
+  li { margin-bottom: 5px; }
+
+  code {
+    font-family: "Consolas","Courier New",monospace;
+    background: #f0f2f5; padding: 1px 5px; border-radius: 3px;
+    font-size: 12px; color: #d63384;
+  }
+
+  .alt-card {
+    border: 1px solid #e5e7eb; border-radius: 6px;
+    padding: 16px; margin-bottom: 16px;
+  }
+  .alt-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .alt-title { font-size: 14px; font-weight: 700; }
+  .alt-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+  .pros { background: #f0fdf4; border-radius: 4px; padding: 10px 12px; }
+  .cons { background: #fef2f2; border-radius: 4px; padding: 10px 12px; }
+  .pros h4 { color: #166534; font-size: 12px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
+  .cons h4 { color: #991b1b; font-size: 12px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
+
+  .rank-badge {
+    display: inline-block; font-size: 12px; font-weight: 700; border-radius: 50%;
+    width: 24px; height: 24px; text-align: center; line-height: 24px;
+    flex-shrink: 0;
+  }
+  .rank-1 { background: #fcd34d; color: #78350f; }
+  .rank-2 { background: #d1d5db; color: #374151; }
+  .rank-3 { background: #c4a879; color: #451a03; }
+  .rank-4 { background: #e5e7eb; color: #57606a; }
+
+  .checklist { list-style: none; padding-left: 0; }
+  .checklist li { padding: 5px 0; display: flex; gap: 8px; }
+  .checklist li::before { content: ""; flex-shrink: 0; }
+  .check-pass::before { content: "OK"; font-size: 10px; font-weight: 700; color: #166534; background: #dcfce7; padding: 1px 5px; border-radius: 3px; }
+  .check-fail::before { content: "ISSUE"; font-size: 10px; font-weight: 700; color: #991b1b; background: #fee2e2; padding: 1px 5px; border-radius: 3px; }
+  .check-warn::before { content: "WARN"; font-size: 10px; font-weight: 700; color: #854d0e; background: #fef9c3; padding: 1px 5px; border-radius: 3px; }
+
+  .migration-step {
+    display: flex; gap: 12px; margin-bottom: 14px;
+    border-left: 3px solid #3b82d4; padding-left: 14px;
+  }
+  .ms-num {
+    font-size: 12px; font-weight: 700; color: #3b82d4; flex-shrink: 0;
+    min-width: 24px;
+  }
+
+  .footer {
+    margin-top: 48px; padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center; font-size: 12px; color: #9ca3af;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Bob Helper - Temp File Architecture Analysis</h1>
+  <div class="subtitle">Technical Design Review · tools/bob-helper-server.js · tools/bob-launcher-template.ps1 · ReplyCators v1.45.6</div>
+
+  
+  <h2>Executive Summary</h2>
+  <div class="verdict-box amber">
+    <p><strong>Current design is architecturally correct but partially incomplete in its lifecycle management.</strong> The files are functionally required as the inter-process communication (IPC) channel between the Node.js HTTP server and the detached PowerShell launcher. The system already implements a multi-layer cleanup strategy (lock-file protocol, startup eviction, graceful shutdown eviction), but that cleanup is deferred - files are visible in the user's working directory during and briefly after execution, which creates the user experience concern being raised. The proposed solution (immediate deletion after successful processing) is sound in principle, but requires precision in timing to avoid a race condition with the launcher reading the prompt file.</p>
+  </div>
+  <p>The core tension is between two legitimate needs: the launcher must read the <code>.txt</code> prompt file before it can be deleted, and the user wants the file gone immediately. The existing lock-file protocol (<code>.lock</code> companion) was designed to solve exactly this race - it just does not currently drive a post-completion active cleanup pass. Implementing that final step (deleting the <code>.txt</code> and <code>.status.json</code> after the launcher signals completion) resolves the UX concern without sacrificing reliability.</p>
+
+  
+  <h2>Current Behavior Analysis</h2>
+
+  <h3>Why the Files Exist</h3>
+  <p>The fundamental constraint is that MV3 browser extensions cannot spawn native processes. The Chrome/Edge service worker can only perform network requests. IBM Bob is a CLI tool. The gap between these two worlds is bridged by <code>bob-helper-server.js</code>, a local Node.js HTTP server. When the user clicks Execute:</p>
+
+  <div class="flow-diagram">
+    <div class="flow-step"><div class="flow-num">1</div><div>Plugin sends <code>RC_EXECUTE_BOB</code> (chrome.runtime.sendMessage)</div></div>
+    <div class="flow-step"><div class="flow-num">2</div><div>background.js relays via HTTP POST to <code>http://127.0.0.1:47123/execute</code></div></div>
+    <div class="flow-step"><div class="flow-num">3</div><div>Server writes <code>&lt;requestId&gt;.txt</code> (prompt), <code>&lt;requestId&gt;.lock</code>, and <code>&lt;requestId&gt;.status.json</code> to disk</div></div>
+    <div class="flow-step"><div class="flow-num">4</div><div>Server spawns <code>powershell.exe</code> with <code>RC_PROMPT_FILE</code> env var pointing to the .txt file (<code>detached: true</code>, fire-and-forget)</div></div>
+    <div class="flow-step"><div class="flow-num">5</div><div>Server immediately returns <code>{ok: true}</code> - it has NO pipe to the launcher</div></div>
+    <div class="flow-step"><div class="flow-num">6</div><div>Launcher reads <code>RC_PROMPT_FILE</code>, deletes <code>.lock</code>, executes Bob (Bob version-aware: v1 via stdin pipe, v2 via <code>-p</code> flag)</div></div>
+    <div class="flow-step"><div class="flow-num">7</div><div>Launcher updates <code>.status.json</code> at each state transition (pending -&gt; running -&gt; completed/failed)</div></div>
+    <div class="flow-step"><div class="flow-num">8</div><div><code>.txt</code> and <code>.status.json</code> remain on disk - no active deletion after completion</div></div>
+  </div>
+
+  <div class="flow-note">The file is the IPC channel. The server and launcher share no stdin/stdout pipe - the prompt must be written to disk so the detached PowerShell process can read it.</div>
+
+  <h3>Three Artifact Files Per Execution</h3>
+  <p>The question identifies two files, but the actual count is three:</p>
+  <table>
+    <thead>
+      <tr><th>File</th><th>Purpose</th><th>Lifecycle Owner</th><th>Current Fate</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>&lt;requestId&gt;.txt</code></td>
+        <td>Assembled Bob prompt - the IPC payload. Read by the PowerShell launcher via <code>Get-Content -Raw</code>.</td>
+        <td>Server writes; Launcher reads</td>
+        <td>Deleted at startup (24h eviction) or server shutdown. NOT deleted after use.</td>
+      </tr>
+      <tr>
+        <td><code>&lt;requestId&gt;.lock</code></td>
+        <td>Signals the launcher has not yet consumed the prompt. Deleted by launcher immediately after reading the .txt.</td>
+        <td>Server writes; Launcher deletes</td>
+        <td>Short-lived by design - gone once launcher reads the prompt. Usually invisible to user.</td>
+      </tr>
+      <tr>
+        <td><code>&lt;requestId&gt;.status.json</code></td>
+        <td>Execution lifecycle state (pending/running/completed/failed). Read by <code>GET /status/:requestId</code> polling from the plugin.</td>
+        <td>Server writes initial state; Launcher updates state</td>
+        <td>Deleted at startup (24h eviction) or server shutdown. NOT deleted after use.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Existing Cleanup Mechanisms (Already Implemented)</h3>
+  <table>
+    <thead>
+      <tr><th>Mechanism</th><th>Trigger</th><th>Scope</th><th>Limitation</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Age-based eviction</td>
+        <td>Server startup (<code>cleanupOldTempFiles</code>)</td>
+        <td>Files &gt; 24h in <code>TEMP_ROOT</code></td>
+        <td>Does not clean working-directory-relative files. No cleanup for files less than 24h old.</td>
+      </tr>
+      <tr>
+        <td>Graceful shutdown</td>
+        <td>SIGINT / SIGTERM / process.exit (<code>cleanupAllTempFiles</code>)</td>
+        <td>All tracked dirs, lock-aware</td>
+        <td>Only fires if the server is gracefully stopped. Kill or crash leaves files behind.</td>
+      </tr>
+      <tr>
+        <td>Lock-file protocol</td>
+        <td>Launcher deletes .lock after reading .txt</td>
+        <td>Prevents cleanup from removing unconsumed prompts</td>
+        <td>Cleanup is only triggered at startup/shutdown, not on lock deletion.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Root Cause of the User Experience Problem</h3>
+  <p>When a working directory is configured, files are written directly into the user's project/workspace folder rather than into <code>%TEMP%\replycators-bob-helper\</code>. This means <strong>prompt files appear in the user's codebase</strong>, which is more noticeable and more objectionable than files appearing in a hidden system temp directory.</p>
+  <p>The gap is specifically: the lock deletion by the launcher is a perfect signal that the file is safe to delete, but nothing in the current codebase acts on that signal to trigger immediate deletion of the <code>.txt</code> and <code>.status.json</code>.</p>
+
+  
+  <h2>Evaluation of Proposed Solution</h2>
+  <p><em>Proposed: keep files hidden from user, automatically delete them immediately after successful processing.</em></p>
+
+  <h3>Advantages</h3>
+  <ul>
+    <li><strong>Eliminates user-visible clutter</strong> in the working directory - the primary UX complaint is resolved.</li>
+    <li><strong>Reduces attack surface</strong> - prompt files may contain case data, user instructions, or API context. The shorter their on-disk lifespan, the lower the exposure window.</li>
+    <li><strong>Aligns with the lock-file protocol's intent</strong> - the protocol already designates the lock deletion as the safe-to-delete signal. This change just adds the action that should follow that signal.</li>
+    <li><strong>No change to the IPC mechanism</strong> - the fundamental architecture is preserved. Files are still created and read exactly as before.</li>
+    <li><strong>Low implementation risk</strong> - the signal already exists; the only missing piece is a cleanup action triggered by it.</li>
+  </ul>
+
+  <h3>Disadvantages</h3>
+  <ul>
+    <li><strong>"Immediately after successful processing" is ambiguous.</strong> If interpreted as "delete as soon as Bob finishes," this requires the launcher to perform deletion - but the launcher today only updates the <code>.status.json</code> and exits. Adding file deletion to a fire-and-forget script increases coupling between the launcher and the server's file layout.</li>
+    <li><strong>Status file dilemma.</strong> The <code>.status.json</code> is still being polled by the plugin every 3 seconds via <code>RC_BOB_STATUS</code>. Deleting it immediately after Bob completes creates a race: the final poll might arrive after deletion, returning 404 and incorrectly treating the execution as lost.</li>
+    <li><strong>Reduces post-failure diagnostics.</strong> If Bob exits with a non-zero code, the prompt file may be the only artifact that captures exactly what was sent. Deleting it immediately on success still leaves it on failure - which is good - but "successful processing" must be carefully defined to mean "Bob exited 0 and status was confirmed."</li>
+    <li><strong>Does not help the TEMP_ROOT case independently.</strong> Files in <code>%TEMP%\replycators-bob-helper\</code> (no working directory configured) are less visible to the user but still persist until the 24h eviction at next startup. The proposed solution should address both locations.</li>
+  </ul>
+
+  <h3>Risks</h3>
+  <table>
+    <thead>
+      <tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Status poll arrives after deletion - 404 misread as failure</td>
+        <td><span class="badge badge-amber">Medium</span></td>
+        <td>Server should cache the final status in memory for a TTL (e.g. 30s) after file deletion, serving it from the in-memory cache.</td>
+      </tr>
+      <tr>
+        <td>Launcher deletes file before Bob has fully consumed it (Bob 1.0 stdin-pipe path)</td>
+        <td><span class="badge badge-red">High</span></td>
+        <td>On the Bob 1.0 path, the prompt is piped via stdin (<code>$promptContent | &amp; bob.ps1</code>). The file content is read into <code>$promptContent</code> first, then piped. Deletion after the read but before Bob exits is safe.</td>
+      </tr>
+      <tr>
+        <td>Concurrent executions - one cleanup deletes another request's file</td>
+        <td><span class="badge badge-blue">Low</span></td>
+        <td>Each request has a unique <code>requestId</code>-based filename. Cleanup is per-file, not directory-wide.</td>
+      </tr>
+      <tr>
+        <td>Server crash during Bob execution - no cleanup path fires</td>
+        <td><span class="badge badge-amber">Medium</span></td>
+        <td>Startup-eviction (24h) remains as the backstop. For working-directory files, this is the only safety net if the server is killed.</td>
+      </tr>
+      <tr>
+        <td>File deleted before diagnostic investigation completes</td>
+        <td><span class="badge badge-blue">Low</span></td>
+        <td>Only applies to success-path deletion. Failure path should always retain files. <code>DEBUG=1</code> mode could optionally retain all files.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>Alternative Solutions</h2>
+  <p><em>Ranked from most to least recommended.</em></p>
+
+  
+  <div class="alt-card">
+    <div class="alt-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="rank-badge rank-1">1</span>
+        <span class="alt-title">Post-Completion Active Cleanup Triggered by Lock Deletion</span>
+      </div>
+      <div class="alt-meta">
+        <span class="badge badge-green">Recommended</span>
+        <span class="badge badge-blue">Complexity: Low</span>
+      </div>
+    </div>
+    <p>The launcher already deletes the <code>.lock</code> file when it has consumed the prompt. Extend the launcher to also delete the <code>.txt</code> file immediately after reading it (when <code>$promptContent</code> is populated). Add a deferred deletion of the <code>.status.json</code> to the launcher after writing the final <code>completed</code> or <code>failed</code> state, with a 10-second delay to allow the plugin's polling to catch the final status before the file disappears. The server's in-memory <code>_usedPromptDirs</code> set already tracks all relevant directories - extend it to also track per-request metadata for a short-lived in-memory status cache so that post-deletion polls do not 404.</p>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>Pros</h4>
+        <ul>
+          <li>Files disappear from working directory within seconds of execution start</li>
+          <li>Exploits existing lock-file protocol signal without new infrastructure</li>
+          <li>Handles both TEMP_ROOT and working-directory-relative files</li>
+          <li>No change to IPC mechanism - file is still written and read identically</li>
+          <li>Low risk - launcher already performs <code>Remove-LockFile</code>; same pattern extended to .txt</li>
+          <li>Failure path retains files (only success-path deletion for .txt)</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>Cons</h4>
+        <ul>
+          <li>Requires small in-memory status cache in server to handle late polls</li>
+          <li>Status file deletion delay (10s) means files are not completely gone instantly</li>
+          <li>Launcher script grows slightly more complex</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:10px"><strong>agents.md alignment:</strong> Fully compliant. No new storage keys, no new platform dependencies, no changes to dashboard.js or the plugin manifest. Touches only <code>tools/</code> files. Does not introduce automated tests. Follows the lock-file protocol design intent.</p>
+  </div>
+
+  
+  <div class="alt-card">
+    <div class="alt-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="rank-badge rank-2">2</span>
+        <span class="alt-title">Write All Files Exclusively to TEMP_ROOT (Never to Working Directory)</span>
+      </div>
+      <div class="alt-meta">
+        <span class="badge badge-amber">Partial Fix</span>
+        <span class="badge badge-blue">Complexity: Low</span>
+      </div>
+    </div>
+    <p>Change <code>resolvePromptDir()</code> to always use <code>TEMP_ROOT</code> regardless of <code>workingDir</code>. Pass <code>workingDir</code> to the launcher only for Bob's <code>--include-directories</code> context, not as the file location. This isolates all temp files to <code>%TEMP%\replycators-bob-helper\</code> which is a system folder users rarely browse.</p>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>Pros</h4>
+        <ul>
+          <li>Eliminates working-directory clutter immediately with a one-line change</li>
+          <li>No race conditions or timing changes</li>
+          <li>TEMP_ROOT already has 24h eviction at startup</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>Cons</h4>
+        <ul>
+          <li>Files still persist until 24h eviction - just in a less visible location</li>
+          <li>Does not address the 24h persistence gap or the security concern</li>
+          <li>If TEMP path differs from workingDir across drives, no functional impact on Bob - working dir is still set correctly via <code>Set-Location</code></li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:10px"><strong>agents.md alignment:</strong> Compliant. This is a pure <code>tools/</code> layer change. Could be implemented alongside Alternative 1 as a belt-and-suspenders measure.</p>
+  </div>
+
+  
+  <div class="alt-card">
+    <div class="alt-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="rank-badge rank-3">3</span>
+        <span class="alt-title">Named Pipe / stdin Pass-Through (Eliminate Files Entirely)</span>
+      </div>
+      <div class="alt-meta">
+        <span class="badge badge-amber">Long-term</span>
+        <span class="badge badge-purple">Complexity: High</span>
+      </div>
+    </div>
+    <p>Replace file-based IPC with a Windows Named Pipe. The server opens a named pipe server (<code>\\.\pipe\replycators-bob-&lt;requestId&gt;</code>), writes the prompt, and the launcher reads from the pipe. No temp files are created. Bob 1.0 could pipe prompt directly; Bob 2.0 would need a temp file only for the <code>-p</code> flag inline-prompt path or a short-lived pipe-to-string read.</p>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>Pros</h4>
+        <ul>
+          <li>Zero file system footprint - completely eliminates the UX and security concerns</li>
+          <li>More architecturally clean IPC for a production-grade tool</li>
+          <li>No eviction logic needed</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>Cons</h4>
+        <ul>
+          <li>Named pipe creation in PowerShell requires .NET/System.IO.Pipes - more complex launcher</li>
+          <li>Bob 2.0's <code>-p</code> flag takes the prompt as a command-line argument (not stdin), so a file or a very long argument string is still required for that path</li>
+          <li>High complexity with limited marginal benefit over Alternative 1</li>
+          <li>Named pipes on Windows have known complexity around connection timing</li>
+          <li>Requires thorough testing across Bob 1.x and Bob 2.x invocation paths</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:10px"><strong>agents.md alignment:</strong> Compliant in principle, but constitutes a significant architectural change to the IPC layer. Would require an ADR and MINOR version bump. Deferred until after RC-015 Phase 2 per the Long-Term Architecture Direction.</p>
+  </div>
+
+  
+  <div class="alt-card">
+    <div class="alt-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="rank-badge rank-4">4</span>
+        <span class="alt-title">Reduce Eviction Threshold (1h Instead of 24h)</span>
+      </div>
+      <div class="alt-meta">
+        <span class="badge badge-red">Insufficient</span>
+        <span class="badge badge-blue">Complexity: Low</span>
+      </div>
+    </div>
+    <p>Change <code>OLD_FILE_MAX_AGE_MS</code> from 24 hours to 1 hour. Files would still be cleaned up on the next server startup, which may be hours or days later. The user-visible clutter during active use is not addressed at all. Not recommended as a primary fix.</p>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>Pros</h4>
+        <ul>
+          <li>One-line change - zero risk</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>Cons</h4>
+        <ul>
+          <li>Does not address the problem - files still appear during active use</li>
+          <li>Does not help working-directory-relative files which are not in TEMP_ROOT</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:10px"><strong>agents.md alignment:</strong> Compliant but insufficient. Purely cosmetic improvement.</p>
+  </div>
+
+  
+  <h2>Recommended Approach</h2>
+  <div class="verdict-box">
+    <p><strong>Implement Alternative 1 (post-completion active cleanup) combined with Alternative 2 (TEMP_ROOT isolation).</strong></p>
+  </div>
+  <p>The two changes are complementary and neither is sufficient alone: Alternative 2 immediately eliminates working-directory clutter without any timing risk, while Alternative 1 ensures the files are actively deleted rather than accumulating in TEMP_ROOT until the next startup.</p>
+
+  <h3>Specific Implementation</h3>
+  <ol>
+    <li><strong>In <code>bob-launcher-template.ps1</code></strong>: After <code>$promptContent = Get-Content -Path $env:RC_PROMPT_FILE -Raw -Encoding UTF8</code> and the <code>Remove-LockFile</code> call - add an immediate deletion of the <code>.txt</code> file. The content is already in memory; the file is no longer needed.</li>
+    <li><strong>In <code>bob-launcher-template.ps1</code></strong>: After writing the final <code>completed</code> or <code>failed</code> status, add a deferred cleanup of the <code>.status.json</code> (via a <code>Start-Sleep 15; Remove-Item</code> background job, or simply delete it immediately and accept that a very late poll will get a 404 - which the plugin already handles gracefully by stopping polling on any terminal state).</li>
+    <li><strong>In <code>bob-helper-server.js</code></strong>: Add a lightweight in-memory status cache (<code>Map&lt;requestId, statusObject&gt;</code>) that stores the last known status object for each completed/failed request. Keep entries for 60 seconds, then evict. The <code>readStatusFile()</code> function falls back to this cache on file-not-found, so late polls after file deletion still return the correct final state.</li>
+    <li><strong>In <code>bob-helper-server.js</code></strong>: Change <code>resolvePromptDir()</code> to always return <code>TEMP_ROOT</code>, passing <code>workingDir</code> only as <code>RC_WORKING_DIR</code> for Bob's execution context (Set-Location), not for file placement. This is a one-line change to the <code>if (!workingDir) return TEMP_ROOT</code> condition.</li>
+  </ol>
+
+  
+  <h2>Migration Plan</h2>
+
+  <div class="migration-step">
+    <div class="ms-num">Step 1</div>
+    <div>
+      <strong>Change <code>resolvePromptDir()</code> to always return TEMP_ROOT</strong><br />
+      In <code>bob-helper-server.js</code>, simplify <code>resolvePromptDir(workingDir)</code> to unconditionally return <code>TEMP_ROOT</code>. The <code>_usedPromptDirs</code> tracking set becomes TEMP_ROOT-only. Ensure <code>ensureTempRoot()</code> is always called. The <code>workingDir</code> value continues to be passed to the launcher as <code>RC_WORKING_DIR</code> unchanged. <em>Risk: None. Working directory is used by the launcher for <code>Set-Location</code> and <code>--include-directories</code>, not for file placement.</em>
+    </div>
+  </div>
+
+  <div class="migration-step">
+    <div class="ms-num">Step 2</div>
+    <div>
+      <strong>Add .txt deletion to launcher after prompt read</strong><br />
+      In <code>bob-launcher-template.ps1</code>, immediately after the <code>Remove-LockFile</code> call, add: <code>try { Remove-Item -Path $env:RC_PROMPT_FILE -Force -ErrorAction SilentlyContinue } catch {}</code>. The content is already captured in <code>$promptContent</code>. This makes the file's existence ephemeral - gone within milliseconds of the launcher starting.
+    </div>
+  </div>
+
+  <div class="migration-step">
+    <div class="ms-num">Step 3</div>
+    <div>
+      <strong>Add in-memory status cache to server</strong><br />
+      In <code>bob-helper-server.js</code>, add a <code>Map</code> named <code>_statusCache</code>. When <code>readStatusFile()</code> cannot find a file, check the cache. In <code>writeStatusFile()</code>, when the state is <code>completed</code> or <code>failed</code>, also write to the in-memory cache with a TTL timestamp. Add a periodic <code>setInterval</code> eviction (every 60s) to remove entries older than 120s. This ensures late status polls after file deletion still return the final state.
+    </div>
+  </div>
+
+  <div class="migration-step">
+    <div class="ms-num">Step 4</div>
+    <div>
+      <strong>Add .status.json deletion to launcher after writing final state</strong><br />
+      In <code>bob-launcher-template.ps1</code>, in both the success and failure paths, after the final <code>Write-BobStatus</code> call, add: <code>Start-Sleep -Seconds 20; try { Remove-Item -Path $env:RC_STATUS_FILE -Force -ErrorAction SilentlyContinue } catch {}</code>. The 20-second delay allows any in-flight status polls to complete before the file disappears. The in-memory cache (Step 3) handles any polls that arrive after deletion.
+    </div>
+  </div>
+
+  <div class="migration-step">
+    <div class="ms-num">Step 5</div>
+    <div>
+      <strong>Update error handler in launcher</strong><br />
+      In the <code>catch</code> block of <code>bob-launcher-template.ps1</code>, do NOT delete the <code>.txt</code> or <code>.status.json</code> on failure. Retain them for diagnostic investigation. The <code>last-error.log</code> file in TEMP is also retained. This preserves the current excellent failure-mode observability.
+    </div>
+  </div>
+
+  <div class="migration-step">
+    <div class="ms-num">Step 6</div>
+    <div>
+      <strong>Update documentation</strong><br />
+      Update <code>docs/BOB-HELPER-SERVER.md</code> Temp file lifecycle section to reflect: files written to TEMP_ROOT only; .txt deleted immediately after prompt read; .status.json deleted ~20s after final state write; in-memory cache provides 120s coverage for late polls. Update the Execution Flow numbered list (step 14). Version bump to PATCH in relevant plugin and platform versions.
+    </div>
+  </div>
+
+  <div class="migration-step">
+    <div class="ms-num">Step 7</div>
+    <div>
+      <strong>Update CHANGELOG.md and dist/ mirror</strong><br />
+      Following agents.md §12: bump platform PATCH version, update all Authoritative Version Locations, copy modified root files to <code>dist/</code>.
+    </div>
+  </div>
+
+  
+  <h2>Edge Cases and Failure Scenarios</h2>
+  <table>
+    <thead>
+      <tr><th>Scenario</th><th>Current Behavior</th><th>Behavior After Recommended Changes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Server crashes mid-execution</strong></td>
+        <td>Files remain until next startup eviction (24h)</td>
+        <td>Same - server crash cannot trigger file cleanup. Launcher continues to run independently and now self-cleans its own files on completion.</td>
+      </tr>
+      <tr>
+        <td><strong>Launcher crashes before reading prompt</strong></td>
+        <td>.lock and .txt remain; evicted after 24h</td>
+        <td>Same. .lock ensures the file won't be evicted prematurely if server restarts before 24h. After 24h, age-based eviction fires.</td>
+      </tr>
+      <tr>
+        <td><strong>Concurrent executions</strong></td>
+        <td>Unique requestId per execution - no filename collision</td>
+        <td>Same. Each execution has its own .txt and .status.json. Cleanup is per-file.</td>
+      </tr>
+      <tr>
+        <td><strong>Late status poll after file deletion</strong></td>
+        <td>Returns 404 - plugin stops polling (currently treated as failure)</td>
+        <td>In-memory cache serves the final state for 120s after deletion. 404 only possible after 120s TTL expiry, which is well outside the polling window (3s interval, ~10 polls max).</td>
+      </tr>
+      <tr>
+        <td><strong>Retry / re-execute same request</strong></td>
+        <td>New requestId generated - no collision</td>
+        <td>Same. Each Execute click generates a new requestId via <code>'sf-' + Date.now() + '-' + random</code>.</td>
+      </tr>
+      <tr>
+        <td><strong>Bob exits non-zero (partial failure)</strong></td>
+        <td>Files retained until eviction</td>
+        <td>.txt is still deleted (already read before Bob ran). .status.json is retained indefinitely on failure path (no deferred deletion added to catch block). last-error.log is always written.</td>
+      </tr>
+      <tr>
+        <td><strong>Working directory configured by user</strong></td>
+        <td>Files written INTO the user's project directory - visible in file explorer / IDE</td>
+        <td>Files written to TEMP_ROOT only. User's project directory remains clean.</td>
+      </tr>
+      <tr>
+        <td><strong>Server restart while Bob is running</strong></td>
+        <td>cleanupAllTempFiles() at shutdown respects .lock protocol</td>
+        <td>Same. If launcher already deleted the .txt (Step 2), the shutdown cleanup finds nothing to do for that file. .status.json is still present and will be cleaned by shutdown.</td>
+      </tr>
+      <tr>
+        <td><strong>Disk write failure (TEMP not writable)</strong></td>
+        <td>Server returns 500 "Failed to write prompt file"</td>
+        <td>Same - the bob-helper.ps1 check (CHECK 5) validates TEMP writeability as a pre-flight check.</td>
+      </tr>
+      <tr>
+        <td><strong>Diagnostic investigation of a problem</strong></td>
+        <td>Developer enables REPLYCATORS_BOB_HELPER_DEBUG=1 to see logs; files persist</td>
+        <td>For failures: .status.json is retained (no deferred cleanup on failure path). For successes: files are cleaned. Consider adding a DEBUG mode that suppresses file cleanup entirely for deep investigation.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>Compliance Review</h2>
+  <ul class="checklist">
+    <li class="check-pass">Files in scope are exclusively in <code>tools/</code> - no changes to dashboard.js, background.js, or plugin modules required</li>
+    <li class="check-pass">No new <code>chrome.storage.local</code> keys introduced</li>
+    <li class="check-pass">No new platform logging or notification systems introduced</li>
+    <li class="check-pass">No changes to plugin architecture, PLUGINS[], or the extension manifest</li>
+    <li class="check-pass">In-memory status cache is scoped to the Node.js process - does not violate ADR-005 (Chrome storage as persistence layer) as it is a server-side concern only</li>
+    <li class="check-pass">No <code>node_modules</code> introduced - all changes use Node.js built-ins (<code>Map</code>, existing <code>fs</code>) per §13-A Runtime-First Policy</li>
+    <li class="check-pass"><code>setInterval</code> for cache eviction complies with Performance Budget (§16): adds one <code>setInterval</code>, bringing total from 0 to 1 (budget: &lt;= 2)</li>
+    <li class="check-warn">CHANGELOG.md and dist/ mirror must be updated - standard post-change requirement per §2 Critical Rule 4 and §12</li>
+    <li class="check-warn">docs/BOB-HELPER-SERVER.md Temp file lifecycle section becomes stale if not updated - per §23-A Documentation Maintenance Rules</li>
+    <li class="check-pass">ASCII Punctuation Standard (§28): all new strings in the implementation use standard hyphens</li>
+    <li class="check-pass">No directories with __ prefix are introduced (§25)</li>
+    <li class="check-pass">Platform logging remains with ReplyCatorsApp.addLog() in plugin code - server-side uses process.stdout.write per existing pattern</li>
+  </ul>
+
+  
+  <h2>Final Verdict</h2>
+  <div class="verdict-box">
+    <p><strong>Implemented with modifications.</strong></p>
+  </div>
+
+  <p>The proposed solution ("delete files immediately after successful processing") is correct in intent but requires two modifications to be safe and complete:</p>
+  <ol>
+    <li><strong>Add an in-memory status cache</strong> to the server before deleting the <code>.status.json</code>. Without it, deleting the status file while the plugin is still polling creates a window where the plugin receives a 404 and may incorrectly surface an error to the user despite the execution succeeding.</li>
+    <li><strong>Scope temp file placement to TEMP_ROOT exclusively.</strong> The UX problem is worst when files appear in the user's working directory. Isolating all temp files to <code>%TEMP%\replycators-bob-helper\</code> addresses the most visible manifestation immediately and is a zero-risk change independent of the timing work.</li>
+  </ol>
+
+  <p>The recommended implementation (Alternatives 1 + 2 combined) achieves all stated goals - files are hidden from the user's project directory, actively deleted within seconds of use, and the diagnostic and failure-recovery properties of the current design are fully preserved. The lock-file protocol, the status-file polling loop, the 24h backstop eviction, and the graceful-shutdown cleanup all remain intact and complementary.</p>
+
+  <p>The named-pipe alternative (Alternative 3) represents a cleaner long-term architecture and should be noted in the Technical Debt Register for consideration during RC-015 Phase 2, but it is disproportionate to the current problem and should not block the near-term fix.</p>
+
+  <div class="footer">
+    <p>Made with IBM Bob — ReplyCators Architecture Review — tools/bob-helper-server.js, tools/bob-launcher-template.ps1</p>
+  </div>
+
+</div>
+</body>
+</html>

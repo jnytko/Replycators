@@ -65,6 +65,8 @@ This page provides a navigable index of all engineering documentation for the Re
 | Backup & Restore | [plugins/backup-restore.md](plugins/backup-restore.md) |
 | Marketplace | [plugins/marketplace.md](plugins/marketplace.md) |
 
+> **Note:** Backup & Restore and Marketplace are **platform features**, not user-installable plugins registered in `PLUGINS[]`. They are listed here for documentation discoverability. Their implementations live in `plugins/backup-restore.js` and `plugins/marketplace.js` respectively.
+
 ---
 
 ## Archive and History

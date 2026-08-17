@@ -4,15 +4,16 @@ name: ReplyCators CI
 # CI ENVIRONMENT NOTE — Runtime-First Policy Exception
 #
 # The Runtime-First Policy (AGENTS.md § 13-A) applies to LOCAL and AGENT
-# workflows on C:\Work\Bob.  GitHub Actions runners are EPHEMERAL environments:
-# no C:\Work\Bob\Runtime directory exists on a runner.  Therefore, jobs here
-# correctly run "npm ci" to install dependencies into the ephemeral workspace.
+# workflows using the shared Runtime directory at [root]\Runtime\NodeJS.
+# GitHub Actions runners are EPHEMERAL environments: no Runtime directory
+# exists on a runner.  Therefore, jobs here correctly run "npm ci" to install
+# dependencies into the ephemeral workspace.
 #
 # This is the ONLY context where running npm ci / npm install inside the
 # repository directory is acceptable WITHOUT Runtime-first evaluation.
 #
-# For local/agent workflows: always check C:\Work\Bob\Runtime\NodeJS first.
-# Authoritative dependency store: C:\Work\Bob\Runtime\NodeJS\node_modules
+# For local/agent workflows: always check [root]\Runtime\NodeJS first.
+# Authoritative dependency store: [root]\Runtime\NodeJS\node_modules
 # ─────────────────────────────────────────────────────────────────────────────
 #
 # AUTOMATED TESTING NOTE
@@ -21,12 +22,18 @@ name: ReplyCators CI
 # and TD-003). The test job has been removed. Validation is manual QA only
 # until the first stable release.
 # ─────────────────────────────────────────────────────────────────────────────
+#
+# BRANCHING STRATEGY
+# CI triggers on: main (production), feature/** and release/** branches.
+# Direct pushes to main are discouraged; use pull_request for all changes.
+# See CONTRIBUTING.md "Branching strategy" for the full policy.
+# ─────────────────────────────────────────────────────────────────────────────
 
 on:
   push:
-    branches: [main, master, develop, 'release/**', 'feature/**']
+    branches: [main, 'release/**', 'feature/**', 'fix/**', 'docs/**', 'chore/**']
   pull_request:
-    branches: [main, master, develop]
+    branches: [main]
 
 jobs:
   # ── Job 1: Type-check TypeScript source ──────────────────────────────────────
@@ -45,7 +52,7 @@ jobs:
 
       - name: Install dependencies
         # CI EXCEPTION: ephemeral runner has no Runtime directory. npm ci is correct here.
-        # For local/agent workflows: use C:\Work\Bob\Runtime\NodeJS instead.
+        # For local/agent workflows: use [root]\Runtime\NodeJS instead.
         run: npm ci
 
       - name: Run TypeScript type-check
@@ -67,16 +74,20 @@ jobs:
 
       - name: Install dependencies
         # CI EXCEPTION: ephemeral runner has no Runtime directory. npm ci is correct here.
-        # For local/agent workflows: use C:\Work\Bob\Runtime\NodeJS instead.
+        # For local/agent workflows: use [root]\Runtime\NodeJS instead.
         run: npm ci
 
       - name: Production build
         run: npm run build
 
       - name: Verify dist/ sync (root → dist/)
+        # Verifies the freshly-built dist/ matches the committed root files.
         run: npm run sync:verify
 
       - name: Upload dist/ artifact
+        # Uploads the built dist/ for downstream inspection or manual download.
+        # NOTE: Job 3 (sync-check) does NOT consume this artifact — it checks the
+        # committed dist/ independently. The artifact is retained for release use.
         uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -84,6 +95,10 @@ jobs:
           if-no-files-found: error
 
   # ── Job 3: Sync Verification (root ↔ dist/) ──────────────────────────────────
+  # PURPOSE: Verifies that the COMMITTED dist/ in the PR/push matches the COMMITTED
+  # root files. This catches the common mistake of pushing root changes without
+  # syncing dist/. It checks what was committed, NOT what Job 2 just built —
+  # those are intentionally separate concerns.
   sync-check:
     name: Root ↔ dist/ Sync Check
     runs-on: ubuntu-latest
@@ -99,6 +114,6 @@ jobs:
           cache: 'npm'
 
       - name: Verify root and dist/ are in sync
-        # dist/ is committed to the repo, so we check it directly without a build.
-        # No npm ci needed here — sync-root.js uses only Node built-ins (fs, path).
+        # Checks committed dist/ against committed root — no build or npm ci needed.
+        # sync-root.js uses only Node built-ins (fs, path).
         run: node build/sync-root.js --verify

@@ -9,8 +9,11 @@
 
 ## Overview
 
-**Archive scope:** Verbose release entries for platform versions v1.27.1 and below.
+**Archive scope:** Verbose release entries for platform versions **v1.27.1 and below** (version-based boundary).
 These entries are preserved for historical reference and traceability.
+
+The archive boundary is version-based, not time-based. New entries are moved here when the main CHANGELOG.md
+would otherwise contain verbose entries for versions below v1.27.2.
 
 - For recent verbose entries (v1.27.2 and above): see [CHANGELOG.md](../CHANGELOG.md).
 - For a quick summary of all versions: see the Version History Reference table in CHANGELOG.md.

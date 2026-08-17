@@ -3,6 +3,7 @@
 ## Sections
 
 - Overview
+- Deferred Items Table
 - Resolved Items Table
 - Resolution Notes
 
@@ -10,10 +11,20 @@
 
 ## Overview
 
-**Archive document.** All 18 original technical debt items have been fully resolved.
+**Archive document.** All 18 original technical debt items have been closed or deferred as of v1.22.1.
 Active agents: consult `AGENTS.md §18` for current debt status.
 
 To add new debt: create a new TD entry here with status `Open` and add a reference from the relevant section of `AGENTS.md`.
+
+---
+
+## Deferred Items Table
+
+Items that are acknowledged open risks, intentionally deferred to a future milestone.
+
+| ID | Priority | Trigger | Summary |
+|----|----------|---------|---------|
+| TD-003 | Medium | RC-015 Phase 3 / first stable release | Automated test coverage zero. Jest introduced then removed v1.16.0. Manual QA is current strategy. Will be reintroduced when architecture, plugin interfaces, and storage schema are stable. See `AGENTS.md §26`. |
 
 ---
 
@@ -23,7 +34,6 @@ To add new debt: create a new TD entry here with status `Open` and add a referen
 |----|----------|----------|---------|
 | TD-001 | High | v1.17.0 | `dashboard.js` monolith (~5,411 lines) modularised; all 8 plugin implementations extracted to `plugins/*.js`. Post-refactor validated v1.18.0. |
 | TD-002 | High | v1.11.0 | No postbuild sync - `build/sync-root.js` added; `postbuild` npm hook runs automatically. |
-| TD-003 | Medium | Deferred | Automated test coverage zero. Jest introduced then removed v1.16.0. Manual QA is current strategy. Planned after first stable release. |
 | TD-004 | Low | v1.18.0 | Font strategy: 5 options silently fall back on machines without fonts. Option D (Hybrid) implemented. |
 | TD-005 | Low | v1.11.0 | Custom font fallback audit. Superseded by TD-004 in v1.18.0. See `docs/FONT-STRATEGY.md`. |
 | TD-006 | Low | v1.11.0 | `rc:session:*` namespace conflates session and persistent data. Migration plan at `docs/STORAGE-MIGRATION-ROADMAP.md`. Blocked on future MAJOR release. |

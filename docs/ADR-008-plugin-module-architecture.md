@@ -14,7 +14,7 @@
 
 ## Status
 
-Accepted - 2026-07-16
+Accepted - 2025-07-16
 
 ---
 

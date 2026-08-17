@@ -1,0 +1,531 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ReplyCators - Change Risk Assessment &amp; Validation Plan</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.65; color: #1f2328; background: #fff; padding: 32px 16px; }
+  .container { max-width: 820px; margin: 0 auto; }
+  h1 { font-size: 21px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #57606a; margin-bottom: 32px; }
+  h2 { font-size: 17px; font-weight: 700; margin: 36px 0 14px; padding-bottom: 7px; border-bottom: 2px solid #e5e7eb; }
+  h3 { font-size: 14px; font-weight: 700; color: #1f2328; margin: 18px 0 7px; }
+  h4 { font-size: 13px; font-weight: 700; color: #57606a; margin: 14px 0 5px; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin: 8px 0 12px 20px; }
+  li { margin-bottom: 5px; }
+  code { font-family: "Consolas", "Courier New", monospace; font-size: 12px; background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 3px; padding: 1px 5px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 13px; }
+  th { background: #f7f8fa; font-weight: 600; text-align: left; padding: 8px 10px; border: 1px solid #e5e7eb; }
+  td { padding: 8px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; white-space: nowrap; }
+  .badge-high { background: #fee2e2; color: #991b1b; }
+  .badge-med { background: #fef3c7; color: #92400e; }
+  .badge-low { background: #d1fae5; color: #065f46; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+  .badge-conf-high { background: #d1fae5; color: #065f46; }
+  .badge-conf-med { background: #fef3c7; color: #92400e; }
+  .badge-conf-low { background: #fee2e2; color: #991b1b; }
+  .fact-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 5px; padding: 12px 14px; margin: 12px 0; font-size: 13px; }
+  .warn-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 5px; padding: 12px 14px; margin: 12px 0; font-size: 13px; }
+  .danger-box { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 5px; padding: 12px 14px; margin: 12px 0; font-size: 13px; }
+  .ok-box { background: #f0fdf4; border: 1px solid #86efac; border-radius: 5px; padding: 12px 14px; margin: 12px 0; font-size: 13px; }
+  .section-intro { background: #f7f8fa; border-left: 3px solid #3b82d4; padding: 10px 14px; margin-bottom: 18px; border-radius: 0 4px 4px 0; font-size: 13px; color: #57606a; }
+  .test-case { border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px 14px; margin-bottom: 10px; background: #fff; }
+  .test-case .tc-title { font-weight: 700; font-size: 13px; margin-bottom: 5px; }
+  .test-case .tc-meta { font-size: 12px; color: #57606a; margin-bottom: 6px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .test-case .tc-body { font-size: 13px; }
+  .change-block { border: 1px solid #e5e7eb; border-radius: 8px; padding: 18px; margin-bottom: 24px; background: #fff; }
+  .change-block h3 { margin-top: 0; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 14px; }
+  .conf-table { border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; margin: 16px 0; }
+  .conf-table th, .conf-table td { padding: 8px 12px; }
+  .footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>ReplyCators - Change Risk Assessment &amp; Validation Plan</h1>
+<p class="subtitle">QA risk analysis and test plan for three proposed changes. All findings are grounded in direct source inspection of the production codebase. No assumptions are made about unread code.</p>
+
+
+<h2>Executive Summary</h2>
+
+<p>Three changes are under assessment: (1) a post-import advisory toast for the Bob Working Directory, (2) exclusion of the API key from backup exports, and (3) Bob version validation in the Diagnostics CLI check. The overall risk profile is <span class="badge badge-low">Low to Medium</span>.</p>
+
+<p>Two changes carry no risk to the critical path (extraction, execution, storage integrity): the advisory toast is purely additive UI, and the version check is a read-only Diagnostics extension. The API key export exclusion is the only change that touches a write path (the export pipeline), and its blast radius is precisely bounded and verifiable. No change touches <code>applyImport()</code>, the storage write path, the rollback mechanism, the Execute flow, or any content script behavior.</p>
+
+<div class="warn-box">
+<strong>Highest-confidence risk identified:</strong> The API key exclusion change, if implemented incorrectly, could silently clear a user's API key on a <em>same-machine restore from a newly-created backup</em>. The mechanism and guard against this are explained in full in the DEPL-03 section below. This risk is verifiable, not speculative.
+</div>
+
+<div class="warn-box">
+<strong>Second risk identified:</strong> The "What is included and excluded" table rendered in the Backup &amp; Restore UI (line 1117, <code>backup-restore.js</code>) currently lists "Bob Working Directory" as "Sanitizable" with the note "Device-specific path; redacted when sanitize is on." The API key is not listed at all, even though it currently exports in unsanitized mode. All three changes require this table to be updated. Failure to update it creates a user-facing documentation lie that will mislead users about what is in their backup.
+</div>
+
+
+<h2>Current State Analysis</h2>
+
+<div class="section-intro">This section documents verified facts from the source that are necessary to correctly assess each change. Every statement can be traced to a specific file and line number.</div>
+
+<h3>Export Pipeline (backup-restore.js exportBackup())</h3>
+<p>The export pipeline has two distinct gates for sensitive data:</p>
+<ol>
+  <li><strong>The <code>neverExport</code> list</strong> (per-entry registry field) — keys listed here are <em>never</em> added to the <code>keysToRead</code> array and are therefore never read from storage. They cannot appear in the output under any circumstances.</li>
+  <li><strong>The <code>sanitize()</code> function</strong> (per-entry, called conditionally at line 546-548) — applies only when the user has explicitly checked "Sanitize before export." It clears fields post-read.</li>
+</ol>
+<p>The <code>bobApiKey</code> field is inside <code>rc:session:sf-settings</code> which is in the <code>exportable</code> array. It is NOT in <code>neverExport</code>. The <code>sanitize()</code> function clears it (line 169), but sanitize is opt-in. Therefore: <strong>in a default full export, <code>bobApiKey</code> is present in plaintext JSON.</strong></p>
+
+<h3>Import Pipeline (backup-restore.js applyImport())</h3>
+<p>The import pipeline writes <em>only declared keys</em> from the registry entry (lines 808-813: <code>filteredData</code> loop). It does not strip individual fields within a storage object — it includes or excludes the entire object. Since <code>rc:session:sf-settings</code> is in the <code>exportable</code> array and is not individually decomposed, the entire object (including all its fields) is written as a unit to storage on import.</p>
+<p><strong>Critical consequence:</strong> If the export path strips <code>bobApiKey</code> but the import path writes the full <code>sf-settings</code> object as-is from the backup file, a backup file that has an empty-string <code>bobApiKey</code> (or missing <code>bobApiKey</code> field) will overwrite the user's live key on same-machine restore.</p>
+
+<h3>Diagnostics Infrastructure (dashboard.js loadPreflightChecks)</h3>
+<p>The Diagnostics system uses lazy-cached shared promises: <code>_getCliCheckResponse()</code> caches the <code>RC_PREFLIGHT_CLI_CHECK</code> result so it is shared between <code>checkBobCli</code> and <code>checkNodeRuntime</code> (F-13 pattern). A new "Bob version" check that reads from <code>/cli-check</code> <em>must</em> use the same <code>_getCliCheckResponse()</code> pattern, not issue its own <code>RC_PREFLIGHT_CLI_CHECK</code> message. Failure to do so would break the F-13 optimization and send two HTTP requests to <code>/cli-check</code> per diagnostics run — a correctly identified and documented performance concern.</p>
+
+<h3>Settings UI Restore Path (dashboard.js syncSettingsUI)</h3>
+<p>The Bob API key is restored from storage into: (a) the module-level <code>_committedBobApiKey</code> variable (line 4383), (b) the DOM input (line 4391), and (c) the plugin module via <code>onApiKeyChanged()</code> (line 4403). The plugin module's Execute-button gating reads <code>_bobApiKey</code> which is seeded by <code>onApiKeyChanged</code>. If a restore operation writes an empty-string <code>bobApiKey</code> to storage, the next popup open will seed all three locations with an empty string, silently disabling Execute.</p>
+
+<h3>The "What is included" Table</h3>
+<p>The table in <code>backup-restore.js render()</code> (lines 1113-1128) is hardcoded HTML. It currently does not list the API key at all, and lists Bob Working Directory as "Sanitizable." Any change to export policy must also update this table or the UI will actively mislead users.</p>
+
+
+<h2>Proposed Change Review</h2>
+
+
+<div class="change-block">
+<h3>Change 1: DEPL-02 - Post-Import Advisory Toast for Bob Working Directory</h3>
+
+<h4>Precise scope</h4>
+<p>After a successful <code>applyImport()</code>, if the imported data contained a non-empty <code>bobWorkingDir</code> value inside <code>rc:session:sf-settings</code>, show a toast advisory: "Bob Working Directory was restored - verify the path is valid on this machine in Settings."</p>
+
+<h4>Touch points</h4>
+<ul>
+  <li>The post-apply block in <code>_bindUI</code> (around line 1274 of <code>backup-restore.js</code>) where <code>result.keysWritten</code> is checked.</li>
+  <li>OR: a post-apply hook that reads the imported envelope's <code>sf-settings.bobWorkingDir</code> field.</li>
+  <li><code>app().showToast()</code> or <code>app().addNotification()</code> — both are already used in the import flow.</li>
+</ul>
+
+<h4>Risk analysis</h4>
+<ul>
+  <li><strong>Risk: reading a nested field from the envelope for the toast condition.</strong> The toast must read <code>envelope.sections['com.replycators.salesforce-extractor']['rc:session:sf-settings']?.bobWorkingDir</code>. This is a nullable chain through several layers. If any level is absent (e.g., a selected-mode export that didn't include the SF plugin, or a backup from before <code>bobWorkingDir</code> was added to the schema), the access must not throw. Must be null-safe throughout.</li>
+  <li><strong>Risk: toast fires on every import, not just cross-machine restores.</strong> A same-machine backup-and-restore will also show the advisory toast, which is technically correct but mildly annoying. Accept this: the alternative (detecting "same machine" by path comparison) is overengineering for a toast.</li>
+  <li><strong>Risk: keep-existing strategy.</strong> If the user selects "Keep existing on conflict" and the <code>sf-settings</code> key already exists on the current machine, the key is excluded from writes. The toast must not fire in this case, because nothing was actually written. The condition should check whether the <code>sf-settings</code> key is in <code>result.keysWritten</code> OR the final write plan, not just whether the envelope contains it.</li>
+  <li><strong>No risk to storage integrity, rollback, or the Execute path.</strong> This is purely additive UI after a successful write. The worst-case failure mode is: toast does not appear, or appears when it should not. Neither causes data loss.</li>
+</ul>
+
+<h4>Adjacent feature impact</h4>
+<p>None. The toast uses the existing <code>addNotification()</code> platform API. No storage key, schema, or import engine changes.</p>
+</div>
+
+
+<div class="change-block">
+<h3>Change 2: DEPL-03 - Exclude API Key from Backup Exports</h3>
+
+<h4>Precise scope</h4>
+<p>Strip <code>bobApiKey</code> from the <code>rc:session:sf-settings</code> object in the export output, in all export modes (full, selected, sanitized, unsanitized). The import pipeline and storage schema are unchanged.</p>
+
+<div class="danger-box">
+<strong>Critical design question that must be resolved before implementation:</strong><br />
+The export currently exports the entire <code>rc:session:sf-settings</code> object as an atomic unit. The import path writes it back as an atomic unit. If the export strips <code>bobApiKey</code> from the object and the user restores that backup on the same machine, the import writes an <code>sf-settings</code> object that has no <code>bobApiKey</code> field (or an empty string). This will clear the user's live API key.<br /><br />
+<strong>This is not a theoretical edge case. It is the normal same-machine backup-restore flow.</strong>
+</div>
+
+<h4>Two valid implementation approaches — they have different risk profiles</h4>
+
+<p><strong>Approach A — Strip from export, accept that import may clear the key:</strong> Document explicitly that after importing a backup, the API key must be re-entered. Add the post-import advisory from DEPL-02 to also cover the API key. This is the simplest implementation but imposes friction on same-machine restores.</p>
+
+<p><strong>Approach B — Strip from export, teach the import pipeline to preserve the key:</strong> Before writing the <code>sf-settings</code> object, merge: read the live <code>bobApiKey</code> from current storage, re-inject it into the imported object before writing. This requires a targeted change to <code>applyImport()</code> or a new pre-write merge step specifically for credential fields. Higher complexity, but preserves the user's key on same-machine restores.</p>
+
+<div class="warn-box">
+<strong>Approach B touches <code>applyImport()</code> — the most safety-critical function in the entire plugin.</strong> The rollback mechanism, read-back verification, and import lock all depend on this function operating exactly as designed. Any modification to its write plan construction carries regression risk for ALL plugins, not just Salesforce. Approach B is therefore rated as <span class="badge badge-high">Higher Risk</span>.
+</div>
+
+<h4>Recommendation: Approach A with enhanced post-import advisory</h4>
+<p>Approach A is safer, contained, and honest about the trade-off. The advisory toast must cover both the working directory AND the API key. The "What is included" table must list the API key as "Never exported." The sanitize function's existing <code>bobApiKey = ''</code> line becomes redundant but harmless — leave it in place.</p>
+
+<h4>Additional risk: the <code>_sanitized</code> flag in the envelope</h4>
+<p>The envelope includes <code>_sanitized: sanitize</code> (line 563). After this change, an unsanitized export will nonetheless have an empty <code>bobApiKey</code>. A consumer reading <code>_sanitized: false</code> and expecting to find a key may be surprised. This is a documentation concern, not a functional risk, but it must be noted in the changelog and any API documentation.</p>
+
+<h4>Adjacent feature impact</h4>
+<ul>
+  <li><strong>The "What is included" table:</strong> Must add a row for "BobShell 2.0 API key" as "Never exported" and update the "Bob Working Directory" row note.</li>
+  <li><strong>The sanitize description text</strong> in the export UI (line 1020): references "working directory paths" — add "API keys" to this description.</li>
+  <li><strong>The <code>sensitiveFields</code> array</strong> in the registry entry (lines 135-139) already lists <code>'rc:session:sf-settings.bobApiKey'</code>. This field is documentation-only (not used by any logic in the current codebase). It remains accurate after the change.</li>
+  <li><strong>No impact on the import pipeline</strong> if Approach A is used.</li>
+</ul>
+</div>
+
+
+<div class="change-block">
+<h3>Change 3: Bob Version Validation in /cli-check and Diagnostics</h3>
+
+<h4>Precise scope</h4>
+<p>Add a <code>bobVersionOk</code> boolean and optional <code>bobVersionWarning</code> string to the <code>/cli-check</code> HTTP response. Add a new Diagnostics check item (or extend <code>checkBobCli</code>) that evaluates <code>bobVersionOk</code> and renders a "warn" status if the detected major version is below the minimum.</p>
+
+<h4>F-13 shared promise constraint — verified critical dependency</h4>
+<div class="danger-box">
+<strong>Verified:</strong> <code>checkBobCli</code> and <code>checkNodeRuntime</code> both call <code>_getCliCheckResponse()</code> (lines 2790 and 2834). This shared lazy promise is used to avoid two separate <code>RC_PREFLIGHT_CLI_CHECK</code> background messages per diagnostics run. A new version check function MUST also use <code>_getCliCheckResponse()</code>. If implemented as a new standalone check function that calls <code>chrome.runtime.sendMessage({ type: 'RC_PREFLIGHT_CLI_CHECK' }, ...)</code> directly, it will break the F-13 optimization and issue a redundant background HTTP request. This is not a minor issue — the background message handler has a 4-second AbortController timeout, so a doubled request means doubled network latency risk.
+</div>
+
+<h4>GROUPS array modification — verified critical dependency</h4>
+<p>The new check must be added to the <code>GROUPS['LocalRuntime'].checks</code> array (line 3018). The <code>allPromises</code> and <code>promiseGroupMap</code> parallel arrays are built from this configuration. Adding a check to the array is safe as long as the check returns a Promise that always resolves (never rejects), which is the contract for all existing checks. A check that can reject would cause <code>Promise.allSettled</code> to catch it and render a generic error card — acceptable behavior, but the check should resolve with a safe error descriptor instead.</p>
+
+<h4>Bob 1.0 mode cross-dependency — verified</h4>
+<p>The <code>bobUseBob1</code> setting is stored in <code>rc:session:sf-settings</code> and is read during startup into <code>_restoredSfSettings</code>. The Diagnostics system does not currently read <code>bobUseBob1</code>. If the version check issues a "Bob 2.x required" warning for a user who has explicitly configured Bob 1.0 mode, the warning is misleading and will erode trust in the Diagnostics panel. The version check must read <code>rc:session:sf-settings.bobUseBob1</code> and suppress or reframe the warning accordingly.</p>
+
+<h4>The <code>sfEnabled</code> guard — verified pattern</h4>
+<p>All SF-related diagnostics checks begin with <code>if (!sfEnabled) { resolve({ status: 'skip', ... }); return; }</code>. The new check must follow this pattern identically. <code>sfEnabled</code> is already in scope within <code>loadPreflightChecks()</code>.</p>
+
+<h4>Version string parsing risk — verified from server source</h4>
+<p>The server currently validates the version string with <code>/^[\w.\-+\s]{1,80}$/</code> (line 357 of <code>bob-helper-server.js</code>). This regex accepts a wide range of formats including multi-word strings like <code>"BobShell 2.0.1 (build 123)"</code>. Any numeric comparison against this string must handle the case where it does not begin with a plain digit. The Node runtime check in <code>checkNodeRuntime</code> (line 2854) uses <code>/^[\d.]+$/.test(response.nodeVersion)</code> as a pre-check before numeric parsing — the Bob version check should use an analogous guard before attempting major version extraction.</p>
+
+<h4>Adjacent feature impact</h4>
+<ul>
+  <li>The <code>/cli-check</code> HTTP response schema gains new fields. This is additive and backward compatible. All existing consumers of the response (the Settings Working Directory Save button path, <code>checkBobCli</code>, <code>checkNodeRuntime</code>) only read the fields they expect and ignore unknown ones.</li>
+  <li>The Diagnostics "Local Runtime" group gains one additional check card. No layout breakage expected.</li>
+  <li>The Bob helper server gains a synchronous comparison operation — no event-loop impact.</li>
+</ul>
+</div>
+
+
+<h2>Risk Assessment</h2>
+
+<table>
+  <tr>
+    <th>ID</th>
+    <th>Change</th>
+    <th>Failure Mode</th>
+    <th>Probability</th>
+    <th>Severity</th>
+    <th>Blast Radius</th>
+  </tr>
+  <tr>
+    <td>R-01</td>
+    <td>DEPL-03</td>
+    <td>Same-machine restore from new backup silently clears the API key, disabling Execute until user re-enters it.</td>
+    <td><span class="badge badge-high">Certain if Approach B not used</span></td>
+    <td><span class="badge badge-med">Medium</span> - user-recoverable</td>
+    <td>Execute workflow disabled; user sees "API key not set" tooltip on Execute buttons. Recoverable by re-entering key in Settings.</td>
+  </tr>
+  <tr>
+    <td>R-02</td>
+    <td>DEPL-03</td>
+    <td>"What is included" table not updated - users believe the API key is in their backup when it is not.</td>
+    <td><span class="badge badge-med">Medium</span> if overlooked</td>
+    <td><span class="badge badge-med">Medium</span> - confusion, failed migration</td>
+    <td>User migrates to new machine, discovers missing key only at Execute time with no prior warning.</td>
+  </tr>
+  <tr>
+    <td>R-03</td>
+    <td>DEPL-03</td>
+    <td>Approach B (import merge) introduces a regression in the applyImport write plan for all plugins.</td>
+    <td><span class="badge badge-low">Low if Approach A chosen</span></td>
+    <td><span class="badge badge-high">High</span> - could corrupt multi-plugin restores</td>
+    <td>All backup-restore functionality for all plugins.</td>
+  </tr>
+  <tr>
+    <td>R-04</td>
+    <td>Version check</td>
+    <td>New check function issues its own RC_PREFLIGHT_CLI_CHECK message instead of using _getCliCheckResponse(), breaking F-13 optimization.</td>
+    <td><span class="badge badge-med">Medium</span> - easy to do incorrectly</td>
+    <td><span class="badge badge-low">Low</span> - doubled latency only, no data impact</td>
+    <td>Diagnostics run time increases; two HTTP requests instead of one to /cli-check.</td>
+  </tr>
+  <tr>
+    <td>R-05</td>
+    <td>Version check</td>
+    <td>Warning fires for Bob 1.0 mode users, contradicting their intentional configuration.</td>
+    <td><span class="badge badge-high">Certain if not guarded</span></td>
+    <td><span class="badge badge-low">Low</span> - UX confusion only</td>
+    <td>Bob 1.0 mode users see a misleading "Update Bob" warning in Diagnostics.</td>
+  </tr>
+  <tr>
+    <td>R-06</td>
+    <td>Version check</td>
+    <td>Null or non-parseable version string treated as "below minimum" instead of "unknown", triggering false warning.</td>
+    <td><span class="badge badge-med">Medium</span> - depends on Bob version output format</td>
+    <td><span class="badge badge-low">Low</span> - spurious warning only</td>
+    <td>Users with a valid Bob installation see a false "update required" warning.</td>
+  </tr>
+  <tr>
+    <td>R-07</td>
+    <td>DEPL-02</td>
+    <td>Toast condition reads envelope bobWorkingDir without null-safety, throws for backups without SF section.</td>
+    <td><span class="badge badge-low">Low</span> - easy to guard</td>
+    <td><span class="badge badge-low">Low</span> - toast fails silently at worst</td>
+    <td>No import impact; worst case: toast does not appear or JS error in import completion handler.</td>
+  </tr>
+  <tr>
+    <td>R-08</td>
+    <td>DEPL-02</td>
+    <td>Toast fires when keep-existing strategy skips the sf-settings key, creating false impression that path was restored.</td>
+    <td><span class="badge badge-med">Medium</span> - keep-existing is a supported strategy</td>
+    <td><span class="badge badge-low">Low</span> - misleading toast only</td>
+    <td>User told to verify a path that was never actually written.</td>
+  </tr>
+  <tr>
+    <td>R-09</td>
+    <td>All</td>
+    <td>AGENTS.md requires that the "What is included" table, CHANGELOG.md, and documentation be updated in the same commit. If any is missed, the extension ships with stale UI documentation.</td>
+    <td><span class="badge badge-med">Medium</span> - documentation discipline risk</td>
+    <td><span class="badge badge-low">Low</span> - documentation only</td>
+    <td>User-visible documentation mismatch in the Backup &amp; Restore UI.</td>
+  </tr>
+</table>
+
+
+<h2>Validation &amp; Test Plan</h2>
+
+<div class="section-intro">All test cases are designed to be runnable manually in a development instance of the extension with the browser DevTools open. No automated test infrastructure is assumed to exist (per AGENTS.md §26).</div>
+
+<h3>Pre-conditions for all tests</h3>
+<ul>
+  <li>Extension loaded from root directory in Edge developer mode.</li>
+  <li>Bob Helper server running at port 47123 with a valid BobShell installation.</li>
+  <li>A known API key configured and saved in Settings - Salesforce Case Extractor.</li>
+  <li>A valid Bob Working Directory configured and saved.</li>
+  <li>Activity Log visible for side-effect inspection.</li>
+</ul>
+
+<h3>Block A: DEPL-03 API Key Export Tests</h3>
+
+<div class="test-case">
+  <div class="tc-title">A-01: Full export - API key absent from output file</div>
+  <div class="tc-meta"><span class="badge badge-info">Happy Path</span><span class="badge badge-high">P0 - Security Critical</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> API key configured and saved. Navigate to Maintenance Center - Backup &amp; Restore. Export scope: Full. Sanitize: OFF. Click Export.<br />
+    <strong>Verify:</strong> Open the downloaded JSON file. Navigate to <code>sections["com.replycators.salesforce-extractor"]["rc:session:sf-settings"]</code>. Assert that <code>bobApiKey</code> is absent or is an empty string.<br />
+    <strong>Failure mode to detect:</strong> <code>bobApiKey</code> is present with a non-empty value - the exclusion logic did not fire.
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">A-02: Sanitized export - API key absent (belt-and-suspenders)</div>
+  <div class="tc-meta"><span class="badge badge-info">Happy Path</span><span class="badge badge-med">P1</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> Same as A-01 but Sanitize: ON.<br />
+    <strong>Verify:</strong> Same assertion. Also verify <code>bobWorkingDir</code> is empty (existing sanitize behavior).<br />
+    <strong>Failure mode to detect:</strong> Key present in sanitized export — sanitize bypass.
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">A-03: Selected-mode export without SF plugin - no error</div>
+  <div class="tc-meta"><span class="badge badge-info">Edge Case</span><span class="badge badge-med">P1</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> Export scope: Selected. Deselect Salesforce Case Extractor. Click Export.<br />
+    <strong>Verify:</strong> Export succeeds. Output JSON has no <code>sections["com.replycators.salesforce-extractor"]</code> key. No JS errors in DevTools console.<br />
+    <strong>Failure mode to detect:</strong> Export fails or throws when the stripping logic tries to operate on an absent section.
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">A-04: Same-machine full import from new backup - Execute button state</div>
+  <div class="tc-meta"><span class="badge badge-high">Critical Regression Test</span><span class="badge badge-high">P0</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> API key configured. Export a new backup (post-change). Note the API key is absent. Import the backup (replace strategy). After import, reload extension when prompted.<br />
+    <strong>Verify:</strong> After reload, navigate to Settings - Salesforce Case Extractor. Check whether the API key field shows "[set]" or is empty. Navigate to the SF plugin view. Verify the Execute button state (disabled with "API key not set" tooltip = key was cleared; enabled = key was preserved).<br />
+    <strong>Failure mode to detect:</strong> Execute buttons are disabled with "API key not set" - the import overwrote the live key with the empty-string from the backup.<br />
+    <strong>Note:</strong> If Approach A is confirmed (user must re-enter key), this test should verify that: (a) the key is cleared, AND (b) the advisory toast appeared, AND (c) the user can re-enter the key in Settings without any issue.
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">A-05: Import from pre-change backup (key present in file) - key restored</div>
+  <div class="tc-meta"><span class="badge badge-info">Backward Compatibility</span><span class="badge badge-high">P0</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> Use a backup file created BEFORE this change that contains a non-empty <code>bobApiKey</code>. Import it. Reload.<br />
+    <strong>Verify:</strong> API key field in Settings shows "[set]". Execute button is enabled. The import pipeline accepted the old backup format without errors.<br />
+    <strong>Failure mode to detect:</strong> Import validation rejects the old backup or the key is lost on import.
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">A-06: "What is included" table - API key row present</div>
+  <div class="tc-meta"><span class="badge badge-info">Documentation Verification</span><span class="badge badge-med">P1</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> Navigate to Backup &amp; Restore.<br />
+    <strong>Verify:</strong> The "What is included and excluded" table contains a row for "BobShell 2.0 API key" showing "Never exported." Existing row for "Bob Working Directory" still shows correctly.<br />
+    <strong>Failure mode to detect:</strong> Table not updated - user cannot discover the key is excluded without reading this document.
+  </div>
+</div>
+
+<h3>Block B: DEPL-02 Advisory Toast Tests</h3>
+
+<div class="test-case">
+  <div class="tc-title">B-01: Import with non-empty bobWorkingDir - toast appears</div>
+  <div class="tc-meta"><span class="badge badge-info">Happy Path</span><span class="badge badge-med">P1</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> Create a backup with a non-empty Bob Working Directory. Import it (replace strategy).<br />
+    <strong>Verify:</strong> After apply completes, a notification/toast appears referencing the Bob Working Directory and advising the user to verify the path.<br />
+    <strong>Failure mode to detect:</strong> Toast does not appear - advisory mechanism not triggered.
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">B-02: Import with empty bobWorkingDir - toast does NOT appear</div>
+  <div class="tc-meta"><span class="badge badge-info">Edge Case</span><span class="badge badge-med">P1</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> Create a backup where Bob Working Directory is empty (not configured). Import it.<br />
+    <strong>Verify:</strong> No advisory toast for the working directory appears. The successful import notification still appears.<br />
+    <strong>Failure mode to detect:</strong> Toast fires even when no path was in the backup - spurious noise.
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">B-03: Import without SF section - no error, no toast</div>
+  <div class="tc-meta"><span class="badge badge-info">Edge Case - Null Safety</span><span class="badge badge-med">P1</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> Import a backup that does not include the Salesforce plugin section (e.g., a platform-only selected export).<br />
+    <strong>Verify:</strong> Import succeeds without errors. No Bob Working Directory toast appears. No JS exceptions in DevTools.<br />
+    <strong>Failure mode to detect:</strong> Null-reference error when toast code attempts to read <code>bobWorkingDir</code> from an absent section.
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">B-04: Keep-existing strategy with existing sf-settings - toast behavior</div>
+  <div class="tc-meta"><span class="badge badge-info">Edge Case - Strategy Interaction</span><span class="badge badge-med">P1</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> User has an existing bob working directory configured. Import a backup that also contains a bobWorkingDir, but use "Keep existing on conflict" strategy.<br />
+    <strong>Verify:</strong> The keep-existing strategy prevents the sf-settings key from being written. Verify (a) the user's existing working directory is unchanged in storage, and (b) the advisory toast either does NOT appear or clearly states that existing settings were preserved (not overwritten).<br />
+    <strong>Failure mode to detect:</strong> Toast incorrectly says "Working Directory was restored" when it was actually NOT written.
+  </div>
+</div>
+
+<h3>Block C: Bob Version Validation Tests</h3>
+
+<div class="test-case">
+  <div class="tc-title">C-01: Helper running, Bob 2.x installed - check shows pass</div>
+  <div class="tc-meta"><span class="badge badge-info">Happy Path</span><span class="badge badge-med">P1</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> Helper server running. Bob 2.x installed and on PATH. Navigate to Maintenance Center - Diagnostics.<br />
+    <strong>Verify:</strong> The new "Bob Version" check card shows "pass" status with the detected version string. The existing "Bob CLI (IBM Bob)" check still shows pass. Total number of RC_PREFLIGHT_CLI_CHECK network requests: exactly 1 (verify in Network tab of DevTools or by adding a debug log).
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">C-02: Bob 1.0 mode enabled - version warning suppressed</div>
+  <div class="tc-meta"><span class="badge badge-high">Critical Edge Case</span><span class="badge badge-high">P0</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> In Settings, enable "API key not required (Bob 1.0 mode)". Navigate to Diagnostics. Run checks.<br />
+    <strong>Verify:</strong> The Bob Version check card shows either "skip" or an informational "Bob 1.0 mode active" message at info severity - NOT a warning or fail. No "update required" language appears.<br />
+    <strong>Failure mode to detect:</strong> Warning fires despite Bob 1.0 mode being intentionally enabled.
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">C-03: Helper not running - version check skips gracefully</div>
+  <div class="tc-meta"><span class="badge badge-info">Failure Condition</span><span class="badge badge-med">P1</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> Stop the helper server. Navigate to Diagnostics.<br />
+    <strong>Verify:</strong> Version check shows "skip" with message referencing the helper server check. The existing "Bob CLI (IBM Bob)" check also shows skip/fail. No JS errors. The check does not block other checks from rendering.<br />
+    <strong>Failure mode to detect:</strong> Version check hangs, throws, or shows a misleading error when the server is unavailable.
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">C-04: bob --version returns non-parseable string - treated as unknown</div>
+  <div class="tc-meta"><span class="badge badge-info">Edge Case - Parsing</span><span class="badge badge-med">P1</span></div>
+  <div class="tc-body">
+    <strong>Simulation:</strong> Cannot be directly tested without modifying the environment, but can be assessed by inspecting the parsing logic. Verify in code review that the version comparison uses a guard equivalent to <code>/^\d+/.test()</code> before numeric extraction, and that a null or non-matching version string results in a <code>status: 'info'</code> response of "Version unavailable" rather than a warning.<br />
+    <strong>Failure mode to detect:</strong> null or <code>"BobShell 2.0 (custom build)"</code> causes parseInt to return NaN, which then fails the <code>&lt; MIN</code> check incorrectly (NaN &lt; 2 is false in JS, so this would produce a false "pass" - actually less dangerous than a false "warn". Verify the behavior is intentional and documented).
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">C-05: SF plugin disabled - all SF checks skip</div>
+  <div class="tc-meta"><span class="badge badge-info">Regression Check</span><span class="badge badge-med">P1</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> Disable the Salesforce Case Extractor in Plugin Manager. Navigate to Diagnostics.<br />
+    <strong>Verify:</strong> The new Bob Version check shows "skip" (Salesforce plugin disabled). All existing SF-related checks (Bob Helper, Bob CLI, Bob Port Sync, Node Runtime, Working Directory) also show skip. No new checks appear that are not gated by <code>sfEnabled</code>.<br />
+    <strong>Failure mode to detect:</strong> New check fires for users who have the SF plugin disabled.
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">C-06: Single RC_PREFLIGHT_CLI_CHECK message per diagnostics run</div>
+  <div class="tc-meta"><span class="badge badge-high">F-13 Regression Check</span><span class="badge badge-high">P0</span></div>
+  <div class="tc-body">
+    <strong>Setup:</strong> Helper server running. Navigate to Diagnostics. Open DevTools Network panel filtered to localhost:47123.<br />
+    <strong>Verify:</strong> After checks complete, exactly ONE request to <code>/cli-check</code> appears in the network log. If two requests appear, the new check is NOT sharing <code>_getCliCheckResponse()</code> and the F-13 optimization is broken.<br />
+    <strong>Alternative verification:</strong> Add a temporary console.log inside the RC_PREFLIGHT_CLI_CHECK handler in background.js and confirm it fires exactly once per diagnostics run.
+  </div>
+</div>
+
+<h3>Block D: Regression Tests - Existing Functionality</h3>
+
+<div class="test-case">
+  <div class="tc-title">D-01: Execute workflow unaffected</div>
+  <div class="tc-meta"><span class="badge badge-high">Regression - Critical Path</span><span class="badge badge-high">P0</span></div>
+  <div class="tc-body">
+    After all changes are applied, with API key configured and working directory set: Click Execute on the SF plugin view. Verify the Bob terminal opens, Bob runs, status polling shows running/completed. No regressions in Execute path.
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">D-02: Full round-trip export and import for all plugins</div>
+  <div class="tc-meta"><span class="badge badge-high">Regression - Storage Integrity</span><span class="badge badge-high">P0</span></div>
+  <div class="tc-body">
+    Export a full backup. Verify file structure is valid JSON. Import the backup. Verify all plugins' data is restored correctly (prompts, workspace profiles, snake high score, etc.). Verify rollback works by introducing a deliberate validation error in the file and confirming the rollback restores the pre-import state.
+  </div>
+</div>
+
+<div class="test-case">
+  <div class="tc-title">D-03: Diagnostics run completes without errors (pre-change baseline)</div>
+  <div class="tc-meta"><span class="badge badge-info">Baseline Verification</span><span class="badge badge-med">P1</span></div>
+  <div class="tc-body">
+    Before changes are applied: run Diagnostics and record all check statuses and durations. After changes: run Diagnostics again. Verify: (a) all previously-passing checks still pass, (b) the new Bob Version check renders, (c) no check that previously had a result now shows "info / check could not run", (d) total run duration is not significantly increased (no doubled HTTP requests).
+  </div>
+</div>
+
+
+<h2>Confidence Assessment</h2>
+
+<table class="conf-table">
+  <tr>
+    <th>Change</th>
+    <th>Confidence</th>
+    <th>Basis</th>
+    <th>Remaining Uncertainty</th>
+  </tr>
+  <tr>
+    <td>DEPL-02: Advisory toast</td>
+    <td><span class="badge badge-conf-high">High</span></td>
+    <td>Purely additive. No write path touched. Only risk is null-safety and keep-existing strategy interaction — both are verifiable in code review. Test cases B-01 through B-04 provide 100% coverage of the relevant scenarios.</td>
+    <td>None that would block approval. The keep-existing interaction (B-04) should be verified explicitly.</td>
+  </tr>
+  <tr>
+    <td>DEPL-03: API key exclusion (Approach A)</td>
+    <td><span class="badge badge-conf-med">Medium-High</span></td>
+    <td>The export pipeline change is well-bounded. The import backward compatibility is structurally guaranteed by the existing import engine (reads whatever is in the file). The R-01 risk (same-machine restore clears key) is <em>certain</em> under Approach A — but it is a known, accepted trade-off, not a surprise. Tests A-01 through A-06 are sufficient for full validation.</td>
+    <td>Confidence would be High if: (1) the "What is included" table is updated in the same commit, (2) the advisory toast from DEPL-02 explicitly covers the API key, and (3) Approach A is confirmed as the chosen design before implementation begins. If Approach B is chosen, confidence drops to Low until <code>applyImport()</code> changes are independently validated.</td>
+  </tr>
+  <tr>
+    <td>Version validation</td>
+    <td><span class="badge badge-conf-med">Medium</span></td>
+    <td>The Diagnostics infrastructure is well-understood and the check pattern is consistent across 10+ existing checks. The F-13 shared promise is a known dependency. The Bob 1.0 mode guard is a well-understood cross-cutting concern.</td>
+    <td>Confidence is medium because: (1) the exact format of <code>bob --version</code> output in the target BobShell 2.0 environment has not been verified empirically — the parsing logic must be confirmed against real output. (2) The minimum version constant is not yet defined — the check design depends on this value being agreed before implementation. (3) C-04 (unparseable version string) cannot be tested without environment manipulation, so parsing correctness must be assessed via code review only.</td>
+  </tr>
+</table>
+
+<h3>What would increase confidence to High for all three changes</h3>
+<ol>
+  <li><strong>Empirical confirmation of <code>bob --version</code> output format</strong> on the exact BobShell 2.0 version in use — run <code>bob.ps1 --version</code> in a terminal and document the exact string.</li>
+  <li><strong>Agreement on the minimum version constant</strong> before implementation begins — documented in <code>build/bob-helper-config.js</code>.</li>
+  <li><strong>Confirmation that Approach A is the chosen design for DEPL-03</strong> — this removes the Approach B risk entirely.</li>
+  <li><strong>Code review checklist</strong> verifying: null-safe envelope access (DEPL-02), F-13 shared promise use (version check), <code>sfEnabled</code> guard (version check), <code>bobUseBob1</code> guard (version check), and "What is included" table update (DEPL-03).</li>
+  <li><strong>Manual execution of tests A-04, C-02, C-06, D-01, and D-02</strong> — the five tests covering the highest-probability failure modes.</li>
+</ol>
+
+<div class="ok-box">
+<strong>Overall assessment:</strong> All three changes are safe to proceed with at the current confidence level, subject to the conditions stated above. No change threatens the critical Execute workflow, storage integrity, or rollback safety. The highest-risk scenario (R-01: same-machine restore clears the API key) is a known, accepted consequence of Approach A and is recoverable by the user in under 60 seconds. This risk must be communicated clearly in the post-import advisory and the "What is included" table before the change ships.
+</div>
+
+<div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

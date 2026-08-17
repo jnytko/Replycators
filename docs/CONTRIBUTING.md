@@ -72,9 +72,9 @@ A change is **not done** if documentation still describes the old behavior.
 
 ### 5. Update version numbers
 
-- `manifest.json` - `"version"` field
-- `dashboard.html` - version span `id="rc-platform-version"`
-- `CHANGELOG.md` - new entry at the top
+Update **all 10 authoritative version locations** as specified in `AGENTS.md §12 Authoritative Version Locations`. All 10 must match before packaging. See `docs/PACKAGING.md` pre-release checklist for the complete list.
+
+> Do not use the abbreviated list below - it is incomplete. Always refer to `AGENTS.md §12`.
 
 ---
 
@@ -135,6 +135,24 @@ Forbidden:
 
 ---
 
+## Branching strategy
+
+ReplyCators uses a **trunk-based development** model:
+
+- `main` is the only long-lived branch. It must always be in a releasable state.
+- All changes are made on short-lived branches using the naming convention:
+  - `feature/<scope>-<short-description>` - new functionality
+  - `fix/<scope>-<short-description>` - bug fixes
+  - `docs/<short-description>` - documentation-only changes
+  - `chore/<short-description>` - tooling, dependency, or hygiene work
+  - `release/<version>` - release preparation (rare)
+- Branches are deleted after merge.
+- Direct pushes to `main` are strongly discouraged. Use a pull request so that the CI gate and the PR checklist are applied.
+- Every PR to `main` must have the Release Gate checklist in `.github/PULL_REQUEST_TEMPLATE.md` completed.
+- Branch protection on `main` should enforce: CI must pass, no force-push, linear history preferred.
+
+---
+
 ## Versioning
 
 See `AGENTS.md §12` for the complete policy.
@@ -161,6 +179,8 @@ Examples:
 feat(plugin/tab-search): add group-by-domain toggle
 fix(plugin/workspace-starter): fix startup race on last view restore
 ```
+
+The commit message format is **not currently enforced by tooling**. It is a manual convention that contributors and AI agents must follow. Compliance is verified during PR review via the Release Gate checklist.
 
 ---
 

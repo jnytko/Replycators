@@ -445,6 +445,23 @@ Navigation overflow handled through scrolling only - never by compressing icons,
 - Remove `flex-shrink: 0` or `min-width` from `.rc-nav__icon`
 - Change `.rc-nav gap` from `0` to positive value
 
+### ADR-008 - Plugin Module Architecture
+**Status:** Active | **Decided:** v1.17.0 | **Full document:** `docs/ADR-008-plugin-module-architecture.md`
+
+All plugin logic is extracted from `dashboard.js` into self-contained modules under `plugins/`. Each module self-registers on `window.ReplyCatorsPlugins`. `dashboard.js` is the orchestrator only.
+
+**Architecture rules:**
+- New plugin behavior goes in `plugins/<name>.js` - never inside `dashboard.js`
+- Dashboard capabilities needed by a plugin are added to `window.ReplyCatorsApp`, not via direct coupling to shell internals
+- Plugin modules do not call private functions from other plugins
+- Script load order in `dashboard.html` is architecture-critical: plugin modules first, shell last
+
+**Ownership boundary:**
+- Plugin modules own: plugin-specific rendering, event binding, persistence keys, widget behavior, and feature logic
+- `dashboard.js` owns: shell views, startup order, `PLUGINS[]` registry, Plugin Manager, ordering/visibility, global settings, diagnostics
+
+- **Change rule:** New plugin behavior goes in `plugins/<name>.js`. Any new dashboard-level capability required by multiple plugins is added to `window.ReplyCatorsApp`.
+
 ---
 
 ## 7. State Management Rules
@@ -1408,11 +1425,17 @@ npm run sync:dry-run  # print what sync would copy without writing
 
 ## 18. Technical Debt Register
 
-All 18 original debt items (TD-001 through TD-018) have been fully resolved as of v1.22.1.
+All 18 original technical debt items (TD-001 through TD-018) have been closed or deferred as of v1.22.1.
 
-Complete resolution record: `docs/TECH-DEBT-RESOLVED.md`
+Complete record: `docs/TECH-DEBT-RESOLVED.md`
 
-**Active open items:** None.
+**Deferred items (open risk - not yet resolved):**
+
+| ID | Priority | Status | Summary |
+|----|----------|--------|---------|
+| TD-003 | Medium | Deferred | Zero automated test coverage. Jest introduced then removed v1.16.0. Manual QA is current strategy. Trigger: first stable release (RC-015 Phase 3). See `AGENTS.md §26`. |
+
+**Active open items:** None beyond the deferred item above.
 
 **Adding new debt:** Open a new TD entry in `docs/TECH-DEBT-RESOLVED.md` with status `Open` and link to it from the relevant section of AGENTS.md.
 
@@ -1492,10 +1515,11 @@ Complete resolution record: `docs/TECH-DEBT-RESOLVED.md`
 | `AGENTS.md` | This file. Agent briefing, governance, standards. | Always |
 | `CHANGELOG.md` | Authoritative change history. | Always (trimmed) |
 | `README.md` | Project overview, quick start, plugin table. | On-demand |
+| `SECURITY.md` | Security policy, threat model, data handling, vulnerability reporting. | On-demand (security tasks) |
 | `docs/AI-PLUGIN-KIT.md` | Primary guide for AI agents creating/maintaining plugins. | On-demand (plugin tasks) |
 | `docs/ARCHITECTURE.md` | Full architecture reference, layer stack, component descriptions. | On-demand |
 | `docs/DEVELOPER_GUIDE.md` | Step-by-step plugin authoring guide. | On-demand |
-| `docs/CONTRIBUTING.md` | Contribution workflow, change guide, versioning, commit format. | On-demand |
+| `docs/CONTRIBUTING.md` | Contribution workflow, branching strategy, versioning, commit format. | On-demand |
 | `docs/STARTUP-FLOW.md` | Full boot sequence, plugin load order, service worker lifecycle. | On-demand |
 | `docs/STORAGE.md` | Complete storage schema: all keys, namespaces, platform settings. | On-demand |
 | `docs/SETTINGS.md` | Full settings reference: all settings, options, defaults. | On-demand |
@@ -1507,11 +1531,13 @@ Complete resolution record: `docs/TECH-DEBT-RESOLVED.md`
 | `docs/STORAGE-MIGRATION-ROADMAP.md` | Storage namespace migration plan for future MAJOR release. | On-demand |
 | `docs/WORKING_DIRECTORY.md` | File sync policy between root and `dist/`. | On-demand |
 | `docs/ICON-SYSTEM.md` | Authoritative icon system reference - two-tier policy, registry, renderer. | On-demand (icon tasks) |
-| `docs/ADR-008-plugin-module-architecture.md` | ADR for plugin modularization (TD-001). | On-demand |
-| `docs/TECH-DEBT-RESOLVED.md` | Archive. All 18 resolved technical debt items. | Archive-only |
-| `docs/CHANGELOG-ARCHIVE.md` | Archive. Full verbose changelog entries older than ~90 days. | Archive-only |
+| `docs/ADR-008-plugin-module-architecture.md` | ADR for plugin modularization (TD-001). See also § 6 ADR-008 entry. | On-demand |
+| `docs/TECH-DEBT-RESOLVED.md` | Archive of closed/deferred technical debt items. TD-003 is deferred. | Archive-only |
+| `docs/CHANGELOG-ARCHIVE.md` | Archive. Full verbose changelog entries for versions below v1.27.2. | Archive-only |
 | `docs/BOB-HELPER-SERVER.md` | Consolidated technical reference for `tools/bob-helper-server.js`. | On-demand (Bob Helper tasks) |
 | `PLUGIN-SDK.md` | Plugin SDK Standards - platform standards, generator reference, Example Plugin baseline. | On-demand |
+| `.github/PULL_REQUEST_TEMPLATE.md` | PR checklist template - Release Gate embedded as checkboxes. | On-demand (PR tasks) |
+| `.github/CODEOWNERS` | File ownership map for high-risk files requiring mandatory review. | On-demand (governance tasks) |
 | `tools/create-plugin.js` | Optional scaffolding generator. `npm run create-plugin`. | On-demand |
 | `tools/bob-helper.ps1` | PowerShell management script: check/start/stop/status/install/uninstall for Bob Helper server. | On-demand (Bob Helper tasks) |
 

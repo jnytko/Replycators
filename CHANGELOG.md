@@ -4,7 +4,8 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 > **Structure:** Full verbose entries appear in reverse-chronological order below for the most recent releases.
 > A complete **Version History Reference** summary table is at the bottom of this file.
-> Verbose entries for releases older than ~90 days are archived in [`docs/CHANGELOG-ARCHIVE.md`](docs/CHANGELOG-ARCHIVE.md).
+> Verbose entries for versions below **v1.27.2** are archived in [`docs/CHANGELOG-ARCHIVE.md`](docs/CHANGELOG-ARCHIVE.md).
+> The archive boundary is version-based (not time-based) to ensure a stable, predictable cutoff.
 
 ---
 
