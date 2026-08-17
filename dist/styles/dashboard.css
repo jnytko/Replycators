@@ -1,0 +1,4529 @@
+/* ============================================================
+   Reply Creators — Dashboard Layout
+   Fixed 800×580px popup dimensions. Sidebar icon-only by default.
+   Side Panel mode: fluid width/height via body.rc-sidepanel class.
+   ============================================================ */
+
+/* ── Sidebar width CSS custom property ─────────────────────── */
+/* Default value: collapsed icon-only width.
+   JS overrides this on the :root when sidebar is expanded or
+   when the user drags the resize handle (Side Panel mode only). */
+:root {
+  --sidebar-width: 48px;
+}
+
+/* ── Popup sizing — MUST be explicit for Edge extension popups ── */
+/* Default values are 800x580.  JS overrides --rc-popup-w / --rc-popup-h on
+   :root when the user has configured a custom popup size in Settings.        */
+:root {
+  --rc-popup-w: 800px;
+  --rc-popup-h: 580px;
+}
+html {
+  width: var(--rc-popup-w);
+  height: var(--rc-popup-h);
+  overflow: hidden;
+}
+body.rc-app {
+  width: var(--rc-popup-w);
+  height: var(--rc-popup-h);
+  overflow: hidden;
+  margin: 0;
+  background: var(--rc-bg);
+  color: var(--rc-text);
+}
+
+/* ── Side Panel mode — fluid, fills the panel chrome provides ── */
+/*
+ * NOTE: "body.rc-sidepanel html { ... }" is invalid CSS (html cannot be a
+ * descendant of body in the selector model). The html-level constraints are
+ * overridden here by targeting html directly when the body carries the class,
+ * via a :has() selector (widely supported in modern Chromium/Edge), with a
+ * fallback duplicate on body.rc-sidepanel for the rare engines without :has().
+ */
+html:has(body.rc-sidepanel) {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+body.rc-sidepanel {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+body.rc-sidepanel .rc-shell {
+  width: 100% !important;
+  height: 100vh !important;
+  min-width: 0 !important;
+}
+body.rc-sidepanel .rc-sidebar {
+  min-width: 120px !important;
+  height: 100vh !important;
+}
+body.rc-sidepanel .rc-main {
+  height: 100vh !important;
+  overflow-y: auto !important;
+}
+body.rc-sidepanel .rc-view-container {
+  overflow-y: auto !important;
+  height: calc(100vh - 40px) !important;
+}
+/* Inside the side panel: show "Open Side Panel" button as active/in-use — not interactive */
+body.rc-sidepanel #rc-sidepanel-btn {
+  color: var(--rc-green) !important;
+  opacity: 0.6 !important;
+  cursor: default !important;
+  pointer-events: none !important;
+}
+
+/* RC-UX012: "Open as Popup" button —
+   Hidden in action-popup mode (default), visible only inside the side panel.
+   In side panel mode it becomes the primary mode-switch affordance. */
+#rc-popup-btn {
+  display: none !important;
+}
+body.rc-sidepanel #rc-popup-btn {
+  display: inline-flex !important;
+  align-items: center;
+  color: var(--rc-accent);
+  opacity: 0.85;
+}
+body.rc-sidepanel #rc-popup-btn:hover {
+  background: var(--rc-accent-muted);
+  color: var(--rc-accent);
+  opacity: 1;
+}
+
+/* ── App Shell ───────────────────────────────────────────────── */
+.rc-shell {
+  display: flex;
+  width: var(--rc-popup-w);
+  height: var(--rc-popup-h);
+  overflow: hidden;
+  background: var(--rc-bg);
+}
+/* Side panel: shell expands to fill 100% of the panel viewport */
+body.rc-sidepanel .rc-shell {
+  width: 100% !important;
+  height: 100vh !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+/* ── Sidebar — starts COLLAPSED (icon-only, 48px) ───────────── */
+/*
+ * RC-NAV-BDR001 (v3): The right-edge divider is an ::after pseudo-element
+ * on .rc-sidebar, positioned absolutely at right:0, spanning the full
+ * sidebar height via top:0 / bottom:0.
+ *
+ * Why a pseudo-element instead of border-right:
+ *   CSS border-right is painted as part of the element's background layer,
+ *   BEFORE descendant content in the standard CSS paint order. When the
+ *   sidebar's internal .rc-nav scroll container activates an overflow
+ *   scrollbar, the WebKit custom scrollbar (styled via ::-webkit-scrollbar)
+ *   is painted as page content AFTER the border, effectively covering the
+ *   border pixel in the scroll-track column — specifically in popup mode
+ *   where the sidebar is only 48px wide and the 1px gap between scrollbar
+ *   track and border collapses under subpixel rounding.
+ *
+ *   An absolutely positioned ::after pseudo-element with z-index:10 paints
+ *   in a higher stacking layer than the normal-flow .rc-nav scroll container,
+ *   so it is never covered regardless of sidebar width, scroll state, or
+ *   DPI scaling.
+ *
+ * Placement:
+ *   .rc-sidebar { position: relative } is already present for the resize
+ *   handle. ::after { position: absolute; right: 0; top: 0; bottom: 0 }
+ *   spans the full sidebar height without any hardcoded pixel values.
+ *
+ * The pseudo-element:
+ *   - belongs to the stable sidebar shell (never scrolls)
+ *   - is non-interactive (pointer-events: none)
+ *   - uses the theme border token (var(--rc-border))
+ *   - renders identically in popup (height:580px) and side panel (height:100vh)
+ *   - does not require .rc-nav margin-right or any gap reservation
+ */
+.rc-sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  max-width: var(--sidebar-width);
+  background: var(--rc-surface);
+  /* No border-right here — divider is the ::after pseudo (RC-NAV-BDR001 v3) */
+  display: flex;
+  flex-direction: column;
+  height: var(--rc-popup-h);
+  overflow-x: hidden;   /* clip horizontal overflow (brand text, labels during collapse animation) */
+  overflow-y: hidden;   /* nav scrolls internally — sidebar just clips the column boundary */
+  transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease;
+  flex-shrink: 0;
+  position: relative;   /* needed for ::after divider and absolute-positioned resize handle */
+}
+/* RC-NAV-BDR001 v3: full-height right-edge divider as ::after pseudo-element.
+   Absolutely positioned at right:0 so it spans the sidebar's full height
+   independently of internal flex/scroll children.  z-index:10 ensures it
+   paints above the .rc-nav scroll container and its scrollbar track in every
+   sidebar state (collapsed/expanded, scrolled/unscrolled, popup/side-panel).
+   pointer-events:none keeps it non-interactive and keyboard-transparent. */
+.rc-sidebar::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--rc-border);
+  z-index: 9;   /* above .rc-nav (z-index:auto) but below resize handle (z-index:10) */
+  pointer-events: none;
+}
+/* Side panel: sidebar fills full panel height */
+body.rc-sidepanel .rc-sidebar {
+  height: 100vh !important;
+}
+
+/* Expanded sidebar — slightly wider in side panel for comfortable reading */
+/* In popup/sidepanel, JS controls width via --sidebar-width; these give the
+   initial expanded width before any user drag. */
+.rc-sidebar--expanded {
+  --sidebar-width: 200px;
+}
+/* RC-NAV001: In side panel mode the expanded sidebar starts at 150px. */
+body.rc-sidepanel .rc-sidebar--expanded {
+  --sidebar-width: 150px;
+}
+
+/* ── Sidebar: disable transition during drag for smooth real-time resize ─── */
+.rc-sidebar--resizing {
+  transition: none !important;
+}
+
+/* ── Sidebar resize handle (Side Panel only) ─────────────────────────────── */
+/* A thin draggable strip on the right edge of the sidebar.
+   Hidden in action-popup mode (fixed 800px layout — no resizing needed). */
+.rc-sidebar-resize-handle {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 5px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 10;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+.rc-sidebar-resize-handle:hover,
+.rc-sidebar-resize-handle--dragging {
+  background: var(--rc-accent);
+  opacity: 0.5;
+}
+body.rc-sidepanel .rc-sidebar-resize-handle {
+  display: block;
+}
+
+/* RC-UX001: first-open hint — pulses the sidebar toggle icon to signal
+   that the sidebar can be expanded. Removed after 3s or on first click. */
+@keyframes rcHintPulse {
+  0%, 100% { background: transparent; }
+  40%       { background: var(--rc-accent-muted); }
+}
+.rc-sidebar--hint #rc-sidebar-toggle {
+  animation: rcHintPulse 1s ease-in-out 3;
+  border-radius: 4px;
+}
+
+/* Brand row */
+.rc-sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 10px 10px;
+  border-bottom: 1px solid var(--rc-border);
+  min-height: 50px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.rc-sidebar__logo {
+  width: 26px; height: 26px; flex-shrink: 0;
+  border-radius: 6px;
+}
+.rc-sidebar__brand-text { display: none; flex-direction: column; min-width: 0; white-space: nowrap; gap: 1px; }
+.rc-sidebar__name       { font-size: 12px; font-weight: 700; color: var(--rc-text); letter-spacing: 0.01em; }
+.rc-sidebar__version    { font-size: 10px; color: var(--rc-text-dim); }
+.rc-sidebar--expanded .rc-sidebar__brand-text { display: flex; }
+
+/* Search */
+.rc-sidebar__search { display: none; padding: 8px 8px 4px; flex-shrink: 0; }
+.rc-sidebar--expanded .rc-sidebar__search { display: block; }
+.rc-search-input {
+  width: 100%;
+  background: var(--rc-surface-2);
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  color: var(--rc-text);
+  padding: 5px 8px;
+  font-size: 11px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+.rc-search-input:focus { border-color: var(--rc-accent); box-shadow: 0 0 0 2px var(--rc-accent-muted); }
+
+/* Nav
+   RC-NAV002: min-height:0 is required for overflow-y:auto to activate inside
+   a flex column. Without it, flex children have min-height:auto (default),
+   so the nav never gets a computed height constraint, and the scrollbar never
+   appears regardless of how many items are inside. This is the classic flexbox
+   scroll fix. Combined with the sidebar's overflow-x:hidden, the nav is the
+   only element that provides vertical scrolling — correct containment. */
+.rc-nav {
+  flex: 1;
+  min-height: 0;          /* RC-NAV002: allow flex shrink so overflow-y:auto fires */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 0;
+  /* RC-NAV-BDR001 v3: margin-right removed. The divider is now the .rc-sidebar::after
+     pseudo-element (z-index:10), which paints above this scroll container regardless
+     of scrollbar position or sidebar width. No gap reservation is needed. */
+  display: flex;
+  flex-direction: column;
+  gap: 0;                 /* RC-NAV005: gap:0 prevents implicit gap from fighting min-height on items */
+}
+.rc-nav__section-title {
+  display: none;
+  padding: 6px 10px 3px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rc-text-dim);
+  white-space: nowrap;
+  flex-shrink: 0;  /* prevent flex from collapsing section headings to 0px */
+}
+.rc-sidebar--expanded .rc-nav__section-title { display: block; }
+
+.rc-nav__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0;
+  /* RC-NAV005: min-height is the primary guard against icon/row shrinking. */
+  min-height: 34px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--rc-text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.1s, color 0.1s;
+  text-align: left;
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  border-radius: 0;
+}
+.rc-sidebar--expanded .rc-nav__item {
+  justify-content: flex-start;
+  padding: 7px 10px;
+}
+.rc-nav__item:hover {
+  background: var(--rc-surface-2); color: var(--rc-text);
+}
+/* Active item: left-border accent + stronger background */
+.rc-nav__item--active {
+  background: var(--rc-accent-muted);
+  color: var(--rc-accent);
+  font-weight: 600;
+  position: relative;
+}
+.rc-nav__item--active::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--rc-accent);
+  border-radius: 0 2px 2px 0;
+}
+
+/* RC-NAV005: Icon sizing guards */
+.rc-nav__icon  { font-size: 15px; flex-shrink: 0; width: 18px; min-width: 18px; text-align: center; line-height: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.rc-nav__icon img { width: 16px !important; height: 16px !important; flex-shrink: 0; }
+.rc-nav__label { display: none; flex: 1; font-size: 12px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rc-sidebar--expanded .rc-nav__label { display: block; }
+
+.rc-nav__badge {
+  display: none;
+  background: var(--rc-surface-3);
+  color: var(--rc-text-muted);
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  min-width: 16px;
+  text-align: center;
+}
+.rc-sidebar--expanded .rc-nav__badge { display: inline-flex; }
+.rc-nav__badge--alert { background: var(--rc-red-bg); color: var(--rc-red); }
+
+/* RC-NAV-DIV001: margin-right:-5px extends the divider past the scrollbar gutter
+   (5px wide, per ::-webkit-scrollbar { width:5px }) so it reaches the full
+   sidebar width regardless of whether the scrollbar is active.  The sidebar's
+   overflow-x:hidden clips any excess.  Horizontal margin on flex items does NOT
+   affect other items' sizing — only the divider's own rendered width extends. */
+.rc-nav__divider { height: 1px; background: var(--rc-border); margin: 4px 0; margin-right: -5px; flex-shrink: 0; }
+.rc-nav__empty   { display: none; padding: 6px 10px; font-size: 11px; color: var(--rc-text-dim); }
+.rc-sidebar--expanded .rc-nav__empty { display: block; }
+
+/* ── Nav spacer — pushes the Utility section toward the bottom ──
+   flex:1 expands to fill remaining space between Plugins and Utility.
+   min-height:8px preserves a minimum visual gap even when the nav is
+   almost full. When content overflows the sidebar height the spacer
+   shrinks to min-height and the nav's overflow-y:auto handles the rest,
+   so utility items remain reachable via scroll.
+   aria-hidden="true" in HTML — the element is purely presentational.  */
+.rc-nav__spacer {
+  flex: 1;
+  min-height: 8px;
+  flex-shrink: 1;  /* allow shrink so overflow-y:auto fires before items are hidden */
+}
+
+/* ── Plugins section: separator + collapsible header ────────
+   The divider is a solid 1px line spanning the full sidebar width.
+   It is always visible — in both collapsed (icon-only) and expanded
+   sidebar states, and in both popup and side panel modes.
+
+   The toggle button behaves like a nav item visually but acts as a
+   section header and collapse control.  In collapsed sidebar mode it
+   shows only the chevron icon (label hidden by .rc-nav__label rules).
+   In expanded mode it shows the "Plugins" label plus the chevron.
+
+   The chevron rotates 90° when the section is open and 0° when closed,
+   matching the expand/collapse convention used across the platform.     */
+
+.rc-plugins-section-divider {
+  height: 1px;
+  background: var(--rc-border);
+  /* RC-NAV-DIV001: margin-right:-5px matches .rc-nav__divider — extends past scrollbar gutter */
+  margin: 6px 0 2px;
+  margin-right: -5px;
+  flex-shrink: 0;
+}
+
+.rc-plugins-section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 0;
+  min-height: 28px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--rc-text-dim);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: color 0.12s;
+}
+.rc-plugins-section-toggle:hover { color: var(--rc-text-muted); }
+.rc-sidebar--expanded .rc-plugins-section-toggle {
+  justify-content: flex-start;
+  padding: 5px 10px;
+}
+
+/* Chevron icon — always visible, rotates when section is open */
+.rc-plugins-section-toggle__icon {
+  font-size: 13px !important;
+  width: 18px !important;
+  min-width: 18px !important;
+  display: inline-block;
+  text-align: center;
+  flex-shrink: 0;
+  transition: transform 0.18s ease;
+  transform: rotate(0deg);   /* collapsed: chevron points right */
+  line-height: 1;
+}
+/* When the section is expanded, rotate the chevron 90° to point down */
+.rc-plugins-section-toggle[aria-expanded="true"] .rc-plugins-section-toggle__icon {
+  transform: rotate(90deg);
+}
+
+/* Label — hidden in icon-only sidebar, shown when expanded */
+.rc-plugins-section-toggle__label {
+  /* inherits .rc-nav__label display:none / expanded display:block via class */
+}
+
+/* Collapsed plugin items container — hidden when section is collapsed */
+#rc-plugin-nav-items.rc-plugins-collapsed {
+  display: none !important;
+}
+
+/* Footer */
+.rc-sidebar__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 6px;
+  border-top: 1px solid var(--rc-border);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.rc-sidebar--expanded .rc-sidebar__footer { justify-content: flex-start; padding: 8px 10px; }
+.rc-sidebar__footer-text {
+  display: none;
+  font-size: 10px;
+  color: var(--rc-text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  letter-spacing: 0.01em;
+}
+.rc-sidebar--expanded .rc-sidebar__footer-text { display: block; }
+.rc-theme-toggle {
+  background: none;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 4px 5px;
+  border-radius: 5px;
+  color: var(--rc-text-muted);
+  flex-shrink: 0;
+  transition: background 0.1s, color 0.1s;
+}
+.rc-theme-toggle:hover { background: var(--rc-surface-2); color: var(--rc-text); }
+
+/* ── Main content ────────────────────────────────────────────── */
+.rc-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: var(--rc-popup-h);
+  overflow: hidden;
+}
+/* Side panel: main area fills full panel height */
+body.rc-sidepanel .rc-main {
+  height: 100vh !important;
+  overflow-y: auto !important;
+}
+
+/* ── Topbar ──────────────────────────────────────────────────── */
+.rc-topbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px 0 10px;
+  height: 42px;
+  flex-shrink: 0;
+  background: var(--rc-surface);
+  border-bottom: 1px solid var(--rc-border);
+}
+.rc-sidebar-toggle {
+  background: none;
+  border: none;
+  color: var(--rc-text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 5px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background 0.1s, color 0.1s;
+}
+.rc-sidebar-toggle:hover { color: var(--rc-text); background: var(--rc-surface-2); }
+.rc-topbar__breadcrumb {
+  flex: 1;
+  font-size: 13px; font-weight: 600; color: var(--rc-text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+.rc-topbar__actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.rc-topbar__action {
+  background: none; border: none; color: var(--rc-text-muted);
+  font-size: 15px; cursor: pointer; padding: 4px 6px; border-radius: 5px;
+  transition: background 0.1s, color 0.1s;
+}
+.rc-topbar__action:hover { background: var(--rc-surface-2); color: var(--rc-text); }
+/* RC-F012 fix: notification indicator as button */
+.rc-notif-indicator {
+  position: relative; cursor: pointer; font-size: 15px; line-height: 1;
+  background: none; border: none; color: var(--rc-text-muted);
+  padding: 4px 6px; border-radius: 5px;
+  transition: background 0.1s, color 0.1s;
+}
+.rc-notif-indicator:hover { background: var(--rc-surface-2); color: var(--rc-text); }
+.rc-notif-dot {
+  position: absolute; top: 2px; right: 2px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--rc-red); border: 1.5px solid var(--rc-surface);
+}
+
+/* ── View container ──────────────────────────────────────────── */
+.rc-view-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.rc-view            { display: none; padding: 16px; animation: fadeIn 0.12s ease; }
+.rc-view--active    { display: block; }
+/* Plugin pages need flex-column layout when active so rc-plugin-header, rc-plugin-tabs,
+   and rc-plugin-body/rc-plugin-tab-panel can fill height correctly via flex:1.
+   flex:1 makes the view stretch to fill rc-view-container (display:flex col parent).
+   Scoped to .rc-plugin-page only — non-plugin views (Dashboard, Settings, etc.) keep display:block. */
+.rc-plugin-page.rc-view--active { display: flex; flex: 1; flex-direction: column; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.rc-view__header    { margin-bottom: 16px; }
+.rc-view__title     { font-size: 18px; font-weight: 700; color: var(--rc-text); margin-bottom: 3px; letter-spacing: -0.01em; }
+.rc-view__subtitle  { font-size: 12px; color: var(--rc-text-muted); line-height: 1.5; }
+.rc-view-error      { padding: 16px; color: var(--rc-red); }
+
+/* ── Dashboard sections — IA structure ──────────────────────── */
+/*
+ * rc-dashboard-section: semantic section wrapper for each Dashboard IA block.
+ * Sections are ordered: Quick Actions → Plugin Functions → Platform Status.
+ * This ordering is enforced in the HTML DOM, which also determines reading
+ * order for screen readers and keyboard navigation.
+ *
+ * rc-dashboard-section--secondary: reduced visual weight for status/admin info.
+ * The section is always present and accessible; it is simply de-emphasised so
+ * primary plugin content dominates visually.
+ */
+.rc-dashboard-section {
+  margin-bottom: 16px;
+}
+.rc-dashboard-section--secondary {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--rc-border-light);
+  opacity: 0.88;
+}
+.rc-dashboard-section--secondary:hover {
+  opacity: 1;
+  transition: opacity 0.15s;
+}
+
+/* ── Section headers inside Dashboard sections ───────────────── */
+/* rc-section-header is defined globally in platform.css.
+   These scoped rules apply only when the header is inside a
+   rc-dashboard-section — they do not affect section headers in
+   plugin views or other areas of the UI. */
+.rc-dashboard-section .rc-section-header {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--rc-text-dim);
+  margin-bottom: 8px;
+  padding: 0 0 4px;
+  border-bottom: 1px solid var(--rc-border-light);
+}
+.rc-section-header--secondary {
+  color: var(--rc-text-dim);
+  opacity: 0.75;
+  font-size: 9px;
+}
+
+/* ── Stats row ───────────────────────────────────────────────── */
+.rc-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 0;
+}
+.rc-stat-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+}
+/* Modern left-bar accent — replaces dated top border */
+.rc-stat-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--rc-accent);
+  border-radius: 3px 0 0 3px;
+}
+.rc-stat-card--green::before  { background: var(--rc-green); }
+.rc-stat-card--amber::before  { background: var(--rc-amber); }
+.rc-stat-card--red::before    { background: var(--rc-red); }
+.rc-stat-card__value  { font-size: 24px; font-weight: 800; color: var(--rc-text); line-height: 1; letter-spacing: -0.02em; }
+.rc-stat-card__label  { font-size: 11px; color: var(--rc-text-muted); font-weight: 500; }
+
+/* ── Dashboard widgets ───────────────────────────────────────── */
+.rc-dashboard-widgets {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 0;   /* section wrapper controls bottom spacing */
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+/* Empty state: shown via .rc-widgets-empty class when all plugin widgets are hidden.
+   applyPluginVisibility() adds/removes this class based on enabled plugin count. */
+.rc-widgets-empty-state {
+  display: none;
+  padding: 24px 16px;
+  font-size: 12px;
+  color: var(--rc-text-muted);
+  text-align: center;
+  grid-column: 1 / -1;
+  border: 1px dashed var(--rc-border);
+  border-radius: 8px;
+}
+#rc-dashboard-widgets.rc-widgets--all-hidden + .rc-widgets-empty-state,
+.rc-widgets--all-hidden .rc-widgets-empty-state {
+  display: block;
+}
+.rc-widget-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.12s;
+}
+.rc-widget-card:hover { border-color: var(--rc-text-dim); }
+.rc-widget-card--large { grid-column: span 2; }
+.rc-widget-card--full  { grid-column: 1 / -1; }
+.rc-widget-card__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 12px 9px 14px;
+  background: var(--rc-surface);
+  border-bottom: 1px solid var(--rc-border-light);
+}
+.rc-widget-card__title { font-size: 12px; font-weight: 600; color: var(--rc-text); display: inline-flex; align-items: center; gap: 5px; }
+.rc-widget-card__title img { width: 16px !important; height: 16px !important; flex-shrink: 0; }
+/* Open/launch button: SVG arrow icon, not text character */
+.rc-widget-card__open {
+  background: none; border: none; color: var(--rc-text-dim);
+  cursor: pointer; padding: 3px; border-radius: 4px;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background 0.1s, color 0.1s;
+  line-height: 1;
+}
+.rc-widget-card__open:hover { background: var(--rc-surface-2); color: var(--rc-accent); }
+.rc-widget-card__body  { flex: 1; overflow: auto; }
+
+/* rc-doc-icon inside widget card header: sits between title and open button.
+   The header uses justify-content:space-between so we wrap title + doc-icon
+   in the left group and the open button remains on the right.
+   The margin-left:auto rule from platform.css is overridden here to 0
+   so it stays flush to the title group. */
+.rc-widget-card__header .rc-doc-icon { margin-left: 0; }
+/* Group: title + doc-icon share the left side of the card header */
+.rc-widget-card__title-group {
+  display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1;
+}
+
+/* ── Quick actions ───────────────────────────────────────────── */
+/* The .rc-quick-actions wrapper uses the new .rc-dashboard-section class.
+   The grid inside it handles the responsive layout.
+   minmax(118px, 1fr): at 720px (popup content area), 6 items fit comfortably
+   in a single row (6 × 120px = 720px). Falls back to 2 rows at narrower widths. */
+.rc-quick-actions__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 8px;
+}
+.rc-action-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; border-radius: 8px;
+  background: var(--rc-surface); border: 1px solid var(--rc-border);
+  cursor: pointer; transition: background 0.1s, border-color 0.1s; text-align: left; color: var(--rc-text);
+}
+.rc-action-card:hover { background: var(--rc-accent-muted); border-color: var(--rc-accent); color: var(--rc-accent); }
+.rc-action-card:hover .rc-action-card__icon { color: var(--rc-accent); }
+.rc-action-card__icon  { font-size: 16px; flex-shrink: 0; color: var(--rc-text-muted); }
+.rc-action-card__label { font-size: 12px; font-weight: 500; }
+
+/* ── Plugin Manager filter bar — RC-UX005 ───────────────────── */
+.rc-pm-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.rc-pm-search {
+  flex: 1;
+  min-width: 120px;
+  max-width: 240px;
+}
+.rc-pm-count {
+  font-size: 11px;
+  color: var(--rc-text-dim);
+  white-space: nowrap;
+  margin-left: 4px;
+}
+
+/* ── Plugin cards ────────────────────────────────────────────── */
+.rc-plugin-grid {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--rc-border); border-radius: 8px; overflow: hidden;
+}
+.rc-plist-header,
+.rc-plist-row {
+  display: grid;
+  grid-template-columns: 26px 160px 60px 1fr 120px 58px 52px 110px;
+  align-items: center;
+}
+.rc-plist-header {
+  background: var(--rc-surface-2);
+  border-bottom: 1px solid var(--rc-border);
+  font-size: 10px; font-weight: 600; color: var(--rc-text-dim);
+  text-transform: uppercase; letter-spacing: 0.07em;
+}
+.rc-plist-col {
+  padding: 7px 8px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  display: flex; align-items: center;
+}
+.rc-plist-sort { cursor: pointer; user-select: none; gap: 3px; }
+.rc-plist-sort:hover { color: var(--rc-text-muted); }
+.rc-plist-row {
+  border-bottom: 1px solid var(--rc-border-light);
+  background: var(--rc-surface);
+  font-size: 11px; transition: background 0.1s;
+}
+.rc-plist-row:last-child   { border-bottom: none; }
+.rc-plist-row:hover        { background: var(--rc-surface-2); }
+.rc-plist-row--disabled    { opacity: 0.5; }
+.rc-plist-col--status  { justify-content: center; padding: 7px 4px; }
+.rc-plist-col--name    { gap: 7px; font-weight: 500; }
+.rc-plist-col--version { font-size: 10px; color: var(--rc-text-dim); }
+.rc-plist-col--desc    { font-size: 10px; color: var(--rc-text-dim); }
+.rc-plist-col--tags    { gap: 3px; flex-wrap: nowrap; }
+.rc-plist-col--toggle  { justify-content: center; }
+.rc-plist-col--open    { justify-content: center; }
+.rc-plist-col--order   { justify-content: flex-start; gap: 4px; align-items: center; }
+.rc-plist-icon  { font-size: 14px; flex-shrink: 0; }
+.rc-plist-name  { color: var(--rc-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rc-plist-pos   { font-size: 10px; margin-left: 2px; color: var(--rc-text-dim); }
+.rc-plugin-card  { display: none; }
+.rc-plist-empty  {
+  padding: 16px 12px;
+  font-size: 12px;
+  color: var(--rc-text-dim);
+  text-align: center;
+  border-top: 1px solid var(--rc-border-light);
+}
+/* RC-UX006: desc expand button and detail row */
+.rc-plist-desc-expand {
+  background: none;
+  border: none;
+  color: var(--rc-text-dim);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  vertical-align: middle;
+  border-radius: 2px;
+}
+.rc-plist-desc-expand:hover { color: var(--rc-accent); background: var(--rc-accent-muted); }
+.rc-plist-detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px 10px 12px;
+  background: var(--rc-surface-2);
+  border-bottom: 1px solid var(--rc-border-light);
+  font-size: 11px;
+  animation: fadeIn 0.1s ease;
+}
+.rc-plist-detail-icon { font-size: 20px; flex-shrink: 0; padding-top: 2px; }
+.rc-plist-detail-body { flex: 1; min-width: 0; }
+.rc-plist-detail-desc { color: var(--rc-text); line-height: 1.5; margin-bottom: 6px; }
+.rc-plist-detail-meta { display: flex; gap: 4px; flex-wrap: wrap; }
+
+/* ── Marketplace ─────────────────────────────────────────────── */
+
+/* ── Marketplace "Coming Soon" Banner ──────────────────────────
+   Theme-aware informational banner displayed above the plugin grid.
+   Informs users that:
+     - shown plugins are planned features, not installable
+     - installation is not yet available
+     - distribution is coming in a future release
+   Uses only --rc-* variables — adapts to all 12 themes automatically.
+   Works in both popup mode (800 px constrained) and side panel (fluid).
+   ──────────────────────────────────────────────────────────────── */
+.rc-marketplace-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-left: 4px solid var(--rc-accent);
+  border-radius: 8px;
+}
+.rc-marketplace-banner__icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  line-height: 1;
+}
+.rc-marketplace-banner__body {
+  flex: 1;
+  min-width: 0;
+}
+.rc-marketplace-banner__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rc-text);
+  margin: 0 0 6px;
+}
+.rc-marketplace-banner__text {
+  font-size: 12px;
+  color: var(--rc-text-muted);
+  line-height: 1.5;
+  margin: 0 0 8px;
+}
+.rc-marketplace-banner__text strong {
+  color: var(--rc-text);
+}
+.rc-marketplace-banner__list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rc-marketplace-banner__list li {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  line-height: 1.4;
+}
+
+/* Side panel: let the banner content breathe horizontally */
+body.rc-sidepanel .rc-marketplace-banner {
+  padding: 16px 18px;
+}
+
+.rc-marketplace-grid {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+.rc-marketplace-card {
+  background: var(--rc-surface); border: 1px solid var(--rc-border);
+  border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px;
+}
+.rc-marketplace-card__icon   { font-size: 26px; }
+.rc-marketplace-card__meta   { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.rc-marketplace-card__name   { font-size: 13px; font-weight: 600; color: var(--rc-text); }
+.rc-marketplace-card__desc   { font-size: 11px; color: var(--rc-text-muted); flex: 1; }
+.rc-marketplace-card__footer { margin-top: auto; }
+.rc-coming-soon {
+  display: inline-block; padding: 2px 8px; border-radius: 8px;
+  background: var(--rc-surface-3); color: var(--rc-text-dim);
+  font-size: 10px; font-weight: 600;
+}
+
+/* ── TD-004: Font availability badge ────────────────────────────────────────── */
+/* Lives below the font selector in Settings. Cleared for system default.       */
+.rc-settings-row--sub {
+  padding-top: 0;
+  padding-bottom: 6px;
+  margin-top: -4px;
+  min-height: 0;
+}
+.rc-settings-row__info--full {
+  flex: 1 1 100%;
+}
+.rc-font-badge {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--rc-text-muted);
+  display: inline-block;
+}
+.rc-font-badge--ok {
+  color: var(--rc-success, #3fb950);
+}
+.rc-font-badge--warn {
+  color: var(--rc-warning, #d29922);
+}
+
+/* ── AUC tab active state — RC-UX008 fix ────────────────────────────────────── */
+/* rc-tab--active is toggled by activateTab() in dashboard.js.
+   The primary button state (rc-btn--primary) provides the fill colour;
+   the bottom border underline adds an additional "selected tab" affordance.   */
+.rc-tab--active {
+  border-bottom: 2px solid var(--rc-accent) !important;
+  font-weight: 700;
+}
+
+/* ── Apptio Planning Upgrade Calculator ─────────────────────────────────────── */
+.auc-stat {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 100px;
+}
+.auc-stat-label {
+  font-size: 10px;
+  color: var(--rc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.auc-stat-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rc-text);
+}
+.rc-text-accent {
+  color: var(--rc-accent, #3b82d4);
+}
+
+/* ── Side Panel topbar button highlight ─────────────────────── */
+.rc-topbar__action--sidepanel {
+  font-size: 16px;
+  color: var(--rc-accent);
+  opacity: 0.85;
+}
+.rc-topbar__action--sidepanel:hover {
+  background: var(--rc-accent-muted);
+  color: var(--rc-accent);
+  opacity: 1;
+}
+
+/* ── Salesforce Extractor — new compact extract-first layout ── */
+
+/* Primary action row: big Extract button + inline status banner */
+.sf-extract-primary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.rc-btn--extract {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 9px 22px;
+  letter-spacing: 0.02em;
+}
+.sf-banner-inline {
+  flex: 1;
+  margin-bottom: 0 !important;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex !important;
+  align-items: center;
+}
+
+/* Source + case number rows: label + control on one line */
+.sf-source-row,
+.sf-case-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.sf-source-label {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  white-space: nowrap;
+  width: 42px;
+  flex-shrink: 0;
+  margin: 0;
+}
+.sf-source-select {
+  flex: 1;
+  max-width: 220px;
+}
+.sf-case-input {
+  width: 160px;
+  font-family: monospace;
+  text-transform: uppercase;
+}
+/* Case-row wrapper — inline flex when visible */
+.sf-toolbar-case-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Helper text row below toolbar */
+.sf-helper-text {
+  padding: 4px 16px 5px;
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  background: var(--rc-surface);
+  border-bottom: 1px solid var(--rc-border-light);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SALESFORCE CASE EXTRACTOR — PLUGIN VIEW CSS
+   Covers: plugin bar, inner tabs, 2-column workspace, prompt
+   selection panel, execution panel, management, history.
+   ═══════════════════════════════════════════════════════════════ */
+/* sf-plugin-bar, sf-plugin-title, sf-plugin-badge, sf-inner-tabs, sf-inner-tab,
+   sf-tab-panel removed in v1.43.5 — replaced by platform standard components:
+   rc-plugin-header, rc-plugin-tabs, rc-plugin-tab, rc-plugin-tab-panel.        */
+
+/* ── Extract tab: outer card shell ──────────────────────────────
+   The Extract tab uses an edge-to-edge 2-column workspace. The entire
+   tab panel is given a 10px top padding so the content does not press
+   directly against the tab bar bottom border — matching the visual
+   breathing room that rc-plugin-body provides for non-tabbed plugins.
+   The toolbar band and workspace column headers are styled as
+   card sections, not raw surface bands.                            */
+#tab-extract {
+  padding-top: 10px;
+  background: var(--rc-bg);
+}
+
+/* ── Extract tab: toolbar + 2-column workspace ───────────────── */
+.sf-extract-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px 6px;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px 8px 0 0;
+  margin: 0 10px;
+  flex-shrink: 0;
+}
+.sf-toolbar-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--rc-border);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+/* Extraction scope options row — second toolbar row (include + display options) */
+.sf-extract-options {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 5px 10px;
+  background: var(--rc-surface-2);
+  border-left: 1px solid var(--rc-border);
+  border-right: 1px solid var(--rc-border);
+  border-bottom: 1px solid var(--rc-border);
+  margin: 0 10px;
+  flex-shrink: 0;
+}
+.sf-extract-options__label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--rc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+.sf-extract-options__item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--rc-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  flex-shrink: 0;
+}
+.sf-extract-options__item--inline {
+  cursor: default;
+}
+.sf-extract-options__item--inline:hover {
+  color: var(--rc-text-muted);
+}
+.sf-extract-options__item input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--rc-accent);
+}
+.sf-extract-options__item:hover {
+  color: var(--rc-text);
+}
+/* Vertical separator between Include and Display groups */
+.sf-extract-options__sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--rc-border);
+  margin: 2px 4px;
+  flex-shrink: 0;
+}
+/* Sort order inline select */
+.sf-extract-options__sort {
+  height: 22px;
+  padding: 0 4px;
+  font-size: 11px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+/* Warn-tint Include label when any include toggle is checked */
+.sf-extract-options:has(#sf-incl-internal:checked, #sf-incl-jira-etl:checked, #sf-incl-diag:checked) .sf-extract-options__label:first-of-type {
+  color: var(--rc-warning, #d97706);
+}
+.sf-extract-workspace {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  margin: 0 10px 10px;
+  border: 1px solid var(--rc-border);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+}
+
+/* ── Left column: Extracted Content (~70%) ───────────────────── */
+.sf-col-main {
+  flex: 7;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--rc-border);
+  overflow: hidden;
+}
+.sf-col-main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  background: var(--rc-surface-2);
+  border-bottom: 1px solid var(--rc-border);
+  flex-shrink: 0;
+}
+.sf-col-main-title {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--rc-text-muted);
+}
+.sf-col-main-actions {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.sf-preview-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px 10px;
+  gap: 6px;
+}
+.sf-preview {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  background: var(--rc-surface-2);
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  color: var(--rc-text);
+  font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+  font-size: 11px;
+  line-height: 1.55;
+  padding: 10px 12px;
+  resize: none;
+  outline: none;
+  overflow-y: auto;
+}
+.sf-preview:focus { border-color: var(--rc-accent); }
+
+/* ── Right column: Prompt Selection (~30%) ───────────────────── */
+.sf-col-side {
+  flex: 3;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--rc-surface);
+}
+.sf-col-side-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  background: var(--rc-surface-2);
+  border-bottom: 1px solid var(--rc-border);
+  flex-shrink: 0;
+}
+.sf-col-side-title {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--rc-text-muted);
+}
+.sf-prompt-list-scroll {
+  flex: 1;
+  min-height: 60px;   /* always show at least a few prompt items */
+  overflow-y: auto;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Prompt pick items (radio-style selection) ───────────────── */
+.sf-prompt-pick-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+  font-size: 12px;
+  color: var(--rc-text);
+}
+.sf-prompt-pick-item:hover {
+  background: var(--rc-surface-2);
+  border-color: var(--rc-border);
+}
+.sf-prompt-pick-item.is-selected {
+  background: var(--rc-accent-muted);
+  border-color: var(--rc-accent);
+  color: var(--rc-accent);
+}
+.sf-prompt-radio {
+  accent-color: var(--rc-accent);
+  flex-shrink: 0;
+}
+
+/* ── Execution panel (below prompt list in right column) ─────── */
+.sf-exec-panel {
+  border-top: 1px solid var(--rc-border);
+  padding: 8px 10px;
+  background: var(--rc-surface-2);
+  overflow-y: auto;
+  flex-shrink: 0;
+  max-height: 280px;
+}
+.sf-exec-panel::-webkit-scrollbar       { width: 4px; }
+.sf-exec-panel::-webkit-scrollbar-thumb { background: var(--rc-border); border-radius: 3px; }
+.sf-exec-panel__title {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--rc-text-muted);
+  margin-bottom: 7px;
+}
+.sf-exec-panel__row   { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
+.sf-exec-panel__label { font-size: 10px; font-weight: 600; color: var(--rc-text); }
+.sf-exec-panel__sub   { font-size: 9px; color: var(--rc-text-muted); }
+
+/* Execute button helper-down state — shown when Bob Helper server is not reachable */
+.rc-btn--helper-down {
+  opacity: 0.55;
+  cursor: not-allowed;
+  border-color: var(--rc-warning, #f59e0b) !important;
+}
+.rc-btn--helper-down:hover {
+  opacity: 0.65;
+}
+.sf-file-path-sm {
+  font-size: 10px;
+  color: var(--rc-text-dim);
+  font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ── Prompt Management tab (empty state) ────────────────────── */
+.sf-lib-empty {
+  padding: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--rc-text-dim);
+}
+
+/* ── Prompt Management tab ───────────────────────────────────── */
+/* Tab 2 (Management) uses padded card layout — matches rc-plugin-body rhythm */
+#tab-management {
+  padding: 14px;
+  gap: 10px;
+  background: var(--rc-bg);
+}
+.sf-mgmt-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.sf-mgmt-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--rc-surface-2);
+  border-bottom: 1px solid var(--rc-border);
+  border-radius: 8px 8px 0 0;
+  flex-shrink: 0;
+}
+.sf-mgmt-toolbar-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rc-text);
+}
+.sf-mgmt-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Data table (management + history) */
+.sf-dt {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.sf-dt thead tr {
+  background: var(--rc-surface-2);
+  border-bottom: 2px solid var(--rc-border);
+}
+.sf-dt th {
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--rc-text-dim);
+  white-space: nowrap;
+  text-align: left;
+}
+.sf-dt td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--rc-border-light);
+  vertical-align: middle;
+  color: var(--rc-text);
+}
+.sf-dt tr:last-child td { border-bottom: none; }
+.sf-dt tbody tr:hover td { background: var(--rc-surface-2); }
+.td-name    { font-weight: 500; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td-default { text-align: center; }
+.td-order   { text-align: center; color: var(--rc-text-dim); }
+.td-actions { text-align: right; white-space: nowrap; }
+.td-actions .rc-btn { margin-left: 3px; }
+
+/* Default prompt badge in mgmt table */
+.sf-default-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 100px;
+  background: var(--rc-surface-3);
+  color: var(--rc-text-dim);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Delete confirm row */
+.sf-confirm-row { display: none; }
+.sf-confirm-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--rc-red-bg);
+  border-radius: 6px;
+  margin: 2px 0;
+}
+.sf-confirm-msg {
+  flex: 1;
+  font-size: 11px;
+  color: var(--rc-red);
+}
+
+/* Add / edit prompt form */
+.sf-add-prompt-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--rc-border);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--rc-accent);
+  background: var(--rc-surface-2);
+  transition: background 0.1s;
+  flex-shrink: 0;
+  user-select: none;
+}
+.sf-add-prompt-trigger:hover { background: var(--rc-accent-muted); }
+.sf-add-form {
+  display: none;
+  padding: 12px 14px 10px;
+  border-top: 1px solid var(--rc-border);
+  background: var(--rc-surface);
+  flex-shrink: 0;
+}
+.sf-add-form.open { display: block; }
+.sf-add-form-row  { margin-bottom: 8px; }
+.sf-add-form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rc-text-muted);
+  margin-bottom: 4px;
+}
+.sf-add-form-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+
+/* ── Download History tab ────────────────────────────────────── */
+/* Tab 3 (History) uses padded card layout — matches rc-plugin-body rhythm */
+#tab-history {
+  padding: 14px;
+  gap: 10px;
+  background: var(--rc-bg);
+}
+.sf-dl-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.sf-dl-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--rc-surface-2);
+  border-bottom: 1px solid var(--rc-border);
+  border-radius: 8px 8px 0 0;
+  flex-shrink: 0;
+}
+.sf-dl-toolbar-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rc-text);
+}
+.sf-dl-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 12px;
+}
+.sf-dl-empty {
+  text-align: center;
+  padding: 20px;
+  font-size: 12px;
+  color: var(--rc-text-dim);
+}
+.sf-dl-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--rc-surface-3);
+  color: var(--rc-text-dim);
+}
+.sf-dl-badge.complete     { background: var(--rc-green-bg);  color: var(--rc-green); }
+.sf-dl-badge.pending      { background: var(--rc-amber-bg);  color: var(--rc-amber); }
+.sf-dl-badge.interrupted  { background: var(--rc-red-bg);    color: var(--rc-red); }
+.sf-dl-badge.cancelled    { background: var(--rc-surface-3); color: var(--rc-text-dim); }
+
+/* ─────────────────────────────────────────────────────────────────
+   SALESFORCE — SIDE PANEL RESPONSIVE OVERRIDES
+   ───────────────────────────────────────────────────────────────── */
+body.rc-sidepanel .sf-extract-workspace {
+  flex: 1;
+  min-height: 0;
+}
+/* Side panel: exec panel can be taller */
+body.rc-sidepanel .sf-exec-panel {
+  max-height: none;
+}
+/* At very narrow panels (<560px) collapse to single column */
+@media (max-width: 560px) {
+  .sf-extract-workspace { flex-direction: column; }
+  .sf-col-main          { border-right: none; border-bottom: 1px solid var(--rc-border); }
+  .sf-col-side          { flex: none; width: 100%; border-left: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SIDE PANEL — RESPONSIVE LAYOUT SYSTEM
+   ═══════════════════════════════════════════════════════════════
+
+   DESIGN PRINCIPLE
+   ────────────────
+   The side panel is the same application with more space.
+   No information or functionality should ever disappear or become
+   inaccessible when switching from Popup to Side Panel.
+
+   APPROACH
+   ────────
+   1. All content stays visible. Tables scroll horizontally rather
+      than hiding columns.
+   2. Grids reflow using auto-fill minmax so they fill available width.
+   3. Fixed heights are removed so content fills the panel viewport.
+   4. Controls retain full size and remain actionable at all widths.
+
+   These rules apply only when body.rc-sidepanel is set by JS
+   (detectAndApplySidePanelMode in dashboard.js).
+   ═══════════════════════════════════════════════════════════════ */
+
+
+/* ── Navigation scalability — Popup ─────────────────────────
+   RC-NAV003: Popup height is hard-constrained to 580px.  The platform
+   section (7 items × 32px min) occupies ~224px plus brand row (48px) +
+   search (hidden when collapsed) + footer (40px) + divider/section title
+   (~20px) ≈ 332px reserved.  That leaves ~248px for the plugin nav area,
+   which fits ~7–8 plugin items at comfortable density before scrolling.
+   Scrolling activates automatically via .rc-nav overflow-y:auto.
+
+   RC-NAV005: Padding reduction is intentionally modest — the primary
+   scalability mechanism is SCROLLING (via .rc-nav overflow-y:auto +
+   flex-shrink:0 on items), NOT padding compression.  We only reduce
+   padding to optimise how many items are visible before the scroll
+   threshold; we never reduce below 5px so items remain clickable.
+
+   Items in #rc-plugin-nav-items get 6px vertical padding (vs 9px
+   default) in popup mode.  Scrolling handles the rest.                */
+#rc-plugin-nav-items .rc-nav__item {
+  padding-top:    6px;
+  padding-bottom: 6px;
+  min-height: 30px;   /* slightly tighter than platform items but still comfortable */
+}
+.rc-sidebar--expanded #rc-plugin-nav-items .rc-nav__item {
+  padding-top:    5px;
+  padding-bottom: 5px;
+  min-height: 28px;
+}
+
+/* Density overrides still apply on top of the scalability reduction.
+   Density MUST NOT reduce min-height below 24px (minimum click target). */
+[data-density="compact"]  #rc-plugin-nav-items .rc-nav__item           { padding-top: 4px; padding-bottom: 4px; min-height: 26px; }
+[data-density="compact"]  .rc-sidebar--expanded #rc-plugin-nav-items .rc-nav__item { padding: 4px 10px; min-height: 24px; }
+[data-density="spacious"] #rc-plugin-nav-items .rc-nav__item           { padding-top: 8px; padding-bottom: 8px; min-height: 34px; }
+[data-density="spacious"] .rc-sidebar--expanded #rc-plugin-nav-items .rc-nav__item { padding: 8px 12px; min-height: 34px; }
+
+
+/* ── Navigation scalability — Side Panel ────────────────────
+   RC-NAV004: The side panel provides 100vh height.  With a typical
+   panel height of 800–1000px, the platform items (~7 × 32px = 224px)
+   + chrome (~108px) leaves ~468–668px for plugin nav — easily holding
+   15–20 items at comfortable density before scrolling is needed.
+
+   RC-NAV005 (scrolling-first principle): The side panel still uses
+   flex-shrink:0 on items so that overflow triggers scrolling, not
+   compression.  We DO tighten padding slightly vs the popup default
+   because the wider sidebar (220px expanded) makes denser items
+   easier to scan — but min-height is maintained.                       */
+body.rc-sidepanel #rc-plugin-nav-items .rc-nav__item {
+  padding-top:    5px;
+  padding-bottom: 5px;
+  min-height: 28px;
+}
+body.rc-sidepanel .rc-sidebar--expanded #rc-plugin-nav-items .rc-nav__item {
+  padding: 4px 10px;
+  min-height: 26px;
+}
+
+/* ── Dashboard — Stats row ───────────────────────────────────
+   Popup: 4 equal columns in 752px content area (800 - 48px sidebar).
+   Side Panel: auto-fill so columns wrap naturally at any width.    */
+body.rc-sidepanel .rc-stats-row {
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+}
+
+
+/* ── Dashboard — Widget grid ─────────────────────────────────
+   Cards reflow; large (span-2) cards fall back to span-1 so they
+   don't create gaps at narrow widths.                             */
+body.rc-sidepanel .rc-dashboard-widgets {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+body.rc-sidepanel .rc-widget-card--large {
+  grid-column: span 1;
+}
+
+
+/* ── Dashboard — Quick Actions grid ─────────────────────────── */
+body.rc-sidepanel .rc-quick-actions__grid {
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+}
+/* Secondary section: further reduce visual weight in side panel where
+   more vertical space is available and primary content benefits from more room. */
+body.rc-sidepanel .rc-dashboard-section--secondary {
+  opacity: 0.80;
+}
+/* Stats row: compact 4-column grid in side panel */
+body.rc-sidepanel .rc-stats-row {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+
+/* ── Plugin Manager ──────────────────────────────────────────
+   DESIGN DECISION: ALL COLUMNS MUST REMAIN VISIBLE.
+   Hiding columns = feature loss = defect.
+
+   Strategy: wrap the grid in a horizontally-scrollable container
+   so the full table is always accessible regardless of panel width.
+   The table itself keeps its natural column widths (no truncation).
+   At wide panels (≥ 700px) the table fills the available width.   */
+body.rc-sidepanel .rc-plugin-grid {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* Minimum width to guarantee all columns render correctly at any panel width */
+body.rc-sidepanel .rc-plist-header,
+body.rc-sidepanel .rc-plist-row {
+  min-width: 620px;   /* sum of all fixed cols + reasonable flex space */
+}
+/* DO NOT hide any columns in side panel — all data stays accessible */
+
+
+/* ── Activity Log ─────────────────────────────────────────────
+   Popup: max-height 480px (fits in 580px popup).
+   Side Panel: expand to fill viewport — more space = more useful.
+   The log grid is also fixed-width; wrap into a scroll container.  */
+body.rc-sidepanel .rc-log-list {
+  max-height: none !important;
+  height: auto;
+}
+body.rc-sidepanel .rc-log-entry {
+  /* Allow the grid to scroll horizontally on very narrow panels */
+  min-width: 500px;
+}
+/* Wrap the log list in a scroll container */
+body.rc-sidepanel #view-activity .rc-log-list {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* ── Diagnostics ──────────────────────────────────────────────
+   Popup: max-height 400px.
+   Side Panel: let the code block grow freely.                     */
+body.rc-sidepanel .rc-code-block {
+  max-height: none !important;
+}
+
+
+/* ── Settings rows ────────────────────────────────────────────
+   At narrow widths, the label/desc wraps above the control.
+   The control must never be clipped.                             */
+body.rc-sidepanel .rc-settings-row {
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: flex-start;
+}
+body.rc-sidepanel .rc-settings-row__info {
+  min-width: 160px;
+}
+body.rc-sidepanel .rc-settings-row__control {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+
+/* ── Panel body padding ───────────────────────────────────────
+   In very narrow side panels the default 20px padding wastes space. */
+body.rc-sidepanel .rc-panel-body {
+  padding: 14px 14px;
+}
+
+
+/* ── Preview toolbar ──────────────────────────────────────────
+   Action buttons wrap to a new line rather than overflowing.       */
+body.rc-sidepanel .rc-preview-toolbar {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+body.rc-sidepanel .rc-preview-actions {
+  flex-wrap: wrap;
+}
+
+
+/* ── Salesforce Extractor ─────────────────────────────────────
+   Extract button + status banner wrap at narrow widths.
+   Dropdowns and inputs expand to fill available width.            */
+body.rc-sidepanel .sf-extract-primary {
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+body.rc-sidepanel .sf-source-select {
+  max-width: none;
+  flex: 1;
+  min-width: 120px;
+}
+body.rc-sidepanel .sf-case-input {
+  flex: 1;
+  width: auto;
+  min-width: 120px;
+}
+
+
+/* ── Marketplace ──────────────────────────────────────────────
+   Cards reflow to fill available width.                           */
+body.rc-sidepanel .rc-marketplace-grid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
+
+/* ── Notifications & toasts ───────────────────────────────────
+   Toasts should not overflow the panel frame.                     */
+body.rc-sidepanel .rc-toast-container {
+  max-width: min(320px, calc(100vw - 24px));
+  right: 12px;
+  bottom: 12px;
+}
+
+/* ── Edge Bookmark Finder — Interactive rows (RC-UX010) ───────── */
+/*
+ * .bm-result-row  — search result bookmark row (full row is the click target)
+ * .bm-recent-row  — recently added bookmark row
+ *
+ * UX principle: when an entire list item represents a single primary action,
+ * the full content area (title, URL, path) must be clickable — not only
+ * a small icon at the edge.
+ */
+.bm-result-row,
+.bm-recent-row {
+  border-bottom: 1px solid var(--rc-border);
+  padding: 7px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  outline: none;           /* replaced by :focus-visible below */
+}
+.bm-result-row--duplicate { background: var(--rc-surface); }
+
+.bm-result-row:hover,
+.bm-recent-row:hover {
+  background: var(--rc-hover-bg, rgba(59,130,246,0.07));
+}
+.bm-result-row:focus-visible,
+.bm-recent-row:focus-visible {
+  box-shadow: 0 0 0 2px var(--rc-accent, #3b82f6);
+  background: var(--rc-hover-bg, rgba(59,130,246,0.07));
+}
+
+/* Inner layout of a bookmark result row */
+.bm-result-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.bm-result-icon  { font-size: 14px; margin-top: 1px; flex-shrink: 0; }
+.bm-result-body  { flex: 1; min-width: 0; }
+.bm-result-title {
+  font-weight: 600;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bm-result-path {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bm-result-url {
+  font-size: 11px;
+  color: var(--rc-accent, #3b82f6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bm-result-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.bm-duplicate-badge { color: var(--rc-amber, #f59e0b); font-size: 10px; }
+
+/* Recent row layout */
+.bm-recent-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 4px;
+  font-size: 11px;
+}
+.bm-recent-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bm-recent-date { color: var(--rc-text-muted); font-size: 10px; flex-shrink: 0; }
+
+/* ── Edge Bookmark Finder — RC-UX009 cap notice ───────────────── */
+.bm-cap-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--rc-amber-bg);
+  border: 1px solid var(--rc-amber, rgba(245,158,11,0.25));
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  margin-top: 4px;
+}
+.bm-cap-icon { font-size: 13px; flex-shrink: 0; color: var(--rc-amber); }
+
+/* ═══════════════════════════════════════════════════════════════
+   SNAKE PLUGIN — Retro Arcade LCD (visual polish pass)
+   All classes prefixed with .snk- to avoid collisions.
+   Color palette is retro LCD monochrome:
+     LCD background  : #9CBC0F  (retro LCD green)
+     Pixel foreground: #0F380F  (dark LCD ink)
+     Device body     : #2e3f68  (dark midnight blue)
+   Orientation: landscape (wider than tall).
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Plugin view wrapper ───────────────────────────────────────── */
+.snk-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 8px 12px;
+  background: var(--rc-bg);
+  min-height: 0;
+  user-select: none;
+}
+
+/* ── Retro device outer housing ───────────────────────────────── */
+/*
+ * Retro device body: dark midnight-blue housing.
+ * Tight padding keeps the LCD framed cleanly with balanced spacing.
+ */
+.snk-device {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #2e3f68;          /* Retro dark midnight blue */
+  border-radius: 10px 10px 18px 18px;
+  padding: 10px 14px 14px;
+  box-shadow:
+    0 8px 28px rgba(0,0,0,0.75),
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    inset 0 -3px 8px rgba(0,0,0,0.45);
+  width: 100%;
+  max-width: 440px;
+}
+
+/* ── LCD screen bezel ─────────────────────────────────────────── */
+/*
+ * Single strong dark bezel ring (4px) around the LCD.
+ * Uniform thickness on all sides — clean separation from the blue housing.
+ */
+.snk-screen-bezel {
+  background: #111;             /* near-black single-border ring */
+  border-radius: 4px;
+  padding: 4px;
+  width: 100%;
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,0.70),
+    0 1px 0 rgba(255,255,255,0.06);
+}
+
+.snk-screen-bezel::before {
+  content: '';
+  display: block;
+}
+
+/* ── LCD screen — retro monochrome green ──────────────────────── */
+.snk-screen {
+  background: #9CBC0F;
+  position: relative;
+  width: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  /* Subtle inner shadow to add LCD depth */
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.20);
+}
+
+/* ── Canvas (the actual game grid) ──────────────────────────────── */
+/* Score + high-score HUD is drawn directly onto the canvas — no HTML overlay needed. */
+/* width/height are set by JS (DPR-aware) — do not override with CSS percentages.     */
+#snk-canvas {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: #9CBC0F;
+}
+
+/* ── Overlay (start / pause / game-over screens on the LCD) ────── */
+.snk-overlay {
+  position: absolute;
+  inset: 0;
+  /* Use the exact LCD green — slightly transparent so the play area shows faintly */
+  background: rgba(156, 188, 15, 0.94);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  z-index: 10;
+}
+.snk-overlay--hidden { display: none; }
+
+.snk-overlay-title {
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 13px;
+  font-weight: 900;
+  color: #0F380F;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.snk-overlay-subtitle {
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 9px;
+  color: #0F380F;
+  letter-spacing: 2px;
+  text-align: center;
+  white-space: pre;
+  line-height: 1.5;
+}
+.snk-overlay-btn {
+  margin-top: 5px;
+  background: #0F380F;
+  color: #9CBC0F;
+  border: none;
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  padding: 4px 14px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+.snk-overlay-btn:hover {
+  background: #1a4a1a;
+}
+
+/* ── D-pad controls ────────────────────────────────────────────── */
+/*
+ * Always visible — matches the reference screenshot which shows the
+ * d-pad below the LCD regardless of side-panel vs popup context.
+ */
+.snk-dpad {
+  display: flex;
+  margin-top: 10px;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.snk-dpad-row {
+  display: flex;
+  gap: 2px;
+}
+.snk-dpad-btn {
+  background: #1a1a1a;
+  border: 1px solid #3a3a3a;
+  color: #9CBC0F;
+  font-size: 14px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+  font-family: monospace;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.snk-dpad-btn:hover { background: #2a2a2a; }
+.snk-dpad-spacer { width: 36px; height: 36px; }
+
+/* ── Pause button (inside device, below d-pad) ─────────────────── */
+.snk-pause-btn {
+  margin-top: 8px;
+  background: #1a1a1a;
+  border: 1px solid #3a3a3a;
+  color: #9CBC0F;
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 4px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+.snk-pause-btn:hover { background: #2a2a2a; }
+
+/* ── Speed control row (below device) ─────────────────────────── */
+.snk-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  width: 100%;
+  max-width: 440px;
+  justify-content: center;
+}
+.snk-speed-label {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  white-space: nowrap;
+}
+.snk-speed-btn {
+  background: var(--rc-surface-2);
+  border: 1px solid var(--rc-border);
+  color: var(--rc-text-muted);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.snk-speed-btn--active {
+  background: #0F380F;
+  color: #9CBC0F;
+  border-color: #0F380F;
+  font-weight: 700;
+}
+.snk-speed-btn:hover:not(.snk-speed-btn--active) {
+  background: var(--rc-surface-3);
+}
+
+/* ── Widget card (Dashboard) ──────────────────────────────────── */
+.snk-widget-body {
+  padding: 12px 14px;
+}
+.snk-widget-preview {
+  background: #9CBC0F;
+  border: 2px solid #0F380F;
+  height: 36px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #0F380F;
+  letter-spacing: 2px;
+}
+.snk-widget-hi {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  margin-bottom: 8px;
+}
+.snk-widget-hi strong {
+  color: var(--rc-text);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WORKSPACE STARTER PLUGIN — dashboard.css additions
+   Scope: all rules prefixed ws- to avoid collisions with platform styles.
+   Uses ReplyCators CSS custom properties (--rc-*) for theme compatibility.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Plugin view toolbar ─────────────────────────────────────────────────── */
+.ws-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+/* ── Profile list ─────────────────────────────────────────────────────────── */
+.ws-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Profile card ─────────────────────────────────────────────────────────── */
+.ws-profile-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  padding: 11px 14px 10px;
+  transition: border-color 0.15s;
+}
+
+.ws-profile-card:hover {
+  border-color: var(--rc-border-focus, var(--rc-accent));
+}
+
+.ws-card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.ws-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-card-count {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ws-card-desc {
+  font-size: 11.5px;
+  color: var(--rc-text-muted);
+  margin: 2px 0 7px;
+  line-height: 1.4;
+}
+
+.ws-card-actions {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* ── Launch status feedback ──────────────────────────────────────────────── */
+.ws-launch-status {
+  font-size: 11px;
+  min-height: 15px;
+  margin-top: 4px;
+}
+
+.ws-launching { color: var(--rc-text-muted); }
+.ws-launched  { color: var(--rc-success, #1a7f44); font-weight: 500; }
+
+/* ── Delete confirm row ──────────────────────────────────────────────────── */
+.ws-confirm-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.ws-empty-state {
+  padding: 24px 16px 28px;
+  text-align: center;
+}
+
+.ws-empty-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rc-text);
+  margin-bottom: 6px;
+}
+
+.ws-empty-hint {
+  font-size: 12px;
+  color: var(--rc-text-muted);
+  line-height: 1.55;
+}
+
+/* ── Form panel ──────────────────────────────────────────────────────────── */
+.ws-form-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.ws-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0 10px;
+  border-bottom: 1px solid var(--rc-border);
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.ws-form-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rc-text);
+  margin: 0;
+}
+
+.ws-form-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.ws-form-group {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ws-form-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rc-border);
+  margin-top: 12px;
+  flex-shrink: 0;
+}
+
+/* ── URL rows ─────────────────────────────────────────────────────────────── */
+.ws-url-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-bottom: 4px;
+}
+
+.ws-url-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.ws-url-error {
+  border-color: var(--rc-danger, #cf222e) !important;
+  background: var(--rc-danger-bg, #ffeef0) !important;
+}
+
+/* ── Utility: used by delete confirm row ─────────────────────────────────── */
+.rc-hidden { display: none !important; }
+
+/* ── Danger colour variable fallback (in case theme doesn't define it) ───── */
+:root {
+  --rc-danger:    #cf222e;
+  --rc-danger-bg: #ffeef0;
+  --rc-success:   #1a7f44;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WORKSPACE STARTER v2 — Additional styles for enhanced features.
+   All classes prefixed ws- to avoid collisions with platform styles.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Toolbar improvements ──────────────────────────────────────────────── */
+.ws-toolbar {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+.ws-import-label {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+.ws-last-launched {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  white-space: nowrap;
+  margin-left: auto;
+  align-self: center;
+}
+.ws-cat-filter {
+  min-width: 120px;
+  max-width: 180px;
+}
+
+/* ── Section dividers ──────────────────────────────────────────────────── */
+.ws-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rc-text-dim);
+  padding: 10px 0 5px;
+  border-bottom: 1px solid var(--rc-border);
+  margin-bottom: 8px;
+}
+
+/* ── Recent workspaces row ─────────────────────────────────────────────── */
+.ws-recents-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.ws-recent-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: var(--rc-accent-muted);
+  color: var(--rc-accent);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: border-color 0.12s, background 0.12s;
+  white-space: nowrap;
+}
+.ws-recent-chip:hover {
+  border-color: var(--rc-accent);
+  background: var(--rc-surface-2);
+  color: var(--rc-text);
+}
+
+/* ── Favorite profile card ─────────────────────────────────────────────── */
+.ws-profile-card--favorite {
+  border-left: 3px solid var(--rc-accent);
+}
+
+/* ── Favorite toggle button ────────────────────────────────────────────── */
+.ws-fav-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px 0 0;
+  line-height: 1;
+  flex-shrink: 0;
+  color: var(--rc-text-muted);
+  transition: transform 0.1s;
+}
+.ws-fav-btn:hover { transform: scale(1.2); }
+
+/* ── Card statistics row ────────────────────────────────────────────────── */
+.ws-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--rc-text-dim);
+  margin: 4px 0 6px;
+  align-items: center;
+}
+.ws-card-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ── Category badge ────────────────────────────────────────────────────── */
+.ws-cat-badge {
+  display: inline-flex;
+  padding: 1px 6px;
+  border-radius: 100px;
+  background: var(--rc-surface-3);
+  color: var(--rc-text-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* ── Mode badge ────────────────────────────────────────────────────────── */
+.ws-mode-badge {
+  display: inline-flex;
+  padding: 1px 6px;
+  border-radius: 100px;
+  background: var(--rc-surface-2);
+  color: var(--rc-text-dim);
+  font-size: 10px;
+  border: 1px solid var(--rc-border);
+}
+
+/* ── Card header with fav button ────────────────────────────────────────── */
+.ws-card-header {
+  gap: 4px;
+}
+
+/* ── Two-column form row ─────────────────────────────────────────────── */
+.ws-form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+/* ── Favorites widget rows ──────────────────────────────────────────────── */
+.ws-fav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 0;
+  gap: 8px;
+}
+.ws-fav-name {
+  font-size: 11px;
+  color: var(--rc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+/* ── Side panel responsive adjustments ─────────────────────────────────── */
+body.rc-sidepanel .ws-form-row-2 {
+  grid-template-columns: 1fr 1fr;
+}
+body.rc-sidepanel .ws-recents-list {
+  flex-wrap: wrap;
+}
+body.rc-sidepanel .ws-toolbar {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TAB SEARCH PLUGIN — dashboard.css additions
+   Scope: all rules prefixed ts- to avoid collisions with platform styles.
+   Uses ReplyCators CSS custom properties (--rc-*) for theme compatibility.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Tab result row ────────────────────────────────────────────────────── */
+.ts-tab-row {
+  border-bottom: 1px solid var(--rc-border);
+  padding: 7px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+}
+.ts-tab-row--active {
+  background: var(--rc-surface);
+  border-left: 3px solid var(--rc-accent, #3b82f6);
+}
+.ts-tab-row:hover {
+  background: var(--rc-hover-bg, rgba(59,130,246,0.07));
+}
+.ts-tab-row:focus-visible {
+  box-shadow: 0 0 0 2px var(--rc-accent, #3b82f6);
+  background: var(--rc-hover-bg, rgba(59,130,246,0.07));
+}
+
+/* ── Inner layout ──────────────────────────────────────────────────────── */
+.ts-tab-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* ── Favicon ───────────────────────────────────────────────────────────── */
+.ts-tab-favicon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  object-fit: contain;
+}
+
+/* ── Body (title + URL) ────────────────────────────────────────────────── */
+.ts-tab-body {
+  flex: 1;
+  min-width: 0;
+}
+.ts-tab-title {
+  font-weight: 600;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ts-tab-url {
+  font-size: 11px;
+  color: var(--rc-accent, #3b82f6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Action buttons ────────────────────────────────────────────────────── */
+.ts-tab-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  align-items: flex-start;
+  /* Hide on narrow, show on hover/focus-within */
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.ts-tab-row:hover .ts-tab-actions,
+.ts-tab-row:focus-within .ts-tab-actions {
+  opacity: 1;
+}
+
+/* ── Group header ──────────────────────────────────────────────────────── */
+.ts-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 4px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rc-text-muted);
+  border-bottom: 1px solid var(--rc-border);
+  margin-top: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.ts-group-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ts-group-count { flex-shrink: 0; margin-left: 8px; }
+
+/* ============================================================
+   Documentation View — Help & Docs
+   ============================================================ */
+
+/* ── Layout ───────────────────────────────────────────────── */
+.rc-docs-layout {
+  display: flex;
+  gap: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Topic navigation sidebar ─────────────────────────────── */
+.rc-docs-nav {
+  width: 180px;
+  min-width: 140px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--rc-border);
+  overflow-y: auto;
+  padding: 8px 0;
+  background: var(--rc-surface);
+}
+
+/* header row that wraps the title */
+.rc-docs-nav__header {
+  padding: 4px 12px 6px;
+}
+.rc-docs-nav__title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rc-text-muted);
+}
+
+/* ── Search box ───────────────────────────────────────────── */
+.rc-docs-nav__search-wrap {
+  padding: 0 10px 6px;
+}
+.rc-docs-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--rc-text);
+  background: var(--rc-bg);
+  border: 1px solid var(--rc-border);
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.rc-docs-search::placeholder { color: var(--rc-text-muted); opacity: 0.7; }
+.rc-docs-search:focus { border-color: var(--rc-accent); }
+
+/* ── Group container ──────────────────────────────────────── */
+.rc-docs-nav__group { }
+
+/* Group header button — styled to match section labels, NOT a browser button */
+.rc-docs-nav__group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 4px;
+  padding: 5px 12px 3px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--rc-text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: left;
+  cursor: pointer;
+  line-height: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  box-shadow: none;
+  outline: none;
+}
+.rc-docs-nav__group-header:hover { color: var(--rc-text); }
+.rc-docs-nav__group-header:focus-visible {
+  outline: 2px solid var(--rc-accent);
+  outline-offset: -2px;
+}
+.rc-docs-nav__group-chevron {
+  font-size: 10px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+/* Group items wrapper — shown/hidden via class */
+.rc-docs-nav__group-items { }
+.rc-docs-nav__group-items--collapsed { display: none; }
+
+.rc-docs-nav__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 12px;
+  border: none;
+  background: transparent;
+  color: var(--rc-text-muted);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rc-docs-nav__item:hover {
+  background: var(--rc-surface-hover);
+  color: var(--rc-text);
+}
+.rc-docs-nav__item--active {
+  background: var(--rc-sidebar-active-bg);
+  color: var(--rc-accent);
+  font-weight: 500;
+}
+.rc-docs-nav__icon {
+  flex-shrink: 0;
+  font-size: 13px;
+  width: 18px;
+  text-align: center;
+}
+.rc-docs-nav__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Content area ─────────────────────────────────────────── */
+.rc-docs-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+/* ── Body typography ──────────────────────────────────────── */
+.rc-docs-body { max-width: 700px; }
+
+.rc-docs-h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--rc-text);
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rc-border);
+}
+.rc-docs-h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rc-text);
+  margin: 18px 0 6px;
+}
+.rc-docs-p {
+  font-size: 13px;
+  color: var(--rc-text-muted);
+  line-height: 1.6;
+  margin: 0 0 10px;
+}
+
+/* ── Unordered list ───────────────────────────────────────── */
+.rc-docs-ul {
+  margin: 0 0 12px 18px;
+  padding: 0;
+}
+.rc-docs-ul li {
+  font-size: 13px;
+  color: var(--rc-text-muted);
+  line-height: 1.65;
+  margin-bottom: 3px;
+}
+
+/* ── Table ────────────────────────────────────────────────── */
+.rc-docs-table-wrap {
+  overflow-x: auto;
+  margin: 0 0 14px;
+}
+.rc-docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.rc-docs-table th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--rc-text-muted);
+  border-bottom: 1px solid var(--rc-border);
+  padding: 6px 8px;
+  background: var(--rc-surface);
+}
+.rc-docs-table td {
+  padding: 7px 8px;
+  color: var(--rc-text-muted);
+  border-bottom: 1px solid var(--rc-border);
+  vertical-align: top;
+  line-height: 1.5;
+}
+.rc-docs-table tr:last-child td { border-bottom: none; }
+.rc-docs-table code {
+  font-size: 11px;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+/* ── Info box ─────────────────────────────────────────────── */
+.rc-docs-info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-left: 3px solid var(--rc-accent);
+  border-radius: 4px;
+  padding: 12px 14px;
+  margin: 0 0 14px;
+}
+.rc-docs-info-box__icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.rc-docs-info-box__title {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rc-text);
+  margin-bottom: 4px;
+}
+.rc-docs-info-box__body {
+  font-size: 12px;
+  color: var(--rc-text-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ── Code inline ──────────────────────────────────────────── */
+.rc-docs-body code {
+  font-size: 11px;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 3px;
+  padding: 1px 4px;
+  color: var(--rc-accent);
+}
+
+
+/* ============================================================
+   Apptio Documentation Finder Plugin  (com.replycators.apptio-docs-finder)
+   All selectors are prefixed `adf-` to prevent collisions.
+   Only var(--rc-*) tokens are used — no standalone colour values.
+   ============================================================ */
+
+/* adf-tab-bar, adf-tab, adf-tab--active removed — replaced by platform standard
+   rc-plugin-tabs / rc-plugin-tab / rc-plugin-tab--active (v1.43.6).
+   Tab bar is now static HTML in dashboard.html, a direct sibling of rc-plugin-header. */
+
+.adf-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 5px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--rc-accent);
+  color: #fff;
+  border-radius: 8px;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* ── Tab content containers ────────────────────────────────── */
+/* ── Search form ───────────────────────────────────────────── */
+.adf-search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adf-field { display: flex; flex-direction: column; gap: 4px; }
+
+.adf-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.adf-label-hint {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--rc-text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Input row with search icon and clear button */
+.adf-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.adf-input-wrap .rc-input {
+  padding-left: 28px;
+  padding-right: 28px;
+  width: 100%;
+}
+.adf-input-icon {
+  position: absolute;
+  left: 8px;
+  color: var(--rc-text-muted);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.adf-clear-btn {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  padding: 0 4px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--rc-text-muted);
+  cursor: pointer;
+  border-radius: 3px;
+}
+.adf-clear-btn:hover { color: var(--rc-text); background: var(--rc-surface); }
+
+/* Domain filter buttons */
+.adf-domain-btns {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.adf-domain-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 20px;
+  color: var(--rc-text-muted);
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.adf-domain-btn:hover { border-color: var(--rc-accent); color: var(--rc-text); }
+.adf-domain-btn--active {
+  background: var(--rc-accent);
+  border-color: var(--rc-accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Action row */
+.adf-action-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ── URL debug / preview panel ──────────────────────────────── */
+.adf-debug-panel {
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--rc-surface);
+}
+.adf-debug-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 10px;
+  background: none;
+  border: none;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--rc-text-muted);
+  cursor: pointer;
+  text-align: left;
+}
+.adf-debug-toggle:hover { color: var(--rc-text); }
+.adf-chevron { transition: transform 0.15s; }
+.adf-chevron--open { transform: rotate(180deg); }
+
+.adf-debug-body {
+  padding: 6px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border-top: 1px solid var(--rc-border);
+}
+.adf-debug-row { display: flex; gap: 8px; align-items: baseline; }
+.adf-dk {
+  min-width: 72px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--rc-text-muted);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.adf-dv {
+  font-size: 11px;
+  color: var(--rc-text);
+  word-break: break-all;
+}
+.adf-mono { font-family: 'Cascadia Mono', 'Consolas', monospace; font-size: 10px; }
+.adf-scope-warn { margin-top: 2px; }
+
+/* ── Quick links ─────────────────────────────────────────────── */
+.adf-section { display: flex; flex-direction: column; gap: 6px; }
+.adf-section-hdr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.adf-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.adf-section-hint { font-size: 11px; color: var(--rc-text-muted); }
+
+.adf-quick-links { display: flex; flex-direction: column; gap: 4px; }
+.adf-ql-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.adf-ql-chip {
+  padding: 4px 10px;
+  font-size: 11px;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 16px;
+  color: var(--rc-text);
+  cursor: pointer;
+  transition: border-color 0.1s, background 0.1s;
+  white-space: nowrap;
+}
+.adf-ql-chip:hover {
+  border-color: var(--rc-accent);
+  background: var(--rc-bg);
+  color: var(--rc-accent);
+}
+
+/* ── List views (Favorites / Recent / Opened) ───────────────── */
+.adf-view-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.adf-view-count { font-size: 11px; color: var(--rc-text-muted); }
+
+.adf-item-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+.adf-item-card {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  transition: border-color 0.1s;
+}
+.adf-item-card:hover { border-color: var(--rc-accent); }
+
+.adf-ic-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.adf-ic-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--rc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.adf-ic-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.adf-ic-domain {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--rc-accent);
+  text-transform: uppercase;
+}
+.adf-ic-time {
+  font-size: 10px;
+  color: var(--rc-text-muted);
+}
+
+.adf-ic-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.adf-item-card:hover .adf-ic-actions,
+.adf-item-card:focus-within .adf-ic-actions { opacity: 1; }
+
+.adf-ic-btn {
+  padding: 3px 5px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--rc-text-muted);
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.1s, border-color 0.1s;
+}
+.adf-ic-btn:hover {
+  color: var(--rc-text);
+  border-color: var(--rc-border);
+  background: var(--rc-bg);
+}
+
+.adf-empty-state {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--rc-text-muted);
+  font-size: 13px;
+}
+
+/* ── Index / Status view ─────────────────────────────────────── */
+.adf-status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  flex-shrink: 0;
+}
+.adf-stat-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+.adf-stat-val {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--rc-accent);
+  line-height: 1.1;
+}
+.adf-stat-key {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--rc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 3px;
+}
+.adf-domain-breakdown {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  padding: 10px;
+}
+.adf-status-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── Sources overlay ─────────────────────────────────────────── */
+/* NOTE: display:flex is only applied when the overlay is NOT hidden.
+   The HTML `hidden` attribute alone is not enough because author CSS
+   `display:flex` overrides the UA-stylesheet `[hidden]{display:none}`.
+   The explicit [hidden] rule below restores the expected behaviour.   */
+.adf-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--rc-bg);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  gap: 8px;
+  overflow-y: auto;
+}
+.adf-overlay[hidden] { display: none !important; }
+.adf-overlay-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.adf-overlay-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rc-text);
+  flex: 1 1 auto;
+}
+.adf-sources-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.adf-status-bar { min-height: 20px; }
+
+.adf-sources-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 100px 28px;
+  gap: 6px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--rc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.adf-sources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+.adf-source-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 100px 28px;
+  gap: 6px;
+  align-items: center;
+}
+
+/* ── Status messages ─────────────────────────────────────────── */
+.adf-status-msg { font-size: 11px; }
+.adf-status-msg--ok      { color: var(--rc-success, #34d399); }
+.adf-status-msg--error   { color: var(--rc-error,   #f87171); }
+.adf-status-msg--checking { color: var(--rc-text-muted); }
+
+/* ── First-run card ──────────────────────────────────────────── */
+.adf-fr-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 28px 20px 24px;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  margin: auto;
+  max-width: 360px;
+  width: 100%;
+}
+.adf-fr-logo { flex-shrink: 0; }
+.adf-fr-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--rc-text);
+}
+.adf-fr-subtitle {
+  font-size: 12px;
+  color: var(--rc-text-muted);
+  min-height: 18px;
+}
+.adf-fr-bar-wrap {
+  width: 100%;
+  height: 6px;
+  background: var(--rc-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.adf-fr-bar-fill {
+  height: 100%;
+  background: var(--rc-accent);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.adf-fr-pct {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rc-text-muted);
+}
+.adf-fr-error {
+  font-size: 11px;
+  color: var(--rc-error, #f87171);
+  text-align: center;
+}
+.adf-fr-note {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  margin: 0;
+}
+
+/* adf-panels-host — direct sibling of rc-plugin-tabs, fills remaining height.
+   rc-plugin-page.rc-view--active provides the flex-column parent context.      */
+#adf-docs-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+/* adf-tab-panel — inner content padding for rc-plugin-tab-panel elements.
+   rc-plugin-tab-panel provides flex, overflow-y:auto, flex:1, min-height:0.
+   Uses the same padding (16px) and gap (14px) as rc-plugin-body so the
+   visual rhythm matches all compliant non-tabbed plugins. */
+.adf-tab-panel {
+  padding: 16px;
+  gap: 14px;
+}
+
+/* ── ADF hidden-attribute fix ────────────────────────────────────────────────
+   Author CSS `display:flex/grid` overrides the UA-stylesheet `[hidden]{display:none}`.
+   Restore correct hidden behaviour for every ADF element that uses the hidden
+   attribute as a visibility toggle while also having an explicit display rule.  */
+#adf-docs-container [hidden] { display: none !important; }
+
+/* ── Pre-flight Check ─────────────────────────────────────────────────────── */
+
+/* Screen-reader-only utility — visually hidden, but available to AT */
+.rc-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Header row is now .rc-ops-section-header — .rc-preflight__header kept as a no-op alias */
+.rc-preflight__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.rc-preflight__header .rc-section-title {
+  margin-bottom: 0;
+}
+
+
+/* ── Summary bar ───────────────────────────────────────────────────────────── */
+.rc-preflight__summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--rc-border);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.rc-preflight__summary--pass { background: color-mix(in srgb, var(--rc-green) 12%, var(--rc-surface)); border-color: var(--rc-green); }
+.rc-preflight__summary--warn { background: color-mix(in srgb, var(--rc-amber) 12%, var(--rc-surface)); border-color: var(--rc-amber); }
+.rc-preflight__summary--fail { background: color-mix(in srgb, var(--rc-red)   12%, var(--rc-surface)); border-color: var(--rc-red); }
+/* Fallback for older browsers that don't support color-mix */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .rc-preflight__summary--pass { background: var(--rc-surface); border-color: var(--rc-green); }
+  .rc-preflight__summary--warn { background: var(--rc-surface); border-color: var(--rc-amber); }
+  .rc-preflight__summary--fail { background: var(--rc-surface); border-color: var(--rc-red); }
+}
+.rc-preflight__summary-status {
+  font-weight: 700;
+  color: var(--rc-text);
+  white-space: nowrap;
+}
+.rc-preflight__summary-detail {
+  color: var(--rc-text-muted);
+  font-size: 11px;
+}
+
+/* ── Group headers ─────────────────────────────────────────────────────────── */
+.rc-preflight-group-header {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rc-text-muted);
+  padding: 8px 0 4px;
+  border-bottom: 1px solid var(--rc-border);
+  margin-top: 4px;
+}
+/* First group header needs no top margin */
+.rc-preflight__grid > .rc-preflight-group-header:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+.rc-preflight-group-skipped {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  opacity: 0.7;
+  padding: 4px 0;
+}
+
+/* ── Two-column grid of check cards; collapses to one column in narrow layout */
+.rc-preflight__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+body.rc-sidepanel .rc-preflight__grid {
+  grid-template-columns: 1fr;
+}
+@media (max-width: 520px) {
+  .rc-preflight__grid { grid-template-columns: 1fr; }
+}
+
+/* ── Loading placeholder shown before checks resolve ──────────────────────── */
+.rc-preflight__loading {
+  grid-column: 1 / -1;
+  color: var(--rc-text-muted);
+  font-size: 13px;
+  padding: 8px 0;
+}
+
+/* ── Individual check card ─────────────────────────────────────────────────── */
+.rc-preflight-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  background: var(--rc-surface);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.rc-preflight-card--pass   { border-left: 3px solid var(--rc-green); }
+.rc-preflight-card--warn   { border-left: 3px solid var(--rc-amber); }
+.rc-preflight-card--fail   { border-left: 3px solid var(--rc-red);   }
+.rc-preflight-card--info   { border-left: 3px solid var(--rc-accent); }
+.rc-preflight-card--skip   { border-left: 3px solid var(--rc-border); opacity: 0.65; }
+.rc-preflight-card--checking { border-left: 3px solid var(--rc-border); }
+
+/* Status icon + text badge stacked vertically */
+.rc-preflight-card__status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 40px;
+}
+.rc-preflight-card__icon {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+/* Color the icon symbol to match severity — color not relied on alone (badge text also shown) */
+.rc-preflight-card--pass .rc-preflight-card__icon   { color: var(--rc-green); }
+.rc-preflight-card--warn .rc-preflight-card__icon   { color: var(--rc-amber); }
+.rc-preflight-card--fail .rc-preflight-card__icon   { color: var(--rc-red);   }
+.rc-preflight-card--info .rc-preflight-card__icon   { color: var(--rc-accent); }
+.rc-preflight-card--skip .rc-preflight-card__icon   { color: var(--rc-text-muted); }
+
+.rc-preflight-card__badge {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--rc-text-muted);
+  margin-top: 2px;
+}
+.rc-preflight-card--pass .rc-preflight-card__badge  { color: var(--rc-green); }
+.rc-preflight-card--warn .rc-preflight-card__badge  { color: var(--rc-amber); }
+.rc-preflight-card--fail .rc-preflight-card__badge  { color: var(--rc-red);   }
+
+/* Text area: label + detail stacked; detail and remediation wrap */
+.rc-preflight-card__body {
+  flex: 1;
+  min-width: 0;
+}
+.rc-preflight-card__label {
+  font-weight: 600;
+  color: var(--rc-text);
+  word-break: break-word;
+}
+.rc-preflight-card__detail {
+  color: var(--rc-text-muted);
+  margin-top: 1px;
+  /* Allow wrapping — long detail text was previously clipped by white-space:nowrap */
+  white-space: normal;
+  word-break: break-word;
+}
+.rc-preflight-card__remediation {
+  color: var(--rc-text-muted);
+  font-size: 11px;
+  font-style: italic;
+  margin-top: 3px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Inline action button (e.g. "Open Settings") */
+.rc-preflight-card__action {
+  margin-top: 4px;
+  display: inline-block;
+  color: var(--rc-accent);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 11px;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.rc-preflight-card__action:hover { opacity: 0.8; }
+.rc-preflight-card__action:focus-visible {
+  outline: 2px solid var(--rc-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Retry button */
+.rc-preflight-card__retry {
+  margin-top: 4px;
+  margin-left: 6px;
+  display: inline-block;
+  color: var(--rc-text-muted);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 11px;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.rc-preflight-card__retry:hover  { color: var(--rc-accent); }
+.rc-preflight-card__retry:focus-visible {
+  outline: 2px solid var(--rc-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.rc-cache-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.rc-cache-summary__card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.rc-cache-summary__value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--rc-text);
+}
+
+.rc-cache-summary__label {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  margin-top: 4px;
+}
+
+.rc-cache-toolbar label {
+  min-width: 160px;
+}
+
+.rc-cache-group {
+  margin-bottom: 16px;
+}
+
+.rc-cache-group__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rc-text);
+  margin-bottom: 8px;
+}
+
+.rc-cache-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-left: 3px solid var(--rc-accent);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.rc-cache-card--Expired,
+.rc-cache-card--Refresh\ Failed,
+.rc-cache-card--Clear\ Failed {
+  border-left-color: var(--rc-red);
+}
+
+.rc-cache-card--Invalid,
+.rc-cache-card--Missing {
+  border-left-color: var(--rc-amber);
+}
+
+.rc-cache-card--Fresh {
+  border-left-color: var(--rc-green);
+}
+
+.rc-cache-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.rc-cache-card__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rc-text);
+}
+
+.rc-cache-card__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px 12px;
+  font-size: 12px;
+}
+
+.rc-cache-card__meta-item {
+  min-width: 0;
+}
+
+.rc-cache-card__meta-label {
+  display: block;
+  font-size: 10px;
+  color: var(--rc-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+
+.rc-cache-card__meta-value {
+  color: var(--rc-text-muted);
+  word-break: break-word;
+}
+
+.rc-cache-card__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+@media (max-width: 640px) {
+  .rc-cache-toolbar label { min-width: 100%; }
+  .rc-cache-card__header { flex-direction: column; }
+}
+
+/* Small button variant used for Run All Checks */
+.rc-btn--sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.rc-feedback-form { display:flex; flex-direction:column; gap:16px; }
+.rc-feedback-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:16px; }
+.rc-feedback-field, .rc-feedback-section { display:flex; flex-direction:column; gap:8px; }
+.rc-feedback-textarea { min-height:160px; resize:vertical; }
+.rc-feedback-help { font-size:12px; color:var(--rc-text-muted); line-height:1.5; }
+.rc-feedback-error { min-height:16px; color:var(--rc-red); font-size:12px; }
+.rc-feedback-recipients { display:flex; flex-direction:column; gap:4px; padding:12px; border:1px solid var(--rc-border); border-radius:8px; background:var(--rc-surface-2); }
+.rc-feedback-checkbox { display:flex; align-items:center; gap:8px; font-size:13px; }
+.rc-feedback-preview { white-space:pre-wrap; margin:0; }
+.rc-feedback-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.rc-feedback-actions--footer { justify-content:flex-end; }
+.rc-feedback-form .rc-input:focus-visible, .rc-feedback-form button:focus-visible, .rc-feedback-form select:focus-visible, .rc-feedback-form textarea:focus-visible { outline:2px solid var(--rc-accent); outline-offset:2px; }
+@media (max-width: 720px) { .rc-feedback-grid { grid-template-columns:1fr; } }
+
+.rc-unified-tabs { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+
+/* ── Diagnostics: Overview tab — concise snapshot ───────────────────────────── */
+
+/* Compact platform/browser/plugin stat strip */
+.rc-diag-overview__snapshot {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+body.rc-sidepanel .rc-diag-overview__snapshot {
+  grid-template-columns: 1fr;
+}
+
+.rc-diag-overview__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  font-size: 12px;
+}
+.rc-diag-overview__stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rc-text-dim);
+}
+.rc-diag-overview__stat-value {
+  color: var(--rc-text);
+  word-break: break-word;
+}
+
+/* High-priority warning list */
+.rc-diag-overview__warnings {
+  margin-bottom: 12px;
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.rc-diag-overview__warn-heading {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rc-text-muted);
+  padding: 6px 10px;
+  background: var(--rc-surface);
+  border-bottom: 1px solid var(--rc-border);
+}
+.rc-diag-overview__warn-row {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 7px 10px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--rc-border);
+  background: var(--rc-surface);
+}
+.rc-diag-overview__warn-row:last-child {
+  border-bottom: none;
+}
+.rc-diag-overview__warn-row--fail {
+  border-left: 3px solid var(--rc-red);
+}
+.rc-diag-overview__warn-row--warn {
+  border-left: 3px solid var(--rc-amber);
+}
+.rc-diag-overview__warn-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.rc-diag-overview__warn-row--fail .rc-diag-overview__warn-badge {
+  background: color-mix(in srgb, var(--rc-red) 15%, transparent);
+  color: var(--rc-red);
+}
+.rc-diag-overview__warn-row--warn .rc-diag-overview__warn-badge {
+  background: color-mix(in srgb, var(--rc-amber) 15%, transparent);
+  color: var(--rc-amber);
+}
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .rc-diag-overview__warn-row--fail .rc-diag-overview__warn-badge { background: var(--rc-surface-2); color: var(--rc-red); }
+  .rc-diag-overview__warn-row--warn .rc-diag-overview__warn-badge { background: var(--rc-surface-2); color: var(--rc-amber); }
+}
+.rc-diag-overview__warn-text {
+  flex: 1;
+  color: var(--rc-text-muted);
+  min-width: 0;
+  word-break: break-word;
+}
+.rc-diag-overview__warn-link {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--rc-accent);
+  text-decoration: underline;
+  font-size: 11px;
+  font-family: inherit;
+}
+.rc-diag-overview__warn-link:hover { opacity: 0.8; }
+.rc-diag-overview__warn-link:focus-visible {
+  outline: 2px solid var(--rc-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Technical details — expandable <details> control */
+.rc-diag-tech-details {
+  margin-top: 12px;
+}
+.rc-diag-tech-details > summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--rc-text-muted);
+  padding: 4px 0;
+  user-select: none;
+  list-style: disclosure-closed;
+}
+.rc-diag-tech-details[open] > summary {
+  list-style: disclosure-open;
+  margin-bottom: 6px;
+}
+.rc-diag-tech-details > summary:focus-visible {
+  outline: 2px solid var(--rc-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+
+/* ============================================================
+   Environment Dashboards Launcher (EDL) Plugin Styles
+   v1.0.0
+   ============================================================ */
+
+/* ── Environment bar ─────────────────────────────────────────── */
+.edl-env-bar {
+  margin-bottom: 14px;
+}
+
+.edl-env-bar__input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.edl-env-bar__input-wrap {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+  align-items: center;
+}
+
+.edl-env-input {
+  flex: 1;
+  font-family: 'Consolas', 'Cascadia Code', monospace;
+  font-size: 13px;
+  letter-spacing: .02em;
+}
+
+/* ── Resolved env summary row (v1.1.0) ───────────────────────── */
+.edl-env-resolved {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 8px;
+  padding: 5px 8px;
+  background: var(--rc-surface-2, var(--rc-surface));
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.edl-env-resolved__label {
+  color: var(--rc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-size: 11px;
+}
+
+.edl-env-resolved__value {
+  font-family: 'Consolas', 'Cascadia Code', monospace;
+  font-size: 12px;
+  color: var(--rc-accent, #3b82d4);
+  font-weight: 600;
+  background: none;
+  padding: 0;
+}
+
+.edl-env-resolved__sep {
+  color: var(--rc-border);
+  margin: 0 2px;
+}
+
+/* ── Param preview line inside dashboard card (v1.1.0) ──────── */
+.edl-param-preview {
+  margin: 6px 0 4px;
+  padding: 4px 8px;
+  background: var(--rc-surface-2, var(--rc-surface));
+  border-left: 2px solid var(--rc-accent, #3b82d4);
+  border-radius: 0 3px 3px 0;
+  font-size: 11px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.edl-param-preview code {
+  font-family: 'Consolas', 'Cascadia Code', monospace;
+  color: var(--rc-text-muted);
+  background: none;
+  padding: 0;
+}
+
+/* ── Recents row ─────────────────────────────────────────────── */
+.edl-recents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.edl-recents__label {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-right: 4px;
+}
+
+.edl-recent-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 12px;
+  border: 1px solid var(--rc-border);
+  background: var(--rc-surface);
+  color: var(--rc-text);
+  font-size: 11px;
+  font-family: 'Consolas', 'Cascadia Code', monospace;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color .12s, border-color .12s;
+}
+
+.edl-recent-chip:hover {
+  background: var(--rc-accent, #3b82d4);
+  color: #fff;
+  border-color: var(--rc-accent, #3b82d4);
+}
+
+.edl-recent-chip:focus-visible {
+  outline: 2px solid var(--rc-accent, #3b82d4);
+  outline-offset: 2px;
+}
+
+.edl-recent-chip--large {
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+.edl-recent-chip--fav {
+  border-color: var(--rc-warning, #f59e0b);
+  color: var(--rc-warning, #f59e0b);
+}
+
+.edl-recent-chip--fav:hover {
+  background: var(--rc-warning, #f59e0b);
+  color: #fff;
+}
+
+.edl-recent-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ── Resolution card ─────────────────────────────────────────── */
+.edl-resolution-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.edl-resolution-card__row {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.edl-resolution-card__fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  flex: 1;
+}
+
+.edl-res-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 100px;
+}
+
+.edl-res-field__label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--rc-text-muted);
+  margin-bottom: 2px;
+}
+
+.edl-res-field__value {
+  font-size: 12px;
+  font-family: 'Consolas', 'Cascadia Code', monospace;
+  color: var(--rc-text);
+  word-break: break-all;
+}
+
+.edl-res-field__value--env {
+  font-weight: 700;
+  color: var(--rc-accent, #3b82d4);
+}
+
+.edl-res-field__value--unknown {
+  color: var(--rc-warning, #f59e0b);
+}
+
+.edl-resolution-card__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.edl-confidence-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.edl-confidence-badge--high {
+  background: rgba(34, 197, 94, .15);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, .3);
+}
+
+.edl-confidence-badge--medium {
+  background: rgba(245, 158, 11, .15);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, .3);
+}
+
+.edl-confidence-badge--low {
+  background: rgba(239, 68, 68, .12);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, .25);
+}
+
+.edl-fav-btn {
+  background: none;
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  color: var(--rc-text-muted);
+  font-size: 16px;
+  padding: 2px 7px;
+  cursor: pointer;
+  transition: color .12s, border-color .12s;
+}
+
+.edl-fav-btn:hover,
+.edl-fav-btn--active {
+  color: var(--rc-warning, #f59e0b);
+  border-color: var(--rc-warning, #f59e0b);
+}
+
+.edl-fav-btn:focus-visible {
+  outline: 2px solid var(--rc-accent, #3b82d4);
+  outline-offset: 2px;
+}
+
+.edl-resolution-card__warning {
+  margin-top: 8px;
+  padding: 7px 10px;
+  background: rgba(245, 158, 11, .10);
+  border: 1px solid rgba(245, 158, 11, .25);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--rc-text);
+}
+
+/* ── Tabs ─────────────────────────────────────────────────────── */
+.edl-tabs {
+  margin-bottom: 10px;
+}
+
+.edl-search-input {
+  max-width: 180px;
+}
+
+/* ── Provider group ──────────────────────────────────────────── */
+.edl-provider-group {
+  margin-bottom: 8px;
+}
+
+/* ── Dashboard card grid ─────────────────────────────────────── */
+.edl-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+@media (max-width: 560px) {
+  .edl-card-grid { grid-template-columns: 1fr; }
+}
+
+/* Single-column when in sidebar-expanded mode */
+body.rc-sidepanel .edl-card-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* ── Dashboard card ──────────────────────────────────────────── */
+.edl-dash-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  padding: 7px 10px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color .12s;
+}
+
+.edl-dash-card:hover {
+  border-color: var(--rc-accent, #3b82d4);
+}
+
+.edl-dash-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.edl-dash-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.edl-dash-card__name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--rc-text);
+}
+
+.edl-dash-card__category {
+  font-size: 10px;
+  color: var(--rc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding-left: 1px;
+}
+
+.edl-dash-card__desc {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  line-height: 1.4;
+}
+
+/* ── Hint text above the card grid ───────────────────────────── */
+.edl-hint {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  margin: 0 0 7px;
+  font-style: italic;
+}
+
+/* ── Note line inside a card (PVC warning etc.) ──────────────── */
+.edl-dash-card__note {
+  font-size: 10px;
+  color: var(--rc-warning, #f59e0b);
+  font-style: italic;
+  margin-top: 2px;
+}
+
+/* ── Provider badges ─────────────────────────────────────────── */
+.edl-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  white-space: nowrap;
+}
+
+.edl-badge--splunk {
+  background: rgba(105, 0, 180, .12);
+  color: #6900b4;
+  border: 1px solid rgba(105, 0, 180, .2);
+}
+
+.edl-badge--grafana {
+  background: rgba(255, 109, 0, .12);
+  color: #c94e00;
+  border: 1px solid rgba(255, 109, 0, .22);
+}
+
+.edl-badge--biit {
+  background: rgba(16, 122, 60, .10);
+  color: #107a3c;
+  border: 1px solid rgba(16, 122, 60, .20);
+}
+
+/* Inline hint (below section header, above card grid) */
+.edl-hint--inline {
+  margin-top: 0;
+  margin-bottom: 6px;
+}
+
+/* ── Help & Docs panel ───────────────────────────────────── */
+.edl-help {
+  padding: 2px 0 12px;
+}
+
+.edl-help__section {
+  padding: 4px 0 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--rc-text);
+}
+
+.edl-help__section p {
+  margin: 0 0 8px;
+}
+
+.edl-help__steps {
+  margin: 6px 0 0 18px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.edl-help__steps li {
+  font-size: 13px;
+}
+
+.edl-help__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.edl-help__table th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--rc-text-muted);
+  padding: 4px 8px 4px 0;
+  border-bottom: 1px solid var(--rc-border);
+}
+
+.edl-help__table td {
+  padding: 5px 8px 5px 0;
+  border-bottom: 1px solid var(--rc-border);
+  vertical-align: top;
+  color: var(--rc-text);
+}
+
+.edl-help__table code {
+  background: var(--rc-bg);
+  border: 1px solid var(--rc-border);
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+/* ── PVC manual-step callout ─────────────────────────────────── */
+.edl-pvc-callout {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  background: rgba(59, 130, 212, .08);
+  border: 1px solid rgba(59, 130, 212, .25);
+  border-radius: 5px;
+  padding: 5px 8px;
+  margin: 2px 0 2px;
+}
+
+.edl-pvc-callout__icon {
+  font-size: 16px;
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+
+.edl-pvc-callout__text {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--rc-text);
+}
+
+.edl-pvc-callout__text code {
+  background: rgba(59, 130, 212, .12);
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+/* ── Parameter list ──────────────────────────────────────────── */
+.edl-param-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.edl-param-item {
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+  align-items: baseline;
+}
+
+.edl-param-item--static    .edl-param-value { color: var(--rc-text-muted); }
+.edl-param-item--environment .edl-param-value { color: var(--rc-accent, #3b82d4); font-weight: 600; font-family: monospace; }
+.edl-param-item--namespace .edl-param-value  { color: var(--rc-success, #16a34a); font-family: monospace; }
+.edl-param-item--cluster   .edl-param-value  { color: var(--rc-text); font-family: monospace; }
+.edl-param-item--region    .edl-param-value  { color: var(--rc-text); }
+.edl-param-item--unknown   .edl-param-value  { color: var(--rc-warning, #f59e0b); }
+.edl-param-item--manual    .edl-param-value  { color: var(--rc-warning, #f59e0b); font-style: italic; }
+
+.edl-param-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--rc-text-muted);
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+.edl-param-value {
+  flex: 1;
+  word-break: break-all;
+}
+
+/* ── Dashboard card actions ──────────────────────────────────── */
+.edl-dash-card__actions {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.edl-url-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.edl-url-details__summary {
+  font-size: 10px;
+  color: var(--rc-text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.edl-url-preview {
+  display: block;
+  font-size: 10px;
+  color: var(--rc-text-muted);
+  word-break: break-all;
+  background: var(--rc-bg);
+  border: 1px solid var(--rc-border);
+  border-radius: 4px;
+  padding: 4px 6px;
+  margin-top: 4px;
+  white-space: pre-wrap;
+}
+
+/* ── Manual inputs section ───────────────────────────────────── */
+.edl-manual-section {
+  border: 1px dashed var(--rc-border);
+  border-radius: 6px;
+  padding: 6px 9px;
+}
+
+.edl-manual-section__summary {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.edl-manual-grid {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.edl-manual-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.edl-manual-field__label {
+  font-size: 11px;
+  color: var(--rc-text);
+  font-weight: 500;
+}
+
+.edl-manual-field__hint {
+  display: block;
+  font-size: 10px;
+  color: var(--rc-text-muted);
+  font-weight: 400;
+}
+
+.edl-manual-input {
+  font-family: 'Consolas', 'Cascadia Code', monospace;
+  font-size: 11px;
+}
+
+/* ── Investigation pack card ─────────────────────────────────── */
+.edl-pack-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color .12s;
+}
+
+.edl-pack-card:hover {
+  border-color: var(--rc-accent, #3b82d4);
+}
+
+.edl-pack-card__header {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.edl-pack-card__icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.edl-pack-card__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rc-text);
+}
+
+.edl-pack-card__desc {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+.edl-pack-card__dashboards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+/* ── Favorites panel ─────────────────────────────────────────── */
+.edl-fav-entry {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.edl-fav-remove {
+  background: none;
+  border: none;
+  color: var(--rc-text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: color .12s;
+}
+
+.edl-fav-remove:hover {
+  color: var(--rc-danger, #dc2626);
+}
+
+.edl-fav-remove:focus-visible {
+  outline: 2px solid var(--rc-accent, #3b82d4);
+}

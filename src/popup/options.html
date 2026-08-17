@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ReplyCators — Options</title>
+  <link rel="stylesheet" href="../assets/styles/platform.css" />
+  <style>
+    body { background: var(--rc-bg); color: var(--rc-text); padding: 32px; max-width: 640px; margin: 0 auto; }
+    h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { color: var(--rc-text-muted); font-size: 13px; margin-bottom: 32px; }
+    .save-row { margin-top: 24px; }
+    #save-status { display: inline-block; margin-left: 12px; font-size: 12px; color: var(--rc-green); }
+  </style>
+</head>
+<body data-theme="dark">
+
+  <h1>ReplyCators — Options</h1>
+  <p class="subtitle">Platform settings are managed via the dashboard. Open ReplyCators → Settings.</p>
+
+  <div class="rc-settings-group">
+    <div class="rc-settings-group__title">Platform</div>
+    <div class="rc-settings-row">
+      <div class="rc-settings-row__info">
+        <span class="rc-settings-row__label">Theme</span>
+        <span class="rc-settings-row__desc">Dark or light mode</span>
+      </div>
+      <div class="rc-settings-row__control">
+        <select id="opt-theme" class="rc-input rc-input--sm">
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="save-row">
+    <button id="opt-save" class="rc-btn rc-btn--primary">Save</button>
+    <span id="save-status"></span>
+  </div>
+
+  <script>
+    const themeSelect = document.getElementById('opt-theme');
+    const saveBtn = document.getElementById('opt-save');
+    const saveStatus = document.getElementById('save-status');
+
+    // Load saved settings
+    chrome.storage.sync.get(['rc_theme'], (result) => {
+      if (result.rc_theme) {
+        themeSelect.value = result.rc_theme;
+        document.body.dataset.theme = result.rc_theme;
+      }
+    });
+
+    themeSelect.addEventListener('change', () => {
+      document.body.dataset.theme = themeSelect.value;
+    });
+
+    saveBtn.addEventListener('click', () => {
+      chrome.storage.sync.set({ rc_theme: themeSelect.value }, () => {
+        saveStatus.textContent = '✓ Saved!';
+        setTimeout(() => { saveStatus.textContent = ''; }, 2000);
+      });
+    });
+  </script>
+</body>
+</html>

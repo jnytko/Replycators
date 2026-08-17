@@ -1,0 +1,2012 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReplyCators</title>
+  <link rel="stylesheet" href="styles/platform.css" />
+  <link rel="stylesheet" href="styles/dashboard.css" />
+  <!-- Icon System -->
+  <script src="plugins/shared/icon-helper.js"></script>
+</head>
+<body class="rc-app" data-theme="ibm-blue">
+
+  <!-- ── App Shell ───────────────────────────────────────────── -->
+  <div class="rc-shell">
+
+    <!-- ── Sidebar ──────────────────────────────────────────── -->
+    <aside class="rc-sidebar" id="rc-sidebar">
+      <!-- Resize handle — draggable strip on right edge (shown in Side Panel + Popup Window mode only) -->
+      <div class="rc-sidebar-resize-handle" id="rc-sidebar-resize-handle" title="Drag to resize sidebar" aria-hidden="true"></div>
+      <div class="rc-sidebar__brand">
+        <img src="assets/icons/icon48.png" class="rc-sidebar__logo" alt="ReplyCators" />
+        <div class="rc-sidebar__brand-text">
+          <span class="rc-sidebar__name">ReplyCators</span>
+          <span class="rc-sidebar__version" id="rc-platform-version">v1.45.6</span>
+        </div>
+      </div>
+
+      <div class="rc-sidebar__search">
+        <input type="text" id="rc-search" placeholder="Search plugins..."
+               class="rc-search-input"
+               title="Search plugins by name, category, or tag" />
+      </div>
+
+      <nav class="rc-nav" id="rc-nav" aria-label="Platform and plugin navigation">
+
+        <!-- ── CORE SECTION ── Home and top-level application destination ──────
+             Dashboard is the single Core item: it is the "Home" view.
+             Users should reach it first before plugins and utilities.        -->
+        <button class="rc-nav__item rc-nav__item--active" data-view="dashboard"
+                title="Go to the main Dashboard overview">
+          <span class="rc-nav__icon" data-icon="navigation.home" aria-hidden="true" role="presentation"></span><span class="rc-nav__label">Dashboard</span>
+        </button>
+
+        <!-- ── PLUGINS SECTION ── Plugin management and plugin destinations ──
+             Placed directly after Core so plugin functionality is prominent
+             and easy to reach.
+
+             Plugin Manager and Marketplace are here because their purpose is
+             directly tied to the plugin ecosystem, not to platform settings.
+
+             The collapsible Plugins entries follow Plugin Manager and
+             Marketplace. Plugin nav buttons are injected dynamically by
+             applyPluginVisibility() — do NOT add static items inside
+             #rc-plugin-nav-items; they create ghost entries for disabled
+             plugins and duplicates when JS inserts the same entries.
+
+             The toggle header collapses/expands #rc-plugin-nav-items.
+             State is persisted to chrome.storage.local and restored on
+             startup.                                                          -->
+        <div class="rc-plugins-section-divider"></div>
+        <div class="rc-nav__section-title" aria-hidden="true">Plugins</div>
+
+        <button class="rc-nav__item" data-view="plugins"
+                title="View, enable, disable and configure installed plugins">
+          <span class="rc-nav__icon" data-icon="navigation.plugins" aria-hidden="true" role="presentation"></span><span class="rc-nav__label">Plugin Manager</span>
+          <span class="rc-nav__badge" id="rc-plugin-count">0</span>
+        </button>
+
+        <button class="rc-nav__item" data-view="marketplace"
+                title="Browse plugins available for future installation">
+          <span class="rc-nav__icon" data-icon="navigation.marketplace" aria-hidden="true" role="presentation"></span><span class="rc-nav__label">Marketplace</span>
+        </button>
+
+        <button class="rc-plugins-section-toggle" id="rc-plugins-section-toggle"
+                title="Collapse or expand the installed plugin destinations"
+                aria-expanded="true" aria-controls="rc-plugin-nav-items">
+          <span class="rc-nav__icon rc-plugins-section-toggle__icon">›</span>
+          <span class="rc-nav__label rc-plugins-section-toggle__label">Installed</span>
+        </button>
+        <div id="rc-plugin-nav-items">
+          <!-- populated by JS on DOMContentLoaded -->
+        </div>
+
+        <!-- ── SPACER — pushes the Utility section toward the bottom ──────────
+             flex:1 fills available space between Plugins and Utility.
+             When the nav overflows, the spacer collapses to its min-height
+             and the existing overflow-y:auto scrolling takes over so nothing
+             is ever unreachable.                                               -->
+        <div class="rc-nav__spacer" aria-hidden="true"></div>
+
+        <!-- ── UTILITY SECTION ── Global configuration, monitoring, and help ──
+             Placed at the bottom so administrative and support actions are
+             separated from primary plugin work.
+
+             Order within Utility:
+               1. Options           — global configuration
+               2. Send Feedback     — support email handoff
+               3. Notifications     — notifications and activity log
+               4. Maintenance Center — diagnostics and backup/restore
+               5. Documentation     — help and reference -->
+        <div class="rc-nav__divider" role="separator" aria-hidden="true"></div>
+        <div class="rc-nav__section-title" aria-hidden="true">Utility</div>
+
+        <button class="rc-nav__item" data-view="settings"
+                title="Configure platform appearance, accessibility, notifications, and plugin options">
+          <span class="rc-nav__icon" data-icon="navigation.settings" aria-hidden="true" role="presentation"></span><span class="rc-nav__label">Options</span>
+        </button>
+
+        <button class="rc-nav__item" data-view="feedback"
+                title="Prepare a feedback email draft for the ReplyCators support recipients">
+          <span class="rc-nav__icon" data-icon="utility.sendFeedback" aria-hidden="true" role="presentation"></span><span class="rc-nav__label">Send Feedback</span>
+        </button>
+
+        <button class="rc-nav__item" data-view="notifications"
+                title="View all platform and plugin notifications">
+          <span class="rc-nav__icon" data-icon="navigation.notifications" aria-hidden="true" role="presentation"></span><span class="rc-nav__label">Notifications</span>
+          <span class="rc-nav__badge rc-nav__badge--alert" id="rc-notif-count" style="display:none;">0</span>
+        </button>
+
+        <button class="rc-nav__item" data-view="maintenance"
+                title="Platform diagnostics, health checks, cache inspection, and backup &amp; restore">
+          <span class="rc-nav__icon" data-icon="utility.toolbox" aria-hidden="true" role="presentation"></span><span class="rc-nav__label">Maintenance Center</span>
+        </button>
+
+        <button class="rc-nav__item" data-view="documentation"
+                title="Open Help & Documentation for ReplyCators and its plugins">
+          <span class="rc-nav__icon" data-icon="navigation.documentation" aria-hidden="true" role="presentation"></span><span class="rc-nav__label">Documentation</span>
+        </button>
+
+      </nav>
+
+      <div class="rc-sidebar__footer">
+        <button class="rc-theme-toggle" id="rc-theme-toggle"
+                title="Toggle between dark and light mode"
+                aria-label="Toggle theme">
+          <span id="rc-theme-icon" data-icon="appearance.themeLight" aria-hidden="true" role="presentation"></span>
+        </button>
+        <span class="rc-sidebar__footer-text">ReplyCators Platform</span>
+      </div>
+    </aside>
+
+    <!-- ── Main Content ──────────────────────────────────────── -->
+    <main class="rc-main" id="rc-main">
+
+      <header class="rc-topbar">
+        <button class="rc-sidebar-toggle" id="rc-sidebar-toggle"
+                 title="Collapse or expand the sidebar"
+                 aria-label="Toggle sidebar navigation"><span aria-hidden="true" role="presentation">☰</span></button>
+        <div class="rc-topbar__breadcrumb" id="rc-breadcrumb">Dashboard</div>
+        <div class="rc-topbar__actions">
+          <button class="rc-topbar__action" id="rc-refresh-btn"
+                  title="Refresh plugin statistics and dashboard widgets"
+                  aria-label="Refresh dashboard"><span aria-hidden="true" role="presentation">↺</span></button>
+          <button class="rc-topbar__action rc-topbar__action--sidepanel" id="rc-sidepanel-btn"
+                  title="Open ReplyCators in the browser Side Panel - stays visible while you browse"
+                  aria-label="Open in Side Panel">
+            <span aria-hidden="true" role="presentation">⊟</span>
+          </button>
+          <!-- RC-UX012: Return to Popup button — visible only inside the Side Panel.
+               Sends RC_OPEN_POPUP to the background worker which calls
+               chrome.action.openPopup(). The panel closes naturally when the
+               popup opens. Hidden in popup mode via CSS (display:none by default,
+               shown only when body.rc-sidepanel is present). -->
+          <button class="rc-topbar__action rc-topbar__action--popup" id="rc-popup-btn"
+                  title="Open ReplyCators as a Popup overlay"
+                  aria-label="Switch to Popup mode">
+            <span aria-hidden="true" role="presentation">⤢</span>
+          </button>
+          <button class="rc-notif-indicator" id="rc-notif-indicator"
+                  title="Notifications - click to view all platform and plugin alerts"
+                  aria-label="Notifications">
+            <span data-icon="navigation.notifications" aria-hidden="true" role="presentation"></span><span class="rc-notif-dot" id="rc-notif-dot" style="display:none;"></span>
+          </button>
+        </div>
+      </header>
+
+      <div class="rc-view-container" id="rc-view-container">
+
+        <!-- DASHBOARD VIEW -->
+        <div class="rc-view rc-view--active" id="view-dashboard">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Dashboard</h1>
+            <p class="rc-view__subtitle">ReplyCators Platform Overview</p>
+          </div>
+
+          <!-- ── SECTION 1: Quick Actions ───────────────────────── -->
+          <!-- Placed first so high-frequency actions are immediately accessible
+               without scrolling, regardless of how many plugin widgets are installed. -->
+          <section class="rc-quick-actions rc-dashboard-section" aria-label="Quick Actions" id="rc-quick-actions-section">
+            <div class="rc-section-header" id="rc-quick-actions-heading">Quick Actions</div>
+            <div class="rc-quick-actions__grid">
+              <!-- Primary plugin actions — data-plugin-action hides these when the plugin is disabled -->
+              <button class="rc-action-card" data-view="plugin-salesforce"
+                      data-plugin-action="com.replycators.salesforce-extractor"
+                      title="Navigate to the Salesforce Case Extractor to extract case data">
+                <span class="rc-action-card__icon" aria-hidden="true"><span data-icon="plugins.salesforceCaseExtractor"></span></span>
+                <span class="rc-action-card__label">Extract SF Case</span>
+              </button>
+              <button class="rc-action-card" data-view="plugin-tab-search"
+                      data-plugin-action="com.replycators.tab-search"
+                      title="Open Tab Search to find and manage open browser tabs">
+                <span class="rc-action-card__icon" aria-hidden="true"><span data-icon="plugins.tabSearch"></span></span>
+                <span class="rc-action-card__label">Search Tabs</span>
+              </button>
+              <button class="rc-action-card" data-view="plugin-workspace-starter"
+                      data-plugin-action="com.replycators.workspace-starter"
+                      title="Open Workspace Starter to launch your daily workspace">
+                <span class="rc-action-card__icon" aria-hidden="true"><span data-icon="plugins.workspaceStarter"></span></span>
+                <span class="rc-action-card__label">Launch Workspace</span>
+              </button>
+              <button class="rc-action-card" data-view="plugin-apptio-docs-finder"
+                      data-plugin-action="com.replycators.apptio-docs-finder"
+                      title="Search IBM Apptio documentation instantly">
+                <span class="rc-action-card__icon" aria-hidden="true"><span data-icon="plugins.apptioDocsFinder"></span></span>
+                <span class="rc-action-card__label">Search Docs</span>
+              </button>
+              <button class="rc-action-card" data-view="plugin-env-dashboards"
+                      data-plugin-action="com.replycators.env-dashboards"
+                      title="Launch Splunk and Grafana dashboards for any customer environment">
+                <span class="rc-action-card__icon" aria-hidden="true"><span data-icon="plugins.envDashboards"></span></span>
+                <span class="rc-action-card__label">Open Dashboards</span>
+              </button>
+              <button class="rc-action-card" data-view="plugin-edge-bookmarks"
+                      data-plugin-action="com.replycators.edge-bookmark-finder"
+                      title="Search your Edge bookmarks instantly">
+                <span class="rc-action-card__icon" aria-hidden="true"><span data-icon="plugins.edgeBookmarkFinder"></span></span>
+                <span class="rc-action-card__label">Find Bookmark</span>
+              </button>
+              <!-- Platform management actions -->
+              <button class="rc-action-card" data-view="settings"
+                      title="Configure platform appearance, accessibility, notifications, and plugin options">
+                <span class="rc-action-card__icon" aria-hidden="true"><span data-icon="navigation.settings"></span></span>
+                <span class="rc-action-card__label">Options</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- ── SECTION 2: Plugin Functions ───────────────────── -->
+          <!-- Primary plugin widget grid — the main focus of the Dashboard.
+               Order is governed by dashboardOrder[] / rc:session:dashboard-order. -->
+          <section class="rc-dashboard-section" aria-label="Plugin Functions" id="rc-widgets-section">
+            <div class="rc-section-header">Plugin Functions</div>
+            <div class="rc-dashboard-widgets" id="rc-dashboard-widgets">
+
+            <!-- SVG launch icon reused across all widget cards -->
+            <!-- Salesforce widget — data-plugin-widget used by applyPluginVisibility() -->
+            <div class="rc-widget-card" data-plugin-widget="com.replycators.salesforce-extractor">
+              <div class="rc-widget-card__header">
+                <div class="rc-widget-card__title-group">
+                  <span class="rc-widget-card__title"><span data-icon="plugins.salesforceCaseExtractor" aria-hidden="true" class="rc-widget-icon"></span> Salesforce Case Extractor</span>
+                  <button class="rc-doc-icon" data-doc-view="plugin-salesforce"
+                          title="View Salesforce Case Extractor documentation" aria-label="View Salesforce Case Extractor documentation">
+                    <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+                  </button>
+                </div>
+                <button class="rc-widget-card__open" data-view="plugin-salesforce"
+                        title="Open Salesforce Case Extractor" aria-label="Open Salesforce Case Extractor">
+                  <span aria-hidden="true" style="display:inline-block;font-size:12px;line-height:1;">↗</span>
+                </button>
+              </div>
+              <div class="rc-widget-card__body" style="padding:12px 14px 14px;">
+                <p class="rc-muted" style="font-size:12px;margin-bottom:8px;">Extract case data from Salesforce tabs.</p>
+                <div id="sf-widget-status" style="font-size:11px;color:var(--rc-text-muted);margin-bottom:10px;min-height:14px;">Checking for active case…</div>
+                <button id="sf-widget-extract-btn" class="rc-btn rc-btn--primary rc-btn--sm"
+                        title="Extract case data from the currently active Salesforce Case tab">Extract</button>
+              </div>
+            </div>
+
+            <!-- Cloudability widget — data-plugin-widget used by applyPluginVisibility() -->
+            <div class="rc-widget-card" data-plugin-widget="com.replycators.cloudability-orgid">
+              <div class="rc-widget-card__header">
+                <div class="rc-widget-card__title-group">
+                  <span class="rc-widget-card__title"><span data-icon="plugins.cloudabilityOrgId" aria-hidden="true" class="rc-widget-icon"></span> Cloudability OrgID</span>
+                  <button class="rc-doc-icon" data-doc-view="plugin-cloudability-orgid"
+                          title="View Cloudability OrgID documentation" aria-label="View Cloudability OrgID documentation">
+                    <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+                  </button>
+                </div>
+                <button class="rc-widget-card__open" data-view="plugin-cloudability-orgid"
+                        title="Open Cloudability OrgID" aria-label="Open Cloudability OrgID">
+                  <span aria-hidden="true" style="display:inline-block;font-size:12px;line-height:1;">↗</span>
+                </button>
+              </div>
+              <div class="rc-widget-card__body" style="padding:12px 14px 14px;">
+                <p class="rc-muted" style="font-size:11px;margin-bottom:2px;">Organization</p>
+                <div id="cld-widget-orgname" style="font-size:12px;color:var(--rc-text);margin-bottom:10px;min-height:16px;font-weight:500;">-</div>
+                <p class="rc-muted" style="font-size:11px;margin-bottom:4px;">OrgID</p>
+                <div id="cld-widget-orgid" class="cld-orgid-display cld-orgid-display--empty"
+                     title="The automatically retrieved Cloudability Organisation ID">-</div>
+                <div style="display:flex;gap:6px;margin-top:10px;">
+                  <button id="cld-widget-copy" class="rc-btn rc-btn--secondary rc-btn--sm" disabled
+                          title="Copy the Cloudability Organisation ID to the clipboard">Copy</button>
+                  <button id="cld-widget-refresh" class="rc-btn rc-btn--secondary rc-btn--sm"
+                          title="Manually re-fetch the Cloudability Organisation ID. Requires an open Cloudability tab.">Refresh</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Apptio Planning Upgrade Calculator widget — DEFAULT ORDER #3 -->
+            <div class="rc-widget-card" data-plugin-widget="com.replycators.apptio-planning-upgrade-calculator">
+              <div class="rc-widget-card__header">
+                <div class="rc-widget-card__title-group">
+                  <span class="rc-widget-card__title"><span data-icon="plugins.apptioUpgradeCalculator" aria-hidden="true" class="rc-widget-icon"></span> Apptio Planning Upgrade Calc</span>
+                  <button class="rc-doc-icon" data-doc-view="plugin-apptio-upgrade-calc"
+                          title="View Apptio Planning Upgrade Calculator documentation" aria-label="View Apptio Planning Upgrade Calculator documentation">
+                    <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+                  </button>
+                </div>
+                <button class="rc-widget-card__open" data-view="plugin-apptio-upgrade-calc"
+                        title="Open Apptio Planning Upgrade Calculator" aria-label="Open Apptio Planning Upgrade Calculator">
+                  <span aria-hidden="true" style="display:inline-block;font-size:12px;line-height:1;">↗</span>
+                </button>
+              </div>
+              <div class="rc-widget-card__body" style="padding:12px 14px 14px;">
+                <p class="rc-muted" style="font-size:12px;margin-bottom:10px;">Calculate Apptio Planning upgrade dates for customers.</p>
+                <button id="auc-widget-open-btn" class="rc-btn rc-btn--primary rc-btn--sm"
+                        title="Open the Apptio Planning Upgrade Calculator to calculate upgrade dates">Open Calculator</button>
+              </div>
+            </div>
+
+            <!-- Edge Bookmark Finder widget — DEFAULT ORDER #5 -->
+            <div class="rc-widget-card" data-plugin-widget="com.replycators.edge-bookmark-finder">
+              <div class="rc-widget-card__header">
+                <div class="rc-widget-card__title-group">
+                  <span class="rc-widget-card__title"><span data-icon="plugins.edgeBookmarkFinder" aria-hidden="true" class="rc-widget-icon"></span> Edge Bookmark Finder</span>
+                  <button class="rc-doc-icon" data-doc-view="plugin-edge-bookmarks"
+                          title="View Edge Bookmark Finder documentation" aria-label="View Edge Bookmark Finder documentation">
+                    <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+                  </button>
+                </div>
+                <button class="rc-widget-card__open" data-view="plugin-edge-bookmarks"
+                        title="Open Edge Bookmark Finder" aria-label="Open Edge Bookmark Finder">
+                  <span aria-hidden="true" style="display:inline-block;font-size:12px;line-height:1;">↗</span>
+                </button>
+              </div>
+              <div class="rc-widget-card__body" style="padding:12px 14px 14px;">
+                <p class="rc-muted" style="font-size:12px;margin-bottom:10px;">Search your Edge bookmarks instantly.</p>
+                <button id="bm-widget-search-btn" class="rc-btn rc-btn--primary rc-btn--sm"
+                        title="Open Edge Bookmark Finder to search your bookmarks">Search Bookmarks</button>
+              </div>
+            </div>
+
+            <!-- Workspace Starter widget — DEFAULT ORDER #7 -->
+            <div class="rc-widget-card" data-plugin-widget="com.replycators.workspace-starter">
+              <div class="rc-widget-card__header">
+                <div class="rc-widget-card__title-group">
+                  <span class="rc-widget-card__title"><span data-icon="plugins.workspaceStarter" aria-hidden="true" class="rc-widget-icon"></span> Workspace Starter</span>
+                  <button class="rc-doc-icon" data-doc-view="plugin-workspace-starter"
+                          title="View Workspace Starter documentation" aria-label="View Workspace Starter documentation">
+                    <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+                  </button>
+                </div>
+                <button class="rc-widget-card__open" data-view="plugin-workspace-starter"
+                        title="Open Workspace Starter" aria-label="Open Workspace Starter">
+                  <span aria-hidden="true" style="display:inline-block;font-size:12px;line-height:1;">↗</span>
+                </button>
+              </div>
+              <div class="rc-widget-card__body" style="padding:12px 14px 12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                  <span style="font-size:11px;color:var(--rc-text-muted);">Profiles: <strong id="ws-widget-count">0</strong></span>
+                  <span style="font-size:11px;color:var(--rc-text-muted);">Last: <span id="ws-widget-last">None yet</span></span>
+                </div>
+                <!-- Favorites quick-launch -->
+                <div id="ws-widget-favorites" style="margin-bottom:8px;"></div>
+                <div style="display:flex;gap:6px;">
+                  <button id="ws-widget-launch-btn" class="rc-btn rc-btn--primary rc-btn--sm" disabled
+                          title="Re-launch the last-used workspace profile">&#9654; Re-launch Last</button>
+                  <button id="ws-widget-open-btn" class="rc-btn rc-btn--secondary rc-btn--sm"
+                          title="Open Workspace Starter">Open</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Snake widget — DEFAULT ORDER #8 (immediately before Example Plugin) -->
+            <div class="rc-widget-card" data-plugin-widget="com.replycators.snake">
+              <div class="rc-widget-card__header">
+                <div class="rc-widget-card__title-group">
+                  <span class="rc-widget-card__title"><span data-icon="plugins.snake" aria-hidden="true" class="rc-widget-icon"></span> Snake</span>
+                  <button class="rc-doc-icon" data-doc-view="plugin-snake"
+                          title="View Snake documentation" aria-label="View Snake documentation">
+                    <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+                  </button>
+                </div>
+                <button class="rc-widget-card__open" data-view="plugin-snake"
+                        title="Open Snake game" aria-label="Open Snake">
+                  <span aria-hidden="true" style="display:inline-block;font-size:12px;line-height:1;">↗</span>
+                </button>
+              </div>
+              <div class="rc-widget-card__body snk-widget-body">
+                <div class="snk-widget-preview">▓ ▓ ▓ SNAKE ▓ ▓ ▓</div>
+                <p class="snk-widget-hi">High Score: <strong id="snk-widget-hi-val">0</strong></p>
+                <button id="snk-widget-play-btn" class="rc-btn rc-btn--primary rc-btn--sm"
+                        title="Open the classic retro Snake game">Play Snake</button>
+              </div>
+            </div>
+
+            <!-- Tab Search widget -->
+            <div class="rc-widget-card" data-plugin-widget="com.replycators.tab-search">
+              <div class="rc-widget-card__header">
+                <div class="rc-widget-card__title-group">
+                  <span class="rc-widget-card__title"><span data-icon="plugins.tabSearch" aria-hidden="true" class="rc-widget-icon"></span> Tab Search</span>
+                  <button class="rc-doc-icon" data-doc-view="plugin-tab-search"
+                          title="View Tab Search documentation" aria-label="View Tab Search documentation">
+                    <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+                  </button>
+                </div>
+                <button class="rc-widget-card__open" data-view="plugin-tab-search"
+                        title="Open Tab Search" aria-label="Open Tab Search">
+                  <span aria-hidden="true" style="display:inline-block;font-size:12px;line-height:1;">↗</span>
+                </button>
+              </div>
+              <div class="rc-widget-card__body" style="padding:12px 14px 14px;">
+                <p class="rc-muted" style="font-size:12px;margin-bottom:10px;">Search and manage all open browser tabs.</p>
+                <button id="ts-widget-open-btn" class="rc-btn rc-btn--primary rc-btn--sm"
+                        title="Open Tab Search to filter, navigate, and manage open tabs">Search Tabs</button>
+              </div>
+            </div>
+
+            <!-- Apptio Documentation Finder widget -->
+            <div class="rc-widget-card" data-plugin-widget="com.replycators.apptio-docs-finder">
+              <div class="rc-widget-card__header">
+                <div class="rc-widget-card__title-group">
+                  <span class="rc-widget-card__title"><span data-icon="plugins.apptioDocsFinder" aria-hidden="true" class="rc-widget-icon"></span> Apptio Docs Finder</span>
+                  <button class="rc-doc-icon" data-doc-view="plugin-apptio-docs-finder"
+                          title="View Apptio Documentation Finder documentation" aria-label="View Apptio Documentation Finder documentation">
+                    <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+                  </button>
+                </div>
+                <button class="rc-widget-card__open" data-view="plugin-apptio-docs-finder"
+                        title="Open Apptio Documentation Finder" aria-label="Open Apptio Documentation Finder">
+                  <span aria-hidden="true" style="display:inline-block;font-size:12px;line-height:1;">↗</span>
+                </button>
+              </div>
+              <div class="rc-widget-card__body" style="padding:12px 14px 14px;">
+                <p class="rc-muted" style="font-size:12px;margin-bottom:10px;">Search IBM Apptio documentation instantly.</p>
+                <button id="adf-widget-open-btn" class="rc-btn rc-btn--primary rc-btn--sm"
+                        title="Open Apptio Documentation Finder to search IBM Apptio documentation">Search Docs</button>
+              </div>
+            </div>
+
+            <!-- Env Dashboards Launcher widget -->
+            <div class="rc-widget-card" data-plugin-widget="com.replycators.env-dashboards">
+              <div class="rc-widget-card__header">
+                <div class="rc-widget-card__title-group">
+                  <span class="rc-widget-card__title"><span data-icon="plugins.envDashboards" aria-hidden="true" class="rc-widget-icon"></span> Env Dashboards Launcher</span>
+                  <button class="rc-doc-icon" data-doc-view="plugin-env-dashboards"
+                          title="View Environment Dashboards Launcher documentation" aria-label="View Environment Dashboards Launcher documentation">
+                    <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+                  </button>
+                </div>
+                <button class="rc-widget-card__open" id="edl-widget-open-btn" data-view="plugin-env-dashboards"
+                        title="Open Environment Dashboards Launcher" aria-label="Open Environment Dashboards Launcher">
+                  <span aria-hidden="true" style="display:inline-block;font-size:12px;line-height:1;">↗</span>
+                </button>
+              </div>
+              <div class="rc-widget-card__body" style="padding:12px 14px 14px;">
+                <p style="margin:0 0 6px;font-size:12px;color:var(--rc-text-muted);">
+                  Launch Splunk &amp; Grafana dashboards instantly.
+                </p>
+                <div id="edl-widget-last-env" style="font-size:12px;margin-bottom:8px;"></div>
+                <button id="edl-widget-launch-btn" class="rc-btn rc-btn--primary rc-btn--sm"
+                        title="Open Environment Dashboards Launcher">Open</button>
+              </div>
+            </div>
+
+            <!-- Example Plugin widget — DEFAULT ORDER last (always last by default) -->
+            <div class="rc-widget-card" data-plugin-widget="com.replycators.example-plugin">
+              <div class="rc-widget-card__header">
+                <div class="rc-widget-card__title-group">
+                  <span class="rc-widget-card__title"><span data-icon="plugins.examplePlugin" aria-hidden="true" class="rc-widget-icon"></span> Example Plugin</span>
+                  <button class="rc-doc-icon" data-doc-view="plugin-example"
+                          title="View Example Plugin documentation" aria-label="View Example Plugin documentation">
+                    <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+                  </button>
+                </div>
+                <button class="rc-widget-card__open" data-view="plugin-example"
+                        title="Open Example Plugin" aria-label="Open Example Plugin">
+                  <span aria-hidden="true" style="display:inline-block;font-size:12px;line-height:1;">↗</span>
+                </button>
+              </div>
+              <div class="rc-widget-card__body" style="padding:12px 14px 14px;">
+                <p class="rc-muted" style="font-size:12px;margin-bottom:12px;">AI Plugin Kit baseline. Create from scratch, use as a template, or migrate an existing extension.</p>
+                <button id="ex-widget-open-btn" class="rc-btn rc-btn--secondary rc-btn--sm"
+                        title="Open the Example Plugin reference implementation">Open Plugin</button>
+              </div>
+            </div>
+
+            </div><!-- /rc-dashboard-widgets -->
+            <!-- Empty state — shown by applyPluginVisibility() when all plugins disabled -->
+            <div class="rc-widgets-empty-state" id="rc-widgets-empty-state"
+                 aria-live="polite">
+              No plugins are currently enabled. Open
+              <button class="rc-btn rc-btn--ghost rc-btn--xs rc-action-card"
+                      data-view="plugins"
+                      title="Open Plugin Manager" style="display:inline-flex;vertical-align:middle;padding:3px 8px;">Plugin Manager</button>
+              to enable plugins.
+            </div>
+          </section><!-- /rc-widgets-section -->
+
+          <!-- ── SECTION 3: Platform Status (secondary) ────────── -->
+          <!-- Plugin counts and error state appear below primary plugin content.
+               Errors (count > 0) remain visually prominent via red accent.
+               This section is secondary — it informs but does not dominate. -->
+          <section class="rc-dashboard-section rc-dashboard-section--secondary" aria-label="Platform Status" id="rc-status-section">
+            <div class="rc-section-header rc-section-header--secondary">Platform Status</div>
+            <div class="rc-stats-row">
+              <div class="rc-stat-card"
+                   title="Total number of installed plugins">
+                <div class="rc-stat-card__value" id="stat-total-plugins">3</div>
+                <div class="rc-stat-card__label">Total Plugins</div>
+              </div>
+              <div class="rc-stat-card rc-stat-card--green"
+                   title="Plugins currently enabled and running">
+                <div class="rc-stat-card__value" id="stat-active-plugins">3</div>
+                <div class="rc-stat-card__label">Active</div>
+              </div>
+              <div class="rc-stat-card rc-stat-card--amber"
+                   title="Plugins that are installed but disabled">
+                <div class="rc-stat-card__value" id="stat-inactive-plugins">0</div>
+                <div class="rc-stat-card__label">Inactive</div>
+              </div>
+              <div class="rc-stat-card rc-stat-card--red"
+                   title="Plugins that encountered an error during load or execution">
+                <div class="rc-stat-card__value" id="stat-error-plugins">0</div>
+                <div class="rc-stat-card__label">Errors</div>
+              </div>
+            </div>
+          </section><!-- /rc-status-section -->
+
+        </div><!-- /view-dashboard -->
+
+        <!-- PLUGIN MANAGER VIEW -->
+        <div class="rc-view" id="view-plugins">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Plugin Manager</h1>
+            <p class="rc-view__subtitle">Manage installed plugins</p>
+          </div>
+          <!-- RC-UX005: Plugin Manager filter bar — status + category filters -->
+          <div class="rc-pm-filter-bar" id="rc-pm-filter-bar">
+            <input type="text" id="rc-pm-search" class="rc-input rc-input--sm rc-pm-search"
+                   placeholder="Filter plugins…"
+                   title="Filter plugins by name, description, or tag (case-insensitive)" />
+            <select id="rc-pm-status-filter" class="rc-input rc-input--sm"
+                    title="Filter by plugin status: All, Active (enabled), or Inactive (disabled)">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <select id="rc-pm-category-filter" class="rc-input rc-input--sm"
+                    title="Filter by plugin category">
+              <option value="">All Categories</option>
+              <option value="apptione">ApptioOne / Costing, Billing &amp; EBM</option>
+              <option value="planning">Apptio Planning</option>
+              <option value="apptio-bi">Apptio BI</option>
+              <option value="frontdoor">Apptio Frontdoor</option>
+              <option value="dlf">Datalink Financials (DLF)</option>
+              <option value="dlc">Datalink Classic (DLC)</option>
+              <option value="cloudability">IBM Cloudability</option>
+              <option value="cloud-cost">Cloud Cost Management</option>
+              <option value="targetprocess">IBM Targetprocess</option>
+              <option value="adm">Automated Data Management (ADM)</option>
+              <option value="benchmarking">Apptio Benchmarking</option>
+              <option value="digital-fuel">Digital Fuel</option>
+              <option value="security">Security</option>
+              <option value="upgrades">Upgrades &amp; Maintenance</option>
+              <option value="general">General / Cross-Product</option>
+            </select>
+            <span class="rc-pm-count" id="rc-pm-count" title="Number of plugins matching the current filters"></span>
+          </div>
+          <div class="rc-plugin-grid" id="rc-plugin-grid"></div>
+        </div>
+
+        <!-- MARKETPLACE -->
+        <div class="rc-view" id="view-marketplace">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Plugin Marketplace</h1>
+            <p class="rc-view__subtitle">Discover and install plugins</p>
+          </div>
+          <div class="rc-marketplace-grid" id="rc-marketplace-grid"></div>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div class="rc-view" id="view-notifications">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Notifications</h1>
+            <p class="rc-view__subtitle">Notifications and activity log</p>
+          </div>
+          <div class="rc-unified-tabs" role="tablist" aria-label="Notifications center sections">
+            <button id="rc-center-tab-notifications" class="rc-btn rc-btn--primary rc-btn--sm" type="button" role="tab" aria-selected="true" aria-controls="rc-center-panel-notifications">Notifications</button>
+            <button id="rc-center-tab-activity" class="rc-btn rc-btn--ghost rc-btn--sm" type="button" role="tab" aria-selected="false" aria-controls="rc-center-panel-activity">Activity</button>
+          </div>
+          <div id="rc-center-panel-notifications" role="tabpanel" aria-labelledby="rc-center-tab-notifications">
+            <div class="rc-ops-section-header">
+              <span class="rc-ops-section-header__label">Recent</span>
+              <div style="display:flex;gap:6px;">
+                <button id="rc-notif-clear-all" class="rc-btn rc-btn--ghost rc-btn--sm"
+                        title="Remove all notifications from the history list">Clear All</button>
+                <button id="rc-notif-mark-read" class="rc-btn rc-btn--ghost rc-btn--sm"
+                        title="Mark all notifications as read">Mark All Read</button>
+              </div>
+            </div>
+            <div class="rc-notif-list" id="rc-notif-list">
+              <div class="rc-notif-empty">No notifications yet.</div>
+            </div>
+          </div>
+          <div id="rc-center-panel-activity" role="tabpanel" aria-labelledby="rc-center-tab-activity" hidden>
+            <div class="rc-ops-section-header">
+              <span class="rc-ops-section-header__label">Log</span>
+              <div id="rc-activity-count" class="rc-ops-section-header__count" aria-live="polite"></div>
+            </div>
+            <div class="rc-activity-toolbar">
+              <select id="activity-log-level" class="rc-input rc-input--sm"
+                      title="Filter log entries by severity level" style="max-width:120px;">
+                <option value="">All Levels</option>
+                <option value="error">Error</option>
+                <option value="warn">Warning</option>
+                <option value="info">Info</option>
+                <option value="debug">Debug</option>
+              </select>
+              <select id="activity-plugin-filter" class="rc-input rc-input--sm"
+                      title="Filter log entries by plugin or platform component" style="max-width:200px;">
+                <option value="">All Plugins</option>
+                <option value="platform">Platform</option>
+                <option value="com.replycators.salesforce-extractor">Salesforce Case Extractor</option>
+                <option value="com.replycators.cloudability-orgid">Cloudability OrgID</option>
+                <option value="com.replycators.example-plugin">Example Plugin</option>
+                <option value="com.replycators.edge-bookmark-finder">Edge Bookmark Finder</option>
+                <option value="com.replycators.apptio-planning-upgrade-calculator">Apptio Planning Upgrade Calc</option>
+                <option value="com.replycators.snake">Snake</option>
+                <option value="com.replycators.workspace-starter">Workspace Starter</option>
+                <option value="com.replycators.tab-search">Tab Search</option>
+                <option value="com.replycators.apptio-docs-finder">Apptio Documentation Finder</option>
+                <option value="com.replycators.env-dashboards">Environment Dashboards Launcher</option>
+              </select>
+              <button id="activity-clear-btn" class="rc-btn rc-btn--ghost rc-btn--sm"
+                      title="Clear all log entries from this session">Clear</button>
+            </div>
+            <div class="rc-log-list" id="rc-log-list">
+              <div class="rc-log-empty">No log entries yet. Interact with a plugin to generate logs.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FEEDBACK -->
+        <div class="rc-view" id="view-feedback">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Send Feedback</h1>
+            <p class="rc-view__subtitle">Prepare an unsent email draft for the ReplyCators support recipients</p>
+          </div>
+          <div class="rc-feedback-form" id="rc-feedback-form">
+            <div id="rc-feedback-status" class="rc-status rc-status--neutral" role="status" aria-live="polite" style="display:none;"></div>
+
+            <div class="rc-feedback-grid">
+              <div class="rc-feedback-field">
+                <label for="rc-feedback-category" class="rc-label">Feedback category</label>
+                <select id="rc-feedback-category" class="rc-input" aria-describedby="rc-feedback-category-error">
+                  <option value="">Select a category</option>
+                  <option value="Bug or problem">Bug or problem</option>
+                  <option value="Feature request">Feature request</option>
+                  <option value="Plugin feedback">Plugin feedback</option>
+                  <option value="Documentation feedback">Documentation feedback</option>
+                  <option value="General feedback">General feedback</option>
+                  <option value="Other">Other</option>
+                </select>
+                <div id="rc-feedback-category-error" class="rc-feedback-error" aria-live="polite"></div>
+              </div>
+
+              <div class="rc-feedback-field">
+                <label for="rc-feedback-subject" class="rc-label">Subject</label>
+                <input id="rc-feedback-subject" class="rc-input" type="text" maxlength="160" aria-describedby="rc-feedback-subject-error rc-feedback-subject-help" />
+                <div id="rc-feedback-subject-help" class="rc-feedback-help">Required. Maximum 160 characters.</div>
+                <div id="rc-feedback-subject-error" class="rc-feedback-error" aria-live="polite"></div>
+              </div>
+            </div>
+
+            <div class="rc-feedback-field">
+              <label for="rc-feedback-message" class="rc-label">Message</label>
+              <textarea id="rc-feedback-message" class="rc-input rc-feedback-textarea" maxlength="5000" aria-describedby="rc-feedback-message-error rc-feedback-message-help"></textarea>
+              <div id="rc-feedback-message-help" class="rc-feedback-help">Required. Maximum 5000 characters. ReplyCators keeps your form content in place after the handoff.</div>
+              <div id="rc-feedback-message-error" class="rc-feedback-error" aria-live="polite"></div>
+            </div>
+
+            <div class="rc-feedback-section">
+              <div class="rc-settings-group__title">Recipients</div>
+              <div class="rc-feedback-recipients">
+                <div>Jakub.Nytko@ibm.com</div>
+                <div>Marcin.Jorasz@ibm.com</div>
+              </div>
+            </div>
+
+            <div class="rc-feedback-section">
+              <div class="rc-settings-group__title">Diagnostics</div>
+              <label class="rc-feedback-checkbox"><input id="rc-feedback-include-diagnostics" type="checkbox" checked /> Include diagnostic summary in email</label>
+              <pre id="rc-feedback-diagnostics-preview" class="rc-code-block rc-feedback-preview">Diagnostics preview will appear here.</pre>
+              <div class="rc-feedback-actions">
+                <button id="rc-feedback-download-diagnostics" class="rc-btn rc-btn--secondary rc-btn--sm" type="button">Download Diagnostics</button>
+              </div>
+            </div>
+
+            <div class="rc-feedback-section">
+              <div class="rc-settings-group__title">Fallback and attachments</div>
+              <div class="rc-feedback-help">Attachments cannot be added automatically. After the email draft opens, attach the diagnostics file and any other files manually.</div>
+              <div class="rc-feedback-help" id="rc-feedback-manual-instructions">If the email draft cannot be opened automatically, use the copy actions below to create the email manually.</div>
+              <div class="rc-feedback-actions">
+                <button id="rc-feedback-copy-addresses" class="rc-btn rc-btn--ghost rc-btn--sm" type="button">Copy Email Addresses</button>
+                <button id="rc-feedback-copy-subject" class="rc-btn rc-btn--ghost rc-btn--sm" type="button">Copy Subject</button>
+                <button id="rc-feedback-copy-feedback" class="rc-btn rc-btn--ghost rc-btn--sm" type="button">Copy Feedback</button>
+              </div>
+            </div>
+
+            <div class="rc-feedback-section">
+              <div class="rc-settings-group__title">Privacy notice</div>
+              <div class="rc-feedback-help">ReplyCators uses approved diagnostics only. It does not include secrets, tokens, cookies, clipboard content, local file contents, or full local paths containing usernames.</div>
+            </div>
+
+            <div class="rc-feedback-actions rc-feedback-actions--footer">
+              <button id="rc-feedback-clear" class="rc-btn rc-btn--ghost" type="button">Clear</button>
+              <button id="rc-feedback-open-email" class="rc-btn rc-btn--primary" type="button" disabled>Open Email Client</button>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- OPTIONS (settings) -->
+        <div class="rc-view" id="view-settings">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Options</h1>
+            <p class="rc-view__subtitle">Platform appearance, accessibility, notifications, and plugin options</p>
+          </div>
+          <div class="rc-settings-groups">
+
+            <!-- ── Appearance ───────────────────────────────────────── -->
+            <div class="rc-settings-group">
+              <div class="rc-settings-group__title">Appearance</div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Theme</span>
+                  <span class="rc-settings-row__desc">Visual colour scheme applied to the entire dashboard</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="settings-theme" class="rc-input rc-input--sm"
+                          title="Select a colour theme. Applied immediately across all views, sidebar, forms, and notifications.">
+                    <option value="ibm-blue">IBM Blue</option>
+                    <option value="dark">Dark</option>
+                    <option value="midnight-blue">Midnight Blue</option>
+                    <option value="nord">Nord</option>
+                    <option value="dracula">Dracula</option>
+                    <option value="solarized-dark">Solarized Dark</option>
+                    <option value="solarized-light">Solarized Light</option>
+                    <option value="graphite">Graphite</option>
+                    <option value="high-contrast-dark">High Contrast Dark</option>
+                    <option value="high-contrast-light">High Contrast Light</option>
+                    <option value="light">Light</option>
+                    <option value="replycators">ReplyCators Signature</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Font</span>
+                  <span class="rc-settings-row__desc">Font family applied globally to all UI text</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="settings-font" class="rc-input rc-input--sm"
+                          title="Choose a font family. Applied immediately to the entire dashboard.">
+                    <option value="system">System Default (Segoe UI)</option>
+                    <option value="inter">Inter</option>
+                    <option value="roboto">Roboto</option>
+                    <option value="open-sans">Open Sans</option>
+                    <option value="ibm-plex-sans">IBM Plex Sans</option>
+                    <option value="source-sans-pro">Source Sans Pro</option>
+                  </select>
+                </div>
+              </div>
+              <div class="rc-settings-row rc-settings-row--sub" id="font-availability-row" aria-live="polite">
+                <div class="rc-settings-row__info rc-settings-row__info--full">
+                  <span class="rc-settings-row__label rc-font-badge" id="font-availability-badge" aria-atomic="true"></span>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">UI Density</span>
+                  <span class="rc-settings-row__desc">Controls spacing in sidebar, cards, forms, and tables</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="settings-density" class="rc-input rc-input--sm"
+                          title="Compact reduces padding for information density. Spacious adds breathing room.">
+                    <option value="compact">Compact</option>
+                    <option value="comfortable">Comfortable</option>
+                    <option value="spacious">Spacious</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Accessibility ────────────────────────────────────── -->
+            <div class="rc-settings-group">
+              <div class="rc-settings-group__title">Accessibility</div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Larger Font Size</span>
+                  <span class="rc-settings-row__desc">Increases base font size for improved readability</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle" title="When enabled, all text is rendered at a larger size">
+                    <input type="checkbox" class="rc-toggle__input" id="settings-larger-font" />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Reduce Animations</span>
+                  <span class="rc-settings-row__desc">Disables transitions and fade effects</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle" title="When enabled, all UI animations and transitions are removed">
+                    <input type="checkbox" class="rc-toggle__input" id="settings-reduced-animations" />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">High Contrast Mode</span>
+                  <span class="rc-settings-row__desc">Increases contrast ratios for text and interactive elements</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle" title="When enabled, borders and text use higher contrast values for accessibility">
+                    <input type="checkbox" class="rc-toggle__input" id="settings-high-contrast" />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Enhanced Focus Indicators</span>
+                  <span class="rc-settings-row__desc">Adds visible focus rings for keyboard navigation</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle" title="When enabled, focused elements display a prominent coloured ring">
+                    <input type="checkbox" class="rc-toggle__input" id="settings-enhanced-focus" />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Notifications ────────────────────────────────────── -->
+            <div class="rc-settings-group">
+              <div class="rc-settings-group__title">Notifications</div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Enable Notifications</span>
+                  <span class="rc-settings-row__desc">Master switch - disables all toasts and notification history entries</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle" title="When disabled, no notifications or toasts will be shown regardless of type">
+                    <input type="checkbox" class="rc-toggle__input" id="settings-notif-enabled" checked />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Success Notifications</span>
+                  <span class="rc-settings-row__desc">Show green success toasts and notifications</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle" title="When disabled, success-type notifications and toasts are suppressed">
+                    <input type="checkbox" class="rc-toggle__input" id="settings-notif-success" checked />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Warning Notifications</span>
+                  <span class="rc-settings-row__desc">Show amber warning toasts and notifications</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle" title="When disabled, warning-type notifications and toasts are suppressed">
+                    <input type="checkbox" class="rc-toggle__input" id="settings-notif-warning" checked />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Error Notifications</span>
+                  <span class="rc-settings-row__desc">Show red error toasts and notifications</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle" title="When disabled, error-type notifications and toasts are suppressed">
+                    <input type="checkbox" class="rc-toggle__input" id="settings-notif-error" checked />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Info Notifications</span>
+                  <span class="rc-settings-row__desc">Show blue informational toasts and notifications</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle" title="When disabled, info-type notifications and toasts are suppressed">
+                    <input type="checkbox" class="rc-toggle__input" id="settings-notif-info" checked />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Notification Duration</span>
+                  <span class="rc-settings-row__desc">How long toasts remain visible before auto-dismissing</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="settings-notif-duration" class="rc-input rc-input--sm"
+                          title="Duration in milliseconds that toast notifications remain on screen">
+                    <option value="2000">2 seconds</option>
+                    <option value="4000" selected>4 seconds</option>
+                    <option value="6000">6 seconds</option>
+                    <option value="10000">10 seconds</option>
+                    <option value="30000">30 seconds</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Notification Position</span>
+                  <span class="rc-settings-row__desc">Where toast notifications appear on screen</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="settings-notif-position" class="rc-input rc-input--sm"
+                          title="Choose the corner where toast notifications slide in">
+                    <option value="bottom-right" selected>Bottom Right</option>
+                    <option value="bottom-left">Bottom Left</option>
+                    <option value="top-right">Top Right</option>
+                    <option value="top-left">Top Left</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Dashboard Preferences ────────────────────────────── -->
+            <div class="rc-settings-group">
+              <div class="rc-settings-group__title">Dashboard Preferences</div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Show Plugin Cards</span>
+                  <span class="rc-settings-row__desc">Display plugin widget cards on the Dashboard</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle" title="When disabled, the plugin widget grid is hidden on the main Dashboard view">
+                    <input type="checkbox" class="rc-toggle__input" id="settings-dash-show-cards" checked />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Compact Dashboard</span>
+                  <span class="rc-settings-row__desc">Reduces padding and spacing on the Dashboard view</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle" title="When enabled, the Dashboard view uses tighter spacing">
+                    <input type="checkbox" class="rc-toggle__input" id="settings-dash-compact" />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Remember Last Opened View</span>
+                  <span class="rc-settings-row__desc">Reopen to the last view you were on</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle" title="When enabled, the extension reopens to the last view rather than always starting on Dashboard">
+                    <input type="checkbox" class="rc-toggle__input" id="settings-dash-remember-last" checked />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Logging ──────────────────────────────────────────── -->
+            <div class="rc-settings-group">
+              <div class="rc-settings-group__title">Logging</div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Log Level</span>
+                  <span class="rc-settings-row__desc">Controls which log entries are recorded in the Activity log</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="settings-log-level" class="rc-input rc-input--sm"
+                          title="Normal: info/warn/error only. Verbose: includes debug entries. Debug: maximum detail.">
+                    <option value="normal">Normal (info, warn, error)</option>
+                    <option value="verbose">Verbose (all including debug)</option>
+                    <option value="debug">Debug (maximum detail)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Extension Behavior ──────────────────────────────── -->
+            <div class="rc-settings-group">
+              <div class="rc-settings-group__title">Extension Behavior</div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Default Launch Mode</span>
+                  <span class="rc-settings-row__desc">Choose how ReplyCators opens when you click the toolbar icon</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="settings-default-launch-mode" class="rc-input rc-input--sm"
+                          title="Popup: opens in a small overlay. Side Panel: opens as a persistent panel that stays visible while you browse.">
+                    <option value="popup">Popup</option>
+                    <option value="sidepanel">Side Panel</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Popup Window Size ─────────────────────────────── -->
+            <div class="rc-settings-group">
+              <div class="rc-settings-group__title">Popup Window Size</div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Size Preset</span>
+                  <span class="rc-settings-row__desc">Sets the width and height when ReplyCators opens as a popup. Browser limit: 800 x 600 px max. Does not affect Side Panel.</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="settings-popup-size" class="rc-input rc-input--sm"
+                          title="Compact: 680x480. Standard: 800x580 (default). Custom: enter exact dimensions below.">
+                    <option value="compact">Compact (680 x 480)</option>
+                    <option value="standard" selected>Standard (800 x 580)</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="rc-settings-row" id="settings-popup-custom-row" style="display:none">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Custom Dimensions</span>
+                  <span class="rc-settings-row__desc">Width: 400-800 px. Height: 300-600 px. Browser enforces 800 x 600 maximum.</span>
+                </div>
+                <div class="rc-settings-row__control" style="display:flex;gap:6px;align-items:center">
+                  <input type="number" id="settings-popup-custom-width"
+                         class="rc-input rc-input--sm" style="width:70px"
+                         min="400" max="800" step="10" value="800"
+                         title="Popup width in pixels (400-800)" aria-label="Popup width" />
+                  <span style="font-size:12px;color:var(--rc-text-muted)">x</span>
+                  <input type="number" id="settings-popup-custom-height"
+                         class="rc-input rc-input--sm" style="width:70px"
+                         min="300" max="600" step="10" value="580"
+                         title="Popup height in pixels (300-600)" aria-label="Popup height" />
+                  <span style="font-size:11px;color:var(--rc-text-muted)">px</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Snake Game ──────────────────────────────────────── -->
+            <div class="rc-settings-group">
+              <div class="rc-settings-group__title">Snake</div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Game Speed</span>
+                  <span class="rc-settings-row__desc">Movement speed of the snake - Classic matches the original retro arcade feel</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="settings-snake-speed" class="rc-input rc-input--sm"
+                          title="Slow: relaxed. Classic: authentic retro arcade speed. Fast: challenge mode.">
+                    <option value="slow">Slow</option>
+                    <option value="classic" selected>Classic</option>
+                    <option value="fast">Fast</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Salesforce Extractor ─────────────────────────────── -->
+            <div class="rc-settings-group">
+              <div class="rc-settings-group__title">Salesforce Case Extractor</div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Output Format</span>
+                  <span class="rc-settings-row__desc">How extracted case data is formatted</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="sf-output-format" class="rc-input rc-input--sm"
+                          title="Choose the format for extracted Salesforce case data: plain text, Markdown, or JSON">
+                    <option value="plain-text">Plain Text</option>
+                    <option value="markdown">Markdown</option>
+                    <option value="json">JSON</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Auto-fill Case Number</span>
+                  <span class="rc-settings-row__desc">Detect case number from active tab automatically</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle"
+                         title="When enabled, the case number is automatically detected from the active Salesforce tab">
+                    <input type="checkbox" class="rc-toggle__input" id="sf-auto-fill" checked />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Bob Working Directory</span>
+                  <span class="rc-settings-row__desc">
+                    Absolute path where the <code>bob</code> command is executed (e.g. <code>C:\Work\Bob</code>).
+                    Type or paste the path, then click <strong>Save</strong> to validate and apply.
+                    Required to use the Execute button.
+                    <br><em>Note: this path is written to a temporary prompt file used by bob.
+                    Do not set it to a location that should not contain case-related content.</em>
+                  </span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <div class="rc-input-row">
+                    <input type="text"
+                           id="sf-bob-working-dir-input"
+                           class="rc-input"
+                           placeholder="e.g. C:\Work\Bob"
+                           title="Absolute path where the bob command is executed. Type or paste the path then click Save to validate."
+                           autocomplete="off"
+                           spellcheck="false" />
+                    <button id="sf-bob-working-dir-save"
+                            class="rc-btn rc-btn--sm rc-btn--primary"
+                            title="Validate and save the Bob Working Directory path">Save</button>
+                  </div>
+                  <span id="sf-bob-working-dir-status"
+                        class="rc-status-bar"
+                        hidden></span>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">BobShell 2.0 API Key</span>
+                  <span class="rc-settings-row__desc">
+                    API key for BobShell 2.0. Required when using Bob 2.0 - obtain from your IBM Bob
+                    account settings. Type or paste the key, then click <strong>Save</strong> to apply.
+                    The key is set as an environment variable in the PowerShell session when Execute runs.
+                    Disabled when "API key not required" is checked below.
+                  </span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <div class="rc-input-row">
+                    <input type="password"
+                           id="sf-bob-api-key-input"
+                           class="rc-input"
+                           placeholder="bob_prod_..."
+                           title="BobShell 2.0 API key. Type or paste the key then click Save."
+                           autocomplete="off"
+                           spellcheck="false" />
+                    <button id="sf-bob-api-key-show"
+                            class="rc-btn rc-btn--sm rc-btn--ghost"
+                            type="button"
+                            title="Show or hide the API key value"
+                            aria-label="Show or hide API key">&#128065;</button>
+                    <button id="sf-bob-api-key-save"
+                            class="rc-btn rc-btn--sm rc-btn--primary"
+                            title="Validate and save the BobShell 2.0 API key">Save</button>
+                  </div>
+                  <span id="sf-bob-api-key-status"
+                        class="rc-status-bar"
+                        hidden></span>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">API key not required</span>
+                  <span class="rc-settings-row__desc">
+                    Check this if you are using Bob 1.0. The API key field will be disabled
+                    and BOB_API_KEY will not be set when Execute runs.
+                  </span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle"
+                         title="Check if using Bob 1.0 - disables the API key field and skips BOB_API_KEY injection">
+                    <input type="checkbox" class="rc-toggle__input" id="sf-bob-use-bob1" />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Diagnostic Mode</span>
+                  <span class="rc-settings-row__desc">
+                    When enabled, the Bob terminal window stays open after execution and displays resolved paths, exit code, and timing. For troubleshooting only - disable after use.
+                  </span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle"
+                         title="Enable Diagnostic Mode: Bob terminal window stays open and shows execution details (paths, exit code, timing). Disable after troubleshooting.">
+                    <input type="checkbox" class="rc-toggle__input" id="sf-diagnostic-mode" />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Workspace Starter ───────────────────────────────── -->
+            <div class="rc-settings-group">
+              <div class="rc-settings-group__title">Workspace Starter</div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Tab Groups</span>
+                  <span class="rc-settings-row__desc">Automatically group launched tabs under the workspace profile name (requires Edge 89+)</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle" title="When enabled, all tabs opened by a workspace launch are grouped together with the profile name as the group title">
+                    <input type="checkbox" class="rc-toggle__input" id="ws-setting-tab-groups" checked />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ── Apptio Documentation Finder ─────────────────────────── -->
+            <div class="rc-settings-group">
+              <div class="rc-settings-group__title">Apptio Documentation Finder</div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Save search history</span>
+                  <span class="rc-settings-row__desc">Remember search queries in the Recent tab</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle"
+                         title="When enabled, every Documentation Finder search query is saved to the Recent tab">
+                    <input type="checkbox" class="rc-toggle__input" id="adf-settings-save-search-history" checked />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Save opened history</span>
+                  <span class="rc-settings-row__desc">Remember opened IBM Docs pages in the Opened tab</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <label class="rc-toggle"
+                         title="When enabled, every IBM Docs page opened from the Documentation Finder is saved to the Opened tab">
+                    <input type="checkbox" class="rc-toggle__input" id="adf-settings-save-open-history" checked />
+                    <span class="rc-toggle__slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Refresh categories</span>
+                  <span class="rc-settings-row__desc">Reload documentation source list from IBM Documentation. Use when IBM adds or renames Apptio products.</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <button class="rc-btn rc-btn--secondary rc-btn--sm" id="adf-settings-refresh-btn"
+                          title="Fetch current product list from IBM Documentation API and update source categories">
+                    ↻ Refresh from IBM Docs
+                  </button>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Clear search &amp; opened history</span>
+                  <span class="rc-settings-row__desc">Permanently delete all saved search queries and opened document history from this browser.</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <button class="rc-btn rc-btn--danger rc-btn--sm" id="adf-settings-clear-history-btn"
+                          title="Delete all saved Documentation Finder search and opened history from storage">
+                    Clear History
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /rc-settings-groups -->
+        </div>
+
+        <!-- SALESFORCE PLUGIN VIEW — v4.12.2 tab-driven UI -->
+        <div class="rc-view rc-plugin-page" id="view-plugin-salesforce">
+
+          <!-- Plugin header: standard header + standard tab bar -->
+          <div class="rc-plugin-header">
+            <span class="rc-plugin-header__icon"><span data-icon="plugins.salesforceCaseExtractor" aria-hidden="true" class="rc-widget-icon"></span></span>
+            <span class="rc-plugin-header__name">Salesforce Case Extractor</span>
+            <span class="rc-plugin-header__version">v4.12.2</span>
+            <span id="sf-status-badge" class="rc-badge rc-badge--amber" style="display:none;"
+                  title="Current Salesforce Case detection status"></span>
+            <button class="rc-doc-icon" data-doc-view="plugin-salesforce"
+                    title="View Salesforce Case Extractor documentation" aria-label="View Salesforce Case Extractor documentation">
+              <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+            </button>
+          </div>
+          <div class="rc-plugin-tabs" role="tablist" aria-label="Salesforce Case Extractor sections">
+            <button class="rc-plugin-tab rc-plugin-tab--active" id="sf-inner-tab-extract" data-tab="extract"
+                    role="tab" aria-selected="true" aria-controls="tab-extract">Extract Case</button>
+            <button class="rc-plugin-tab" id="sf-inner-tab-management" data-tab="management"
+                    role="tab" aria-selected="false" aria-controls="tab-management">Prompt Management</button>
+            <button class="rc-plugin-tab" id="sf-inner-tab-history" data-tab="history"
+                    role="tab" aria-selected="false" aria-controls="tab-history">Download History</button>
+          </div>
+
+          <!-- ══════════════════════════════════════════════════════
+               TAB 1: EXTRACT CASE
+               ══════════════════════════════════════════════════════ -->
+          <div class="rc-plugin-tab-panel rc-plugin-tab-panel--active rc-plugin-tab-panel--overflow-hidden" id="tab-extract" role="tabpanel" aria-labelledby="sf-inner-tab-extract">
+
+            <!-- Toolbar row 1: source + extract action -->
+            <div class="sf-extract-toolbar">
+              <label style="font-size:10px;font-weight:600;color:var(--rc-text-muted);white-space:nowrap;">Source</label>
+              <select id="sf-source-select" class="rc-select sf-source-select"
+                      title="Active Salesforce Tab: extract from the currently open case. Search by Case Number: find a specific case across all open tabs.">
+                <option value="active" selected>Active Salesforce Tab</option>
+                <option value="search">Search by Case Number</option>
+              </select>
+              <!-- sf-case-row — shown only in search mode by sfRefreshDetectionBanner() -->
+              <div id="sf-case-row" class="sf-toolbar-case-row" style="display:none;">
+                <div class="sf-toolbar-sep"></div>
+                <label style="font-size:10px;font-weight:600;color:var(--rc-text-muted);white-space:nowrap;">Case #</label>
+                <input type="text" id="sf-case-number" class="rc-input sf-case-input"
+                       placeholder="TSXXXXXXXXX" maxlength="11" size="11"
+                       autocomplete="off" spellcheck="false"
+                       title="Enter a Salesforce case number (format: TSXXXXXXXXX) to search all open Salesforce tabs." />
+              </div>
+              <button id="sf-btn-extract" class="rc-btn rc-btn--primary"
+                      title="Extract case data from the active Salesforce Case tab, or search all tabs for the entered case number">
+                        <span aria-hidden="true" class="rc-btn-icon">↓</span> Extract
+                      </button>
+              <div style="flex:1;"></div>
+            </div>
+
+            <!-- Toolbar row 2: content scope (Include) + display options (Sort / Privacy) -->
+            <div class="sf-extract-options">
+              <span class="sf-extract-options__label">Include:</span>
+              <label class="sf-extract-options__item" for="sf-incl-internal"
+                     title="Include internal (non-public) posts from agents and support staff">
+                <input type="checkbox" id="sf-incl-internal"
+                       title="Include internal (non-public) posts from agents and support staff" />
+                Internal posts
+              </label>
+              <label class="sf-extract-options__item" for="sf-incl-jira-etl"
+                     title="Include JIRA sync posts created by the Support ETL automation">
+                <input type="checkbox" id="sf-incl-jira-etl"
+                       title="Include JIRA sync posts created by the Support ETL automation" />
+                JIRA/ETL posts
+              </label>
+              <label class="sf-extract-options__item" for="sf-incl-diag"
+                     title="Include Diagnostic Data Uploaded system events">
+                <input type="checkbox" id="sf-incl-diag"
+                       title="Include Diagnostic Data Uploaded system events" />
+                Diagnostic data
+              </label>
+              <div class="sf-extract-options__sep" aria-hidden="true"></div>
+              <span class="sf-extract-options__label">Display:</span>
+              <label class="sf-extract-options__item sf-extract-options__item--inline" for="sf-post-sort"
+                     title="Order in which case feed posts appear in the extracted output">
+                Sort:
+              </label>
+              <select id="sf-post-sort" class="rc-select sf-extract-options__sort"
+                      title="Order in which case feed posts appear in the extracted output">
+                <option value="asc">Oldest first</option>
+                <option value="desc">Newest first</option>
+              </select>
+              <label class="sf-extract-options__item" for="sf-privacy-mode"
+                     title="Hide customer-identifying information (contact name, emails)">
+                <input type="checkbox" id="sf-privacy-mode" checked
+                       title="Hide customer-identifying information (contact name, emails)" />
+                Privacy mode
+              </label>
+            </div>
+
+            <!-- Two-column workspace -->
+            <div class="sf-extract-workspace">
+
+              <!-- Left: Extracted content (70%) -->
+              <div class="sf-col-main">
+                <div class="sf-col-main-header">
+                  <span class="sf-col-main-title">Extracted Content</span>
+                  <div class="sf-col-main-actions">
+                    <button id="sf-btn-copy" class="rc-btn rc-btn--secondary rc-btn--xs" disabled
+                            title="Copy the extracted case summary to the clipboard">Copy</button>
+                    <button id="sf-btn-copy-prompt" class="rc-btn rc-btn--secondary rc-btn--xs" disabled
+                            title="Copy the extracted case summary together with the currently selected prompt to the clipboard">Copy with Prompt</button>
+                    <button id="sf-btn-download" class="rc-btn rc-btn--primary rc-btn--xs" disabled
+                            title="Download the extracted case summary as a .txt file">Download</button>
+                    <button id="sf-btn-clear" class="rc-btn rc-btn--ghost rc-btn--xs"
+                            title="Clear the current extraction result">Clear</button>
+                  </div>
+                </div>
+                <div class="sf-preview-wrap">
+                  <div id="sf-status" class="rc-status-bar" style="display:none;"></div>
+                  <textarea id="sf-preview" class="sf-preview" readonly
+                            title="Extracted Salesforce case summary - read-only"
+                            placeholder="Extracted case summary will appear here…"></textarea>
+                </div>
+              </div>
+
+              <!-- Right: Prompt selection (30%) -->
+              <div class="sf-col-side">
+                <div class="sf-col-side-header">
+                  <span class="sf-col-side-title">Prompt Selection</span>
+                </div>
+                <div class="sf-prompt-list-scroll" id="sf-prompt-list-scroll">
+                  <!-- Populated dynamically by renderExtractPromptPicks() -->
+                </div>
+
+                <!-- Execution panel — fields rendered dynamically from prompt.files[] -->
+                <div class="sf-exec-panel" id="sf-exec-panel" style="display:none;">
+                  <div id="exec-fields-dynamic"></div>
+                  <div id="sf-exec-status" class="rc-status-bar" style="display:none;margin-top:5px;"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ══════════════════════════════════════════════════════
+               TAB 2: PROMPT MANAGEMENT
+               ══════════════════════════════════════════════════════ -->
+          <div class="rc-plugin-tab-panel" id="tab-management" role="tabpanel" aria-labelledby="sf-inner-tab-management">
+            <!-- Card wrapper gives management tab the same card containment as other compliant plugins -->
+            <div class="sf-mgmt-card">
+              <div class="sf-mgmt-toolbar">
+                <span class="sf-mgmt-toolbar-title">Manage Prompts</span>
+                <div id="sf-mgmt-status" class="rc-status-bar" style="display:none;"></div>
+              </div>
+              <div class="sf-mgmt-body">
+                <table class="sf-dt" id="sf-mgmt-table">
+                  <thead>
+                    <tr>
+                      <th style="width:52%;">Prompt Name</th>
+                      <th style="width:10%;text-align:center;">Order</th>
+                      <th style="text-align:right;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sf-mgmt-tbody">
+                    <!-- Populated dynamically by renderPromptManagementList() -->
+                  </tbody>
+                </table>
+                <div id="sf-mgmt-empty" class="sf-lib-empty" style="display:none;">
+                  No custom prompts. Use the form below to add one.
+                </div>
+              </div>
+
+              <!-- Collapsed add trigger -->
+              <div class="sf-add-prompt-trigger" id="sf-add-trigger" title="Add a new custom prompt">
+                <span>+ Add Prompt</span>
+                <span id="sf-add-arrow" style="margin-left:auto;font-size:11px;color:var(--rc-text-muted);">▼</span>
+              </div>
+
+              <!-- Expandable add / edit form -->
+              <div class="sf-add-form" id="sf-add-form">
+                <div class="sf-add-form-row">
+                  <label class="sf-add-form-label" for="sf-prompt-title">Title <span class="rc-required">*</span></label>
+                  <input type="text" id="sf-prompt-title" class="rc-input"
+                         maxlength="100" placeholder="Prompt title (max 100 characters)"
+                         title="Short name for this prompt" style="width:100%;" />
+                </div>
+                <div class="sf-add-form-row">
+                  <label class="sf-add-form-label" for="sf-prompt-body">Body <span class="rc-required">*</span></label>
+                  <textarea id="sf-prompt-body" class="rc-textarea" rows="3"
+                            maxlength="10000" placeholder="Prompt body text (max 10,000 characters)"
+                            title="Full prompt text"></textarea>
+                </div>
+                <div id="sf-add-form-error" class="rc-status-bar err" style="display:none;"></div>
+                <div class="sf-add-form-actions">
+                  <button type="button" id="sf-prompt-submit" class="rc-btn rc-btn--primary rc-btn--xs">Save Prompt</button>
+                  <button type="button" id="sf-prompt-cancel" class="rc-btn rc-btn--ghost rc-btn--xs">Cancel</button>
+                </div>
+              </div>
+            </div><!-- /sf-mgmt-card -->
+          </div>
+
+          <!-- ══════════════════════════════════════════════════════
+               TAB 3: DOWNLOAD HISTORY
+               ══════════════════════════════════════════════════════ -->
+          <div class="rc-plugin-tab-panel" id="tab-history" role="tabpanel" aria-labelledby="sf-inner-tab-history">
+            <!-- Card wrapper gives history tab the same card containment as other compliant plugins -->
+            <div class="sf-dl-card">
+              <div class="sf-dl-toolbar">
+                <span class="sf-dl-toolbar-title">Download History</span>
+                <button class="rc-btn rc-btn--ghost rc-btn--xs" id="sf-dl-clear-all"
+                        title="Clear all download history">Clear All</button>
+              </div>
+              <div class="sf-dl-body">
+                <table class="sf-dt" id="sf-dl-table" style="display:none;">
+                  <thead>
+                    <tr>
+                      <th style="width:38%;">File Name</th>
+                      <th style="width:14%;">Status</th>
+                      <th style="width:22%;">Path</th>
+                      <th style="width:13%;">Time</th>
+                      <th style="text-align:right;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sf-dl-tbody">
+                    <tr id="dl-row-main">
+                      <td class="td-name" style="font-family:monospace;" id="dl-filename">-</td>
+                      <td><span class="sf-dl-badge" id="dl-badge">-</span></td>
+                      <td style="font-family:monospace;font-size:10px;color:var(--rc-text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;" id="dl-path">-</td>
+                      <td style="font-size:10px;color:var(--rc-text-muted);" id="dl-time">-</td>
+                      <td class="td-actions">
+                        <button class="rc-btn rc-btn--secondary rc-btn--xs" id="sf-dl-copy-path"
+                                title="Copy full file path" aria-label="Copy path"><span aria-hidden="true" class="rc-btn-icon">⧉</span> Copy Path</button>
+                        <button class="rc-btn rc-btn--ghost rc-btn--xs" id="sf-dl-clear-row"
+                                title="Remove this record" aria-label="Clear record">×</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="sf-dl-empty" id="sf-dl-empty">No downloads yet.</div>
+              </div>
+            </div><!-- /sf-dl-card -->
+          </div>
+
+        </div>
+
+        <!-- CLOUDABILITY ORGID PLUGIN VIEW -->
+        <div class="rc-view rc-plugin-page" id="view-plugin-cloudability-orgid">
+          <div class="rc-plugin-header">
+            <span class="rc-plugin-header__icon"><span data-icon="plugins.cloudabilityOrgId" aria-hidden="true" class="rc-widget-icon"></span></span>
+            <span class="rc-plugin-header__name">Cloudability OrgID</span>
+            <span class="rc-plugin-header__version">v4.0.3</span>
+            <span id="cld-status-badge" class="rc-badge rc-badge--blue"
+                  title="Current retrieval status: Retrieving (automatic), Cached, Live, or Failed">Retrieving…</span>
+            <button class="rc-doc-icon" data-doc-view="plugin-cloudability-orgid"
+                    title="View Cloudability OrgID documentation" aria-label="View Cloudability OrgID documentation">
+              <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+            </button>
+          </div>
+          <!-- Primary action bar — always visible, above the fold -->
+          <div class="rc-plugin-action-bar" style="padding:10px 16px 0;">
+            <button id="cld-refresh-btn" class="rc-btn rc-btn--primary rc-btn--sm"
+                    title="Manually re-fetch the Cloudability Organisation ID. Requires an open Cloudability tab (*.apptio.com/cloudability*).">Refresh OrgID</button>
+            <div class="rc-plugin-action-bar__spacer"></div>
+            <span class="rc-plugin-kv__label" id="cld-source-label"
+                  style="font-size:11px;"
+                  title="Whether the OrgID was read from the local cache or retrieved live from the Cloudability settings API">Source: -</span>
+          </div>
+
+          <div class="rc-plugin-body">
+
+            <!-- PRIMARY: OrgID display — hero element, must remain above the fold -->
+            <div class="cld-primary-block">
+              <div class="cld-orgid-row">
+                <div class="cld-orgid-display cld-orgid-display--empty" id="cld-orgid-value"
+                     title="The Cloudability Organisation ID - automatically resolved from the settings API">-</div>
+                <button id="cld-copy-btn" class="rc-btn rc-btn--secondary" disabled
+                        title="Copy the Cloudability Organisation ID to the clipboard">Copy</button>
+              </div>
+              <div class="cld-meta-row">
+                <span class="rc-plugin-kv__label">Organisation</span>
+                <span id="cld-orgname-value" class="rc-plugin-kv__value"
+                      title="The display name of your Cloudability organisation">-</span>
+                <span id="cld-retrieved-at" class="rc-muted" style="font-size:11px;display:none;"
+                      title="Timestamp of the most recent successful OrgID retrieval"></span>
+              </div>
+              <div id="cld-result-status" class="rc-status rc-status--neutral" style="display:none;"></div>
+            </div>
+
+            <!-- SECONDARY: How-it-works guidance -->
+            <div class="rc-info-cards">
+              <div class="rc-info-card">
+                <div class="rc-info-card__icon"><span data-icon="states.working" aria-hidden="true" style="display:block;width:24px;height:24px;"></span></div>
+                <div>
+                  <div class="rc-info-card__title">Automatic retrieval</div>
+                  <div class="rc-info-card__body">OrgID is retrieved automatically when the extension opens if Cloudability is the <strong>active tab</strong> (the tab you are currently viewing). Background Cloudability tabs are not detected. Switch to your Cloudability tab (<code>*.apptio.com/cloudability*</code>) then click Refresh OrgID.</div>
+                </div>
+              </div>
+              <div class="rc-info-card">
+                <div class="rc-info-card__icon"><span data-icon="actions.refresh" aria-hidden="true" style="display:block;width:24px;height:24px;"></span></div>
+                <div>
+                  <div class="rc-info-card__title">When to use Refresh</div>
+                  <div class="rc-info-card__body">Use <strong>Refresh OrgID</strong> only if the value is missing or stale. If retrieval times out, navigate to Cloudability &rarr; Settings manually then retry.</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- EDGE BOOKMARK FINDER PLUGIN VIEW -->
+        <div class="rc-view rc-plugin-page" id="view-plugin-edge-bookmarks">
+          <div class="rc-plugin-header">
+            <span class="rc-plugin-header__icon"><span data-icon="plugins.edgeBookmarkFinder" aria-hidden="true" class="rc-widget-icon"></span></span>
+            <span class="rc-plugin-header__name">Edge Bookmark Finder</span>
+            <span class="rc-plugin-header__version">v1.0.2</span>
+            <button class="rc-doc-icon" data-doc-view="plugin-edge-bookmarks"
+                    title="View Edge Bookmark Finder documentation" aria-label="View Edge Bookmark Finder documentation">
+              <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+            </button>
+          </div>
+          <div class="rc-plugin-body" id="edge-bookmark-container">
+            <div class="rc-plugin-loading"><span data-icon="states.loading" aria-hidden="true"></span> Scanning bookmarks…</div>
+          </div>
+        </div>
+
+        <!-- EXAMPLE PLUGIN VIEW -->
+        <div class="rc-view rc-plugin-page" id="view-plugin-example">
+          <div class="rc-plugin-header">
+            <span class="rc-plugin-header__icon"><span data-icon="plugins.examplePlugin" aria-hidden="true" class="rc-widget-icon"></span></span>
+            <span class="rc-plugin-header__name">Example Plugin</span>
+            <span class="rc-plugin-header__version">v1.0.2</span>
+            <button class="rc-doc-icon" data-doc-view="plugin-example"
+                    title="View Example Plugin documentation" aria-label="View Example Plugin documentation">
+              <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+            </button>
+          </div>
+          <div class="rc-plugin-body">
+            <div class="rc-example-card rc-example-card--blue">
+              <h2>Hello, World!</h2>
+              <p>This is the Example Plugin - the canonical reference implementation for the ReplyCators AI Plugin Kit.</p>
+              <p>Use it to understand the plugin architecture, as a baseline for new plugins, or as a migration target.</p>
+            </div>
+            <div class="rc-plugin-section">
+              <div class="rc-plugin-section__header">
+                <span class="rc-plugin-section__title">AI Plugin Kit</span>
+              </div>
+              <p class="rc-muted" style="font-size:12px;">
+                Create a plugin from scratch, use this Example Plugin as a baseline, or convert an existing
+                browser extension into a ReplyCators plugin.
+                Open <code>docs/AI-PLUGIN-KIT.md</code> for architecture, migration instructions, templates, and implementation checklists.
+              </p>
+            </div>
+            <div class="rc-plugin-section">
+              <div class="rc-plugin-section__header">
+                <span class="rc-plugin-section__title">Flat-Runtime Capabilities Demonstrated</span>
+              </div>
+              <ul class="rc-capability-list">
+                <li><strong>Registration</strong> - <code>window.ReplyCatorsPlugins.ExamplePlugin</code></li>
+                <li><strong>Lifecycle</strong> - <code>init()</code>, <code>onNavigate()</code>, <code>onLeave()</code></li>
+                <li><strong>Platform logging</strong> - <code>app().addLog()</code></li>
+                <li><strong>Platform notifications</strong> - <code>app().addNotification()</code> / <code>app().showToast()</code></li>
+                <li><strong>Platform navigation</strong> - <code>app().navigateTo()</code></li>
+                <li><strong>Lazy-init pattern</strong> - no async I/O in <code>init()</code></li>
+                <li><strong>Widget wiring</strong> - button handler bound in <code>init()</code></li>
+              </ul>
+              <p class="rc-muted" style="font-size:12px;">
+                Optional scaffolding: <code>npm run create-plugin</code> -
+                see <code>docs/AI-PLUGIN-KIT.md</code> for the full guide.
+              </p>
+            </div>
+            <div class="rc-plugin-action-bar">
+              <button id="ex-say-hello" class="rc-btn rc-btn--primary"
+                      title="Trigger a sample greeting notification to demonstrate the notification system">Say Hello</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- APPTIO PLANNING UPGRADE CALCULATOR PLUGIN VIEW -->
+        <div class="rc-view rc-plugin-page" id="view-plugin-apptio-upgrade-calc">
+          <div class="rc-plugin-header">
+            <span class="rc-plugin-header__icon"><span data-icon="plugins.apptioUpgradeCalculator" aria-hidden="true" class="rc-widget-icon"></span></span>
+            <span class="rc-plugin-header__name">Apptio Planning Upgrade Calculator</span>
+            <span class="rc-plugin-header__version">v1.0.3</span>
+            <button class="rc-doc-icon" data-doc-view="plugin-apptio-upgrade-calc"
+                    title="View Apptio Planning Upgrade Calculator documentation" aria-label="View Apptio Planning Upgrade Calculator documentation">
+              <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+            </button>
+          </div>
+          <div class="rc-plugin-body" id="apptio-upgrade-calc-container">
+            <div class="rc-plugin-loading"><span data-icon="states.loading" aria-hidden="true"></span> Loading Apptio Planning schedule…</div>
+          </div>
+        </div>
+
+        <!-- SNAKE PLUGIN VIEW — Retro Arcade Snake -->
+        <div class="rc-view rc-plugin-page" id="view-plugin-snake">
+          <!-- Standard header: icon + name + version + doc icon.
+               Snake retro layout owns all space below this header. -->
+          <div class="rc-plugin-header">
+            <span class="rc-plugin-header__icon"><span data-icon="plugins.snake" aria-hidden="true" class="rc-widget-icon"></span></span>
+            <span class="rc-plugin-header__name">Snake</span>
+            <span class="rc-plugin-header__version">v1.0.1</span>
+            <button class="rc-doc-icon" data-doc-view="plugin-snake"
+                    title="View Snake documentation" aria-label="View Snake documentation">
+              <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+            </button>
+          </div>
+          <div class="snk-view">
+
+            <!-- Retro device housing — dark midnight blue body -->
+            <div class="snk-device">
+
+              <!-- LCD screen bezel — dark ring around the LCD -->
+              <div class="snk-screen-bezel">
+
+                <!-- LCD screen — HUD + game rendered entirely on canvas -->
+                <div class="snk-screen">
+                  <canvas id="snk-canvas"
+                          aria-label="Snake game"></canvas>
+
+                  <!-- Overlay: shown at start / pause / game-over -->
+                  <div class="snk-overlay" id="snk-overlay">
+                    <div class="snk-overlay-title">SNAKE</div>
+                    <div class="snk-overlay-subtitle">HIGH SCORE: 0<br/>PRESS START</div>
+                    <button class="snk-overlay-btn" id="snk-overlay-btn">START</button>
+                  </div>
+
+                </div><!-- /snk-screen -->
+
+              </div><!-- /snk-screen-bezel -->
+
+              <!-- D-pad — visible only in Side Panel mode -->
+              <div class="snk-dpad">
+                <div class="snk-dpad-row">
+                  <div class="snk-dpad-spacer"></div>
+                  <button class="snk-dpad-btn" id="snk-dpad-up"   title="Up">▲</button>
+                  <div class="snk-dpad-spacer"></div>
+                </div>
+                <div class="snk-dpad-row">
+                  <button class="snk-dpad-btn" id="snk-dpad-left"  title="Left">◀</button>
+                  <div class="snk-dpad-spacer"></div>
+                  <button class="snk-dpad-btn" id="snk-dpad-right" title="Right">▶</button>
+                </div>
+                <div class="snk-dpad-row">
+                  <div class="snk-dpad-spacer"></div>
+                  <button class="snk-dpad-btn" id="snk-dpad-down"  title="Down">▼</button>
+                  <div class="snk-dpad-spacer"></div>
+                </div>
+              </div><!-- /snk-dpad -->
+  
+              <!-- Pause/Resume button — also available via Space key -->
+              <button class="snk-pause-btn" id="snk-pause-btn"
+                      title="Pause or resume the game (also: Space key)">⏸ Pause</button>
+  
+            </div><!-- /snk-device -->
+  
+            <!-- Speed selector row -->
+            <div class="snk-controls-row">
+              <span class="snk-speed-label">Speed:</span>
+              <button class="snk-speed-btn" id="snk-speed-slow"    title="Slow speed">Slow</button>
+              <button class="snk-speed-btn snk-speed-btn--active" id="snk-speed-classic" title="Classic retro speed">Classic</button>
+              <button class="snk-speed-btn" id="snk-speed-fast"    title="Fast speed">Fast</button>
+            </div>
+
+          </div><!-- /snk-view -->
+        </div><!-- /view-plugin-snake -->
+
+        <!-- WORKSPACE STARTER PLUGIN VIEW -->
+        <div class="rc-view rc-plugin-page" id="view-plugin-workspace-starter">
+          <div class="rc-plugin-header">
+            <span class="rc-plugin-header__icon"><span data-icon="plugins.workspaceStarter" aria-hidden="true" class="rc-widget-icon"></span></span>
+            <span class="rc-plugin-header__name">Workspace Starter</span>
+            <span class="rc-plugin-header__version">v2.0.2</span>
+            <button class="rc-doc-icon" data-doc-view="plugin-workspace-starter"
+                    title="View Workspace Starter documentation" aria-label="View Workspace Starter documentation">
+              <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+            </button>
+          </div>
+          <div id="ws-plugin-container" class="rc-plugin-body">
+            <!-- Populated by wsRenderView() on first navigate -->
+            <div class="rc-plugin-loading"><span data-icon="states.loading" aria-hidden="true"></span> Loading workspace profiles&hellip;</div>
+          </div>
+        </div>
+
+        <!-- TAB SEARCH PLUGIN VIEW -->
+        <div class="rc-view rc-plugin-page" id="view-plugin-tab-search">
+          <div class="rc-plugin-header">
+            <span class="rc-plugin-header__icon"><span data-icon="plugins.tabSearch" aria-hidden="true" class="rc-widget-icon"></span></span>
+            <span class="rc-plugin-header__name">Tab Search</span>
+            <span class="rc-plugin-header__version">v1.0.1</span>
+            <button class="rc-doc-icon" data-doc-view="plugin-tab-search"
+                    title="View Tab Search documentation" aria-label="View Tab Search documentation">
+              <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+            </button>
+          </div>
+          <div id="ts-plugin-container" class="rc-plugin-body">
+            <!-- Populated by TabSearch.render() on first navigate -->
+            <div class="rc-plugin-loading"><span data-icon="states.loading" aria-hidden="true"></span> Loading tabs…</div>
+          </div>
+        </div>
+
+        <!-- APPTIO DOCUMENTATION FINDER PLUGIN VIEW -->
+        <div class="rc-view rc-plugin-page" id="view-plugin-apptio-docs-finder">
+          <div class="rc-plugin-header">
+            <span class="rc-plugin-header__icon"><span data-icon="plugins.apptioDocsFinder" aria-hidden="true" class="rc-widget-icon"></span></span>
+            <span class="rc-plugin-header__name">Apptio Documentation Finder</span>
+            <span class="rc-plugin-header__version">v1.0.2</span>
+            <button class="rc-doc-icon" data-doc-view="plugin-apptio-docs-finder"
+                    title="View Apptio Documentation Finder documentation" aria-label="View Apptio Documentation Finder documentation">
+              <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+            </button>
+          </div>
+          <!-- Tab bar — static sibling of rc-plugin-header; populated on first onNavigate() -->
+          <div class="rc-plugin-tabs" id="adf-tab-bar" role="tablist" aria-label="Documentation Finder sections" hidden>
+            <button class="rc-plugin-tab rc-plugin-tab--active" id="adf-tab-search" data-adf-tab="search" role="tab" aria-selected="true"  title="Search IBM Documentation">Search</button>
+            <button class="rc-plugin-tab"                        id="adf-tab-favs"   data-adf-tab="favs"   role="tab" aria-selected="false" title="Saved favorite searches and links">Favorites<span class="adf-tab-badge" id="adf-favs-badge" hidden></span></button>
+            <button class="rc-plugin-tab"                        id="adf-tab-recent" data-adf-tab="recent" role="tab" aria-selected="false" title="Recent search queries">Recent</button>
+            <button class="rc-plugin-tab"                        id="adf-tab-opened" data-adf-tab="opened" role="tab" aria-selected="false" title="Recently opened IBM Docs pages">Opened</button>
+            <button class="rc-plugin-tab"                        id="adf-tab-status" data-adf-tab="status" role="tab" aria-selected="false" title="Index status and source breakdown">Index</button>
+          </div>
+          <!-- Tab panels container — flex column, fills remaining height -->
+          <div id="adf-docs-container" class="adf-panels-host">
+            <!-- Populated by ApptioDocsFinder.onNavigate() on first navigate -->
+            <div class="rc-plugin-loading" id="adf-initial-loading"><span data-icon="states.loading" aria-hidden="true"></span> Loading Apptio Documentation Finder…</div>
+          </div>
+        </div>
+
+        <!-- ENVIRONMENT DASHBOARDS LAUNCHER VIEW -->
+        <div class="rc-view rc-plugin-page" id="view-plugin-env-dashboards">
+          <div class="rc-plugin-header">
+            <span class="rc-plugin-header__icon"><span data-icon="plugins.envDashboards" aria-hidden="true" class="rc-widget-icon"></span></span>
+            <span class="rc-plugin-header__name">Environment Dashboards Launcher</span>
+            <span class="rc-plugin-header__version">v1.3.0</span>
+            <button class="rc-doc-icon" data-doc-view="plugin-env-dashboards"
+                    title="View Environment Dashboards Launcher documentation" aria-label="View Environment Dashboards Launcher documentation">
+              <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+            </button>
+          </div>
+
+          <!-- Dashboards content — no tab bar; Dashboards is the only view -->
+          <div id="edl-container" class="rc-plugin-body">
+            <!-- Populated synchronously by EnvDashboards.onNavigate() — no loading state -->
+          </div>
+
+        </div>
+
+        <!-- MAINTENANCE CENTER VIEW -->
+        <div class="rc-view" id="view-maintenance">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Maintenance Center</h1>
+            <p class="rc-view__subtitle">Platform diagnostics, health checks, and backup &amp; restore</p>
+          </div>
+          <div class="rc-unified-tabs" role="tablist" aria-label="Maintenance Center sections">
+            <button id="rc-maint-tab-diagnostics" class="rc-btn rc-btn--primary rc-btn--sm" type="button" role="tab" aria-selected="true" aria-controls="rc-maint-panel-diagnostics">Diagnostics</button>
+            <button id="rc-maint-tab-backup" class="rc-btn rc-btn--ghost rc-btn--sm" type="button" role="tab" aria-selected="false" aria-controls="rc-maint-panel-backup">Backup &amp; Restore</button>
+          </div>
+
+          <!-- DIAGNOSTICS TAB PANEL -->
+          <div id="rc-maint-panel-diagnostics" role="tabpanel" aria-labelledby="rc-maint-tab-diagnostics">
+            <div id="rc-preflight-live" aria-live="assertive" aria-atomic="true" class="rc-sr-only" role="status"></div>
+            <!-- Diagnostics toolbar: Run Checks + Refresh + three sub-tabs -->
+            <!-- Positioned at the top so actions are always visible without scrolling. -->
+            <!-- role=tablist wraps only the sub-tab buttons; action buttons are plain controls -->
+            <div class="rc-ops-section-header" style="margin-bottom:8px;">
+              <div role="tablist" aria-label="Diagnostics sections" style="display:flex;gap:6px;">
+                <button id="rc-diag-tab-overview" class="rc-btn rc-btn--primary rc-btn--sm" type="button"
+                        role="tab" aria-selected="true" aria-controls="rc-diag-panel-overview"
+                        title="Concise platform health summary">Overview</button>
+                <button id="rc-diag-tab-checks" class="rc-btn rc-btn--ghost rc-btn--sm" type="button"
+                        role="tab" aria-selected="false" aria-controls="rc-diag-panel-checks"
+                        title="Browser permissions, runtime, services, and context checks">System Checks</button>
+                <button id="rc-diag-tab-cache" class="rc-btn rc-btn--ghost rc-btn--sm" type="button"
+                        role="tab" aria-selected="false" aria-controls="rc-diag-panel-cache"
+                        title="Storage quota, registered caches, and cleanup">Cache &amp; Storage</button>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <button id="rc-preflight-run-all" class="rc-btn rc-btn--ghost rc-btn--sm" type="button"
+                        title="Run all dependency checks">Run Checks</button>
+                <button id="rc-diag-refresh" class="rc-btn rc-btn--ghost rc-btn--sm" type="button"
+                        title="Reload the current diagnostic snapshot">↺ Refresh</button>
+              </div>
+            </div>
+
+            <!-- OVERVIEW sub-tab panel: concise health summary only -->
+            <div id="rc-diag-panel-overview" role="tabpanel" aria-labelledby="rc-diag-tab-overview">
+              <!-- Health status bar — mirrors the System Checks summary -->
+              <div id="rc-preflight-summary" class="rc-preflight__summary rc-preflight__summary--pass" aria-live="polite" role="status">
+                <span class="rc-preflight__summary-status">Ready</span>
+                <span class="rc-preflight__summary-detail">Click &ldquo;Run Checks&rdquo; to run dependency checks.</span>
+              </div>
+              <!-- High-priority warning list — populated by JS; hidden when empty -->
+              <div id="rc-overview-warnings" class="rc-diag-overview__warnings" hidden
+                   aria-label="High-priority diagnostic warnings"></div>
+              <!-- Concise platform / browser / plugin snapshot -->
+              <div id="rc-overview-snapshot" class="rc-diag-overview__snapshot"
+                   aria-label="Platform snapshot"></div>
+              <!-- Technical details — raw JSON behind an expandable control -->
+              <details id="rc-diag-tech-details" class="rc-diag-tech-details">
+                <summary>Technical details</summary>
+                <pre id="rc-diag-output" class="rc-code-block"
+                     title="Live diagnostic snapshot - platform version, browser, plugins, and activity"></pre>
+              </details>
+            </div>
+
+            <!-- SYSTEM CHECKS sub-tab panel: all dependency check cards -->
+            <div id="rc-diag-panel-checks" role="tabpanel" aria-labelledby="rc-diag-tab-checks" hidden>
+              <div id="rc-preflight-checks" class="rc-preflight__grid" role="list"
+                   title="Status of all dependency checks"
+                   aria-label="Dependency check results">
+              </div>
+            </div>
+
+            <!-- CACHE & STORAGE sub-tab panel -->
+            <div id="rc-diag-panel-cache" role="tabpanel" aria-labelledby="rc-diag-tab-cache" hidden>
+              <div id="rc-storage-checks" class="rc-preflight__grid" role="list"
+                   title="Storage quota check results"
+                   aria-label="Storage check results"
+                   style="margin-bottom:12px;">
+              </div>
+              <div id="rc-cache-inspector-status" class="rc-status rc-status--neutral" hidden></div>
+              <div id="rc-cache-summary" class="rc-cache-summary"></div>
+              <div class="rc-cache-toolbar">
+                <label>
+                  <span class="rc-section-title">Plugin</span>
+                  <select id="rc-cache-filter-plugin" class="rc-input rc-input--sm"
+                          title="Filter caches by owning plugin">
+                    <option value="all">All plugins</option>
+                  </select>
+                </label>
+                <label>
+                  <span class="rc-section-title">Status</span>
+                  <select id="rc-cache-filter-status" class="rc-input rc-input--sm"
+                          title="Filter caches by evaluated status">
+                    <option value="all">All statuses</option>
+                    <option value="Fresh">Fresh</option>
+                    <option value="Aging">Aging</option>
+                    <option value="Expired">Expired</option>
+                    <option value="Missing">Missing</option>
+                    <option value="Invalid">Invalid</option>
+                    <option value="Refresh Failed">Refresh Failed</option>
+                    <option value="Clear Failed">Clear Failed</option>
+                    <option value="Unknown">Unknown</option>
+                  </select>
+                </label>
+                <label>
+                  <span class="rc-section-title">Storage Area</span>
+                  <select id="rc-cache-filter-area" class="rc-input rc-input--sm"
+                          title="Filter caches by storage area">
+                    <option value="all">All storage areas</option>
+                    <option value="chrome.storage.local">chrome.storage.local</option>
+                  </select>
+                </label>
+              </div>
+              <div id="rc-cache-groups"></div>
+            </div>
+          </div>
+
+          <!-- BACKUP & RESTORE TAB PANEL -->
+          <div id="rc-maint-panel-backup" role="tabpanel" aria-labelledby="rc-maint-tab-backup" hidden>
+            <div id="br-plugin-container">
+              <!-- Populated by BackupRestore.render() on navigate -->
+              <div class="rc-status rc-status--neutral"><span data-icon="states.loading" aria-hidden="true"></span> Loading Backup &amp; Restore…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DOCUMENTATION VIEW -->
+        <div class="rc-view" id="view-documentation">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Help &amp; Documentation</h1>
+            <p class="rc-view__subtitle">Platform guides, plugin references, and troubleshooting</p>
+          </div>
+          <div id="rc-docs-container">
+            <!-- Populated by Documentation.render() on navigate -->
+            <div class="rc-status rc-status--neutral"><span data-icon="states.loading" aria-hidden="true"></span> Loading documentation…</div>
+          </div>
+        </div>
+
+      </div><!-- /rc-view-container -->
+    </main>
+
+    <div class="rc-toast-container" id="rc-toast-container"></div>
+  </div><!-- /rc-shell -->
+
+  <!-- Plugin modules — MUST be loaded before dashboard.js so that
+       window.ReplyCatorsPlugins.<Name> is available when dashboard.js
+       calls init() during DOMContentLoaded. Loading order here matches
+       the PLUGINS[] registration order in dashboard.js. -->
+  <script src="plugins/apptio-docs-finder.js"></script>
+  <script src="plugins/documentation.js"></script>
+  <script src="plugins/salesforce-case-extractor.js"></script>
+  <script src="plugins/cloudability-orgid.js"></script>
+  <script src="plugins/example-plugin.js"></script>
+  <script src="plugins/bookmark-finder.js"></script>
+  <script src="plugins/apptio-upgrade-calculator.js"></script>
+  <script src="plugins/snake.js"></script>
+  <script src="plugins/workspace-starter.js"></script>
+  <script src="plugins/tab-search.js"></script>
+  <script src="plugins/env-dashboards.js"></script>
+  <script src="plugins/marketplace.js"></script>
+  <script src="plugins/backup-restore.js"></script>
+  <!-- Application orchestration shell — must be last -->
+  <script src="dashboard.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,105 @@
+﻿{
+  "manifest_version": 3,
+  "name": "ReplyCators",
+  "short_name": "ReplyCators",
+  "version": "1.45.6",
+  "description": "A plugin-based platform for intelligent reply creation and data extraction across enterprise tools.",
+  "author": "ReplyCators Platform Team",
+
+  "action": {
+    "default_icon": {
+      "16":  "assets/icons/icon16.png",
+      "48":  "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    },
+    "default_title": "ReplyCators"
+  },
+
+  "icons": {
+    "16":  "assets/icons/icon16.png",
+    "48":  "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+
+  "side_panel": {
+    "default_path": "dashboard.html"
+  },
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "options_page": "options.html",
+
+  "permissions": [
+    "storage",
+    "tabs",
+    "tabGroups",
+    "scripting",
+    "contextMenus",
+    "alarms",
+    "bookmarks",
+    "sidePanel",
+    "windows",
+    "downloads"
+  ],
+
+  "host_permissions": [
+    "https://*.salesforce.com/*",
+    "https://*.lightning.force.com/*",
+    "https://*.apptio.com/*",
+    "https://*.apps.papt.to/*",
+    "https://community.ibm.com/*",
+    "https://www.ibm.com/*"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.salesforce.com/*",
+        "https://*.lightning.force.com/*"
+      ],
+      "js": ["plugins/salesforce/content/sf-content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.apptio.com/cloudability*",
+        "https://*.apps.papt.to/cloudability*"
+      ],
+      "js": ["plugins/cloudability/content/cloudability-interceptor.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "https://*.apptio.com/cloudability*",
+        "https://*.apps.papt.to/cloudability*"
+      ],
+      "js": ["plugins/cloudability/content/cloudability-detector.js"],
+      "run_at": "document_end"
+    }
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "plugins/apptio-upgrade-calculator/apptio-schedule.json",
+        "assets/icons/*.png",
+        "assets/icons/streamline-ultimate-colors-free/**/*.svg"
+      ],
+      "matches": [
+        "https://*.salesforce.com/*",
+        "https://*.lightning.force.com/*",
+        "https://*.apptio.com/*",
+        "https://*.apps.papt.to/*",
+        "https://community.ibm.com/*",
+        "https://www.ibm.com/*"
+      ]
+    }
+  ],
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'"
+  }
+}

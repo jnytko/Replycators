@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" id="Env-Dashboards-Launcher--Streamline-Custom">
+  <desc>Environment Dashboards Launcher — custom icon for ReplyCators</desc>
+  <!-- Monitor / screen -->
+  <rect fill="#c4e0ff" x="2" y="3" width="16" height="11" rx="1.5" />
+  <rect fill="#e8f3ff" x="2" y="3" width="16" height="5" rx="1.5" />
+  <path stroke="#191919" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+        d="M2 4.5A1.5 1.5 0 0 1 3.5 3h13A1.5 1.5 0 0 1 18 4.5v9A1.5 1.5 0 0 1 16.5 15h-13A1.5 1.5 0 0 1 2 13.5v-9Z" />
+  <!-- Screen stand -->
+  <path stroke="#191919" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+        d="M10 15v2.5M7.5 17.5h5" />
+  <!-- Bar chart inside screen (dashboard indicator) -->
+  <rect fill="#3b82f6" x="4.5" y="8" width="1.5" height="4.5" rx="0.4" />
+  <rect fill="#3b82f6" x="7"   y="6.5" width="1.5" height="6"   rx="0.4" />
+  <rect fill="#3b82f6" x="9.5" y="9.5" width="1.5" height="3"   rx="0.4" />
+  <rect fill="#3b82f6" x="12" y="7.5" width="1.5" height="5"   rx="0.4" />
+  <!-- Launch arrow badge (top-right) -->
+  <circle fill="#22c55e" cx="19.5" cy="4.5" r="3" />
+  <path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+        d="M17.8 4.5h3.4M19.8 3l1.5 1.5-1.5 1.5" />
+</svg>

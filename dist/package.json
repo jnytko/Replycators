@@ -1,0 +1,30 @@
+﻿{
+  "name": "replycators",
+  "version": "1.45.6",
+  "description": "ReplyCators — Plugin-based Microsoft Edge Extension Platform",
+  "private": true,
+  "scripts": {
+    "build":          "webpack --config build/webpack.config.js --mode production",
+    "build:dev":      "webpack --config build/webpack.config.js --mode development",
+    "postbuild":      "node build/sync-root.js",
+    "watch":          "webpack --config build/webpack.config.js --mode development --watch",
+    "typecheck":      "tsc --noEmit",
+    "lint":           "eslint src --ext .ts,.tsx --report-unused-disable-directives",
+    "clean":          "rimraf dist",
+    "sync":           "node build/sync-root.js",
+    "sync:verify":    "node build/sync-root.js --verify",
+    "sync:dry-run":   "node build/sync-root.js --dry-run",
+    "package":        "npm run clean && npm run build && node build/package.js",
+    "create-plugin":  "node tools/create-plugin.js"
+  },
+  "devDependencies": {
+    "@types/chrome":              "^0.0.270",
+    "typescript":                 "^5.4.5",
+    "webpack":                    "^5.91.0",
+    "webpack-cli":                "^5.1.4",
+    "ts-loader":                  "^9.5.1",
+    "copy-webpack-plugin":        "^12.0.2",
+    "rimraf":                     "^5.0.5",
+    "archiver":                   "^7.0.1"
+  }
+}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ReplyCators — Options</title>
+  <link rel="stylesheet" href="styles/platform.css" />
+  <style>
+    body   { background: var(--rc-bg); color: var(--rc-text); display: flex; align-items: center;
+             justify-content: center; min-height: 100vh; margin: 0; }
+    .rc-options-redirect {
+      text-align: center; padding: 40px 32px; max-width: 460px;
+      background: var(--rc-surface); border: 1px solid var(--rc-border);
+      border-radius: 12px;
+    }
+    .rc-options-redirect__logo  { font-size: 40px; margin-bottom: 16px; }
+    .rc-options-redirect__title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .rc-options-redirect__desc  { font-size: 13px; color: var(--rc-text-muted); margin-bottom: 24px; line-height: 1.6; }
+    .rc-options-redirect__btn   {
+      display: inline-block; padding: 10px 22px; background: var(--rc-accent);
+      color: #fff; border-radius: 6px; font-size: 14px; font-weight: 600;
+      text-decoration: none; cursor: pointer; border: none;
+    }
+    .rc-options-redirect__btn:hover { background: var(--rc-accent-hover); }
+    .rc-options-redirect__note  { font-size: 11px; color: var(--rc-text-dim); margin-top: 16px; }
+  </style>
+</head>
+<!-- RC-011 fix: options.html now opens the main popup (dashboard) instead of
+     maintaining a parallel, disconnected settings UI. The old options page
+     wrote to chrome.storage.sync['rc_theme'] which was never read by the
+     dashboard (which uses chrome.storage.local['rc:session:app-settings']).
+     Solution: redirect users to the real settings experience in the popup. -->
+<body data-theme="ibm-blue">
+  <div class="rc-options-redirect">
+    <div class="rc-options-redirect__logo">⚙️</div>
+    <div class="rc-options-redirect__title">ReplyCators Settings</div>
+    <div class="rc-options-redirect__desc">
+      All ReplyCators settings — themes, fonts, density, accessibility,
+      notifications, and plugin preferences — are managed from the main
+      ReplyCators popup.<br/><br/>
+      Click <strong>Open ReplyCators</strong> to access the full settings panel.
+    </div>
+    <button class="rc-options-redirect__btn" id="open-popup-btn">Open ReplyCators ↗</button>
+    <div class="rc-options-redirect__note">
+      Click the ReplyCators icon in your browser toolbar, then navigate to ⚙️ Settings.
+    </div>
+  </div>
+  <script>
+    // Apply saved theme so the options page renders consistently
+    chrome.storage.local.get(['rc:session:app-settings'], result => {
+      const settings = result['rc:session:app-settings'];
+      if (settings && settings.theme) {
+        document.body.dataset.theme = settings.theme;
+      }
+    });
+    document.getElementById('open-popup-btn').addEventListener('click', () => {
+      // chrome.action.openPopup() requires a user gesture and is MV3-only.
+      // If unavailable (e.g. called from options page context) fall back to
+      // instructing the user to click the toolbar icon.
+      if (chrome.action && chrome.action.openPopup) {
+        chrome.action.openPopup().catch(() => {
+          // Silently ignore — user will see the instruction note below the button
+        });
+      }
+    });
+  </script>
+</body>
+</html>

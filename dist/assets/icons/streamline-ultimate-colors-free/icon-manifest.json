@@ -1,0 +1,939 @@
+{
+  "pack": "Streamline Ultimate Colors — Free",
+  "source": "https://github.com/webalys-hq/streamline-vectors (ultimate/colors/)",
+  "official_page": "https://www.streamlinehq.com/icons/ultimate-colos-free",
+  "license": "CC BY 4.0",
+  "attribution": "Icons by Streamline (http://streamlinehq.com)",
+  "download_date": "2025-07-16",
+  "total_files": 169,
+  "notes": "Original 97 SVGs from webalys-hq/streamline-vectors (ultimate/colors/). 8 navigation/ SVGs repaired from empty placeholders 2025-07-16. 4 registry path errors corrected. 3 SVGs added 2025-07-16 (back, forward, person). 8 semantic replacement icons added 2025-07-17 (marketplace: shop-sign-open, settings: cog, side-panel-mode: Browser-Page-Layout, popup-mode: Expand-2, cloudability-orgid: hr-hierarchy-man, tab-search: network-search, apptio-upgrade-calculator: analytics-board-graph-line, snake: chess-knight). 57 new common utility icons added 2025-07-17. 5 semantic icon replacements 2025-07-18 (warning: Network-Warning, unavailable: Stop-Sign, external-link: Login-1, side-panel-mode: Browser-Page-Layout, popup-mode: Expand-2). utility.sidePanelMode and utility.popupMode entries added as canonical IDs for dashboard.html. Total: 168 SVGs.",
+  "icons": [
+    {
+      "semanticId": "navigation.home",
+      "localPath": "navigation/home.svg",
+      "streamlineName": "home-2",
+      "category": "navigation",
+      "purpose": "Dashboard — main overview view",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "navigation.plugins",
+      "localPath": "navigation/plugins.svg",
+      "streamlineName": "Module-Puzzle",
+      "category": "navigation",
+      "purpose": "Plugin Manager — colorful interlocking puzzle grid = modules/plugins concept",
+      "downloadDate": "2025-07-18",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "navigation.marketplace",
+      "localPath": "navigation/marketplace.svg",
+      "streamlineName": "Tags-1",
+      "category": "navigation",
+      "purpose": "Marketplace — orange/gold price tag = store/shopping/marketplace concept",
+      "downloadDate": "2025-07-18",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "navigation.settings",
+      "localPath": "navigation/settings.svg",
+      "streamlineName": "cog",
+      "category": "navigation",
+      "purpose": "Options — classic gear icon for settings",
+      "downloadDate": "2025-07-17",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "navigation.diagnostics",
+      "localPath": "navigation/diagnostics.svg",
+      "streamlineName": "health-activity",
+      "category": "navigation",
+      "purpose": "Diagnostics — health checks and troubleshooting",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "navigation.notifications",
+      "localPath": "navigation/notifications.svg",
+      "streamlineName": "bell-notification",
+      "category": "navigation",
+      "purpose": "Notifications — alerts and notices",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "navigation.activity",
+      "localPath": "navigation/activity.svg",
+      "streamlineName": "history-clock",
+      "category": "navigation",
+      "purpose": "Activity — event log and timeline",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "navigation.backup",
+      "localPath": "navigation/backup.svg",
+      "streamlineName": "database-backup",
+      "category": "navigation",
+      "purpose": "Backup and Restore — export and import settings",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "navigation.documentation",
+      "localPath": "navigation/documentation.svg",
+      "streamlineName": "book-open",
+      "category": "navigation",
+      "purpose": "Documentation — help, guides, and references",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.search",
+      "localPath": "actions/search.svg",
+      "streamlineName": "search-1",
+      "category": "actions",
+      "purpose": "Search — filter or find items",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.refresh",
+      "localPath": "actions/refresh.svg",
+      "streamlineName": "synchronize-arrows",
+      "category": "actions",
+      "purpose": "Refresh or synchronise",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.toggleMenu",
+      "localPath": "actions/toggle-menu.svg",
+      "streamlineName": "navigation-menu",
+      "category": "actions",
+      "purpose": "Toggle sidebar / hamburger menu",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.openExternal",
+      "localPath": "actions/external-link.svg",
+      "streamlineName": "Login-1",
+      "category": "actions",
+      "purpose": "Open in new tab or external page",
+      "downloadDate": "2025-07-18",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.copy",
+      "localPath": "actions/copy.svg",
+      "streamlineName": "copy-paste",
+      "category": "actions",
+      "purpose": "Copy to clipboard",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.download",
+      "localPath": "actions/download.svg",
+      "streamlineName": "download-bottom",
+      "category": "actions",
+      "purpose": "Download or export to file",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.upload",
+      "localPath": "actions/upload.svg",
+      "streamlineName": "upload-top",
+      "category": "actions",
+      "purpose": "Upload or import from file",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.add",
+      "localPath": "actions/add.svg",
+      "streamlineName": "add-circle",
+      "category": "actions",
+      "purpose": "Add a new item",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.remove",
+      "localPath": "actions/remove.svg",
+      "streamlineName": "remove-circle",
+      "category": "actions",
+      "purpose": "Remove an item",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.edit",
+      "localPath": "actions/edit.svg",
+      "streamlineName": "pencil-write",
+      "category": "actions",
+      "purpose": "Edit or modify",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.filter",
+      "localPath": "actions/filter.svg",
+      "streamlineName": "filter-1",
+      "category": "actions",
+      "purpose": "Filter a list",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.share",
+      "localPath": "actions/share.svg",
+      "streamlineName": "share-1",
+      "category": "actions",
+      "purpose": "Share or send to others",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.delete",
+      "localPath": "actions/delete.svg",
+      "streamlineName": "bin-1",
+      "category": "actions",
+      "purpose": "Delete permanently",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.check",
+      "localPath": "actions/check.svg",
+      "streamlineName": "check-circle",
+      "category": "actions",
+      "purpose": "Confirm or mark complete",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.expand",
+      "localPath": "actions/expand.svg",
+      "streamlineName": "expand-1",
+      "category": "actions",
+      "purpose": "Expand a section or panel",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.collapse",
+      "localPath": "actions/collapse.svg",
+      "streamlineName": "collapse-1",
+      "category": "actions",
+      "purpose": "Collapse a section or panel",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.back",
+      "localPath": "actions/back.svg",
+      "streamlineName": "arrow-left",
+      "category": "actions",
+      "purpose": "Navigate back",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "actions.forward",
+      "localPath": "actions/forward.svg",
+      "streamlineName": "arrow-right",
+      "category": "actions",
+      "purpose": "Navigate forward",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "status.success",
+      "localPath": "status/success.svg",
+      "streamlineName": "check-circle-1",
+      "category": "status",
+      "purpose": "Success state",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "status.warning",
+      "localPath": "status/warning.svg",
+      "streamlineName": "Network-Warning",
+      "category": "status",
+      "purpose": "Warning state",
+      "downloadDate": "2025-07-18",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "status.error",
+      "localPath": "status/error.svg",
+      "streamlineName": "remove-circle-1",
+      "category": "status",
+      "purpose": "Error state",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "status.info",
+      "localPath": "status/info.svg",
+      "streamlineName": "information-circle",
+      "category": "status",
+      "purpose": "Informational state",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "status.loading",
+      "localPath": "status/loading.svg",
+      "streamlineName": "loading-circle",
+      "category": "status",
+      "purpose": "Loading or in-progress state",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "status.unavailable",
+      "localPath": "status/unavailable.svg",
+      "streamlineName": "Stop-Sign",
+      "category": "status",
+      "purpose": "Feature unavailable or disabled",
+      "downloadDate": "2025-07-18",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "status.pending",
+      "localPath": "status/pending.svg",
+      "streamlineName": "time-clock",
+      "category": "status",
+      "purpose": "Pending or queued",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "status.working",
+      "localPath": "status/working.svg",
+      "streamlineName": "gear-loader",
+      "category": "status",
+      "purpose": "Processing or working",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "appearance.themeDark",
+      "localPath": "utility/theme-dark.svg",
+      "streamlineName": "moon-night",
+      "category": "utility",
+      "purpose": "Dark theme toggle",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "appearance.themeLight",
+      "localPath": "utility/theme-light.svg",
+      "streamlineName": "sun-light",
+      "category": "utility",
+      "purpose": "Light theme toggle",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "appearance.sidePanelMode",
+      "localPath": "utility/side-panel-mode.svg",
+      "streamlineName": "Browser-Page-Layout",
+      "category": "utility",
+      "purpose": "Side panel display mode (appearance category alias)",
+      "downloadDate": "2025-07-18",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.sidePanelMode",
+      "localPath": "utility/side-panel-mode.svg",
+      "streamlineName": "Browser-Page-Layout",
+      "category": "utility",
+      "purpose": "Side panel display mode (canonical ID used by dashboard.html data-icon attributes)",
+      "downloadDate": "2025-07-18",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "appearance.popupMode",
+      "localPath": "utility/popup-mode.svg",
+      "streamlineName": "Expand-2",
+      "category": "utility",
+      "purpose": "Popup display mode (appearance category alias)",
+      "downloadDate": "2025-07-18",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.popupMode",
+      "localPath": "utility/popup-mode.svg",
+      "streamlineName": "Expand-2",
+      "category": "utility",
+      "purpose": "Popup display mode (canonical ID used by dashboard.html data-icon attributes)",
+      "downloadDate": "2025-07-18",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.calendar",
+      "localPath": "utility/calendar.svg",
+      "streamlineName": "calendar-date",
+      "category": "utility",
+      "purpose": "Calendar or date",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.cloud",
+      "localPath": "utility/cloud.svg",
+      "streamlineName": "cloud-upload",
+      "category": "utility",
+      "purpose": "Cloud service or storage",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.database",
+      "localPath": "utility/database.svg",
+      "streamlineName": "database-1",
+      "category": "utility",
+      "purpose": "Database or storage",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.diagnostics",
+      "localPath": "utility/diagnostics.svg",
+      "streamlineName": "activity-monitor",
+      "category": "utility",
+      "purpose": "System diagnostics or monitor",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.folder",
+      "localPath": "utility/folder.svg",
+      "streamlineName": "folder-1",
+      "category": "utility",
+      "purpose": "Folder or directory",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.history",
+      "localPath": "utility/history.svg",
+      "streamlineName": "history-1",
+      "category": "utility",
+      "purpose": "History or changelog",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.layout",
+      "localPath": "utility/layout.svg",
+      "streamlineName": "layout-grid",
+      "category": "utility",
+      "purpose": "Layout or view arrangement",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.link",
+      "localPath": "utility/link.svg",
+      "streamlineName": "link-chain",
+      "category": "utility",
+      "purpose": "Hyperlink or URL",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.monitor",
+      "localPath": "utility/monitor.svg",
+      "streamlineName": "monitor-screen",
+      "category": "utility",
+      "purpose": "Monitor, screen, or display",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.network",
+      "localPath": "utility/network.svg",
+      "streamlineName": "hierarchy-network",
+      "category": "utility",
+      "purpose": "Network or connectivity",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.paperWrite",
+      "localPath": "utility/paper-write.svg",
+      "streamlineName": "notes-paper-text",
+      "category": "utility",
+      "purpose": "Send Feedback — feedback message with edit/write",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.person",
+      "localPath": "utility/person.svg",
+      "streamlineName": "single-neutral",
+      "category": "utility",
+      "purpose": "User or person",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.pin",
+      "localPath": "utility/pin.svg",
+      "streamlineName": "pin-location",
+      "category": "utility",
+      "purpose": "Pin or bookmark location",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.refreshLock",
+      "localPath": "utility/refresh-lock.svg",
+      "streamlineName": "synchronize-lock",
+      "category": "utility",
+      "purpose": "Locked refresh or sync with constraint",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.server",
+      "localPath": "utility/server.svg",
+      "streamlineName": "server-rack",
+      "category": "utility",
+      "purpose": "Server or host",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.settingsSlider",
+      "localPath": "utility/settings-slider.svg",
+      "streamlineName": "settings-slider",
+      "category": "utility",
+      "purpose": "Advanced settings or controls panel",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.stats",
+      "localPath": "utility/stats.svg",
+      "streamlineName": "analytics-bars",
+      "category": "utility",
+      "purpose": "Statistics or analytics chart",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.about",
+      "localPath": "utility/about.svg",
+      "streamlineName": "information-desk",
+      "category": "utility",
+      "purpose": "About or credits page",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "utility.user",
+      "localPath": "utility/user.svg",
+      "streamlineName": "user-circle",
+      "category": "utility",
+      "purpose": "User account or profile",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "content.archive",
+      "localPath": "content/archive.svg",
+      "streamlineName": "archive-box",
+      "category": "content",
+      "purpose": "Archive or stored content",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "content.book",
+      "localPath": "content/book.svg",
+      "streamlineName": "book-1",
+      "category": "content",
+      "purpose": "Guide or reference book",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "content.checklist",
+      "localPath": "content/checklist.svg",
+      "streamlineName": "checklist-1",
+      "category": "content",
+      "purpose": "Checklist or task list",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "content.document",
+      "localPath": "content/document.svg",
+      "streamlineName": "file-text",
+      "category": "content",
+      "purpose": "Document or text file",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "content.note",
+      "localPath": "content/note.svg",
+      "streamlineName": "sticky-note",
+      "category": "content",
+      "purpose": "Note or annotation",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "content.task",
+      "localPath": "content/task.svg",
+      "streamlineName": "task-checklist",
+      "category": "content",
+      "purpose": "Task or to-do item",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "content.uploadNotes",
+      "localPath": "content/upload-notes.svg",
+      "streamlineName": "upload-document",
+      "category": "content",
+      "purpose": "Upload notes or document import",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "security.key",
+      "localPath": "security/key.svg",
+      "streamlineName": "key-1",
+      "category": "security",
+      "purpose": "Key, credential, or access token",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "security.lock",
+      "localPath": "security/lock.svg",
+      "streamlineName": "lock-1",
+      "category": "security",
+      "purpose": "Lock or secure access",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "security.shield",
+      "localPath": "security/shield.svg",
+      "streamlineName": "shield-check",
+      "category": "security",
+      "purpose": "Security or protection",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "brands.amazon",
+      "localPath": "brands/amazon.svg",
+      "streamlineName": "amazon",
+      "category": "brands",
+      "purpose": "Amazon brand logo",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "brands.dropbox",
+      "localPath": "brands/dropbox.svg",
+      "streamlineName": "dropbox",
+      "category": "brands",
+      "purpose": "Dropbox brand logo",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "brands.github",
+      "localPath": "brands/github.svg",
+      "streamlineName": "github",
+      "category": "brands",
+      "purpose": "GitHub brand logo",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "brands.google",
+      "localPath": "brands/google.svg",
+      "streamlineName": "google",
+      "category": "brands",
+      "purpose": "Google brand logo",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "brands.googleDrive",
+      "localPath": "brands/google-drive.svg",
+      "streamlineName": "google-drive",
+      "category": "brands",
+      "purpose": "Google Drive brand logo",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "brands.linkedin",
+      "localPath": "brands/linkedin.svg",
+      "streamlineName": "linkedin",
+      "category": "brands",
+      "purpose": "LinkedIn brand logo",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "brands.microsoft",
+      "localPath": "brands/microsoft.svg",
+      "streamlineName": "microsoft",
+      "category": "brands",
+      "purpose": "Microsoft brand logo",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "plugins.salesforceCaseExtractor",
+      "localPath": "plugins/salesforce-case-extractor.svg",
+      "streamlineName": "cloud-transfer",
+      "category": "plugins",
+      "purpose": "Salesforce Case Extractor — case extraction, cloud data, export",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "plugins.cloudabilityOrgId",
+      "localPath": "plugins/cloudability-orgid.svg",
+      "streamlineName": "human-resources-hierarchy-man",
+      "category": "plugins",
+      "purpose": "Cloudability OrgID — organisation, account, identifier",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "plugins.edgeBookmarkFinder",
+      "localPath": "plugins/edge-bookmark-finder.svg",
+      "streamlineName": "bookmark-search",
+      "category": "plugins",
+      "purpose": "Edge Bookmark Finder — bookmark plus search",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "plugins.apptioUpgradeCalculator",
+      "localPath": "plugins/apptio-upgrade-calculator.svg",
+      "streamlineName": "analytics-board-graph-line",
+      "category": "plugins",
+      "purpose": "Apptio Planning Upgrade Calculator — planning, calculator, calendar",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "plugins.apptioDocsFinder",
+      "localPath": "plugins/apptio-docs-finder.svg",
+      "streamlineName": "document-search",
+      "category": "plugins",
+      "purpose": "Apptio Documentation Finder — documents plus search",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "plugins.workspaceStarter",
+      "localPath": "plugins/workspace-starter.svg",
+      "streamlineName": "workspace-launch",
+      "category": "plugins",
+      "purpose": "Workspace Starter — workspace or launch pad",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "plugins.tabSearch",
+      "localPath": "plugins/tab-search.svg",
+      "streamlineName": "network-search",
+      "category": "plugins",
+      "purpose": "Tab Search — browser tabs plus search",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "plugins.snake",
+      "localPath": "plugins/snake.svg",
+      "streamlineName": "chess-knight",
+      "category": "plugins",
+      "purpose": "Snake — retro snake game",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "plugins.examplePlugin",
+      "localPath": "plugins/example-plugin.svg",
+      "streamlineName": "App-Window-Code",
+      "category": "plugins",
+      "purpose": "Example Plugin — code window with angle brackets; represents a reference template or SDK starter (visually distinct from Plugin Manager's puzzle icon)",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "plugins.backupRestore",
+      "localPath": "plugins/backup-restore.svg",
+      "streamlineName": "database-restore",
+      "category": "plugins",
+      "purpose": "Backup and Restore plugin — archive and restore",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "plugins.salesforceCloud",
+      "localPath": "plugins/salesforce-cloud.svg",
+      "streamlineName": "cloud-crm",
+      "category": "plugins",
+      "purpose": "Salesforce cloud CRM integration",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "plugins.tabBrowser",
+      "localPath": "plugins/tab-browser.svg",
+      "streamlineName": "browser-window-tabs",
+      "category": "plugins",
+      "purpose": "Tab Browser — browser tab management",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "plugins.aiAssistant",
+      "localPath": "plugins/ai-assistant.svg",
+      "streamlineName": "ai-brain",
+      "category": "plugins",
+      "purpose": "AI Assistant — future marketplace plugin",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "marketplace.servicenow",
+      "localPath": "plugins/servicenow.svg",
+      "streamlineName": "servicenow",
+      "category": "plugins",
+      "purpose": "ServiceNow marketplace entry",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "marketplace.jira",
+      "localPath": "plugins/jira.svg",
+      "streamlineName": "jira",
+      "category": "plugins",
+      "purpose": "Jira marketplace entry",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "marketplace.confluence",
+      "localPath": "plugins/confluence.svg",
+      "streamlineName": "confluence",
+      "category": "plugins",
+      "purpose": "Confluence marketplace entry",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "marketplace.microsoft365",
+      "localPath": "plugins/microsoft365.svg",
+      "streamlineName": "microsoft-365",
+      "category": "plugins",
+      "purpose": "Microsoft 365 marketplace entry",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "marketplace.azureDevOps",
+      "localPath": "plugins/azure-devops.svg",
+      "streamlineName": "azure-devops",
+      "category": "plugins",
+      "purpose": "Azure DevOps marketplace entry",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "marketplace.powerBi",
+      "localPath": "plugins/powerbi.svg",
+      "streamlineName": "powerbi",
+      "category": "plugins",
+      "purpose": "Power BI marketplace entry",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "marketplace.zendesk",
+      "localPath": "plugins/zendesk.svg",
+      "streamlineName": "zendesk",
+      "category": "plugins",
+      "purpose": "Zendesk marketplace entry",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "marketplace.sap",
+      "localPath": "plugins/sap.svg",
+      "streamlineName": "sap",
+      "category": "plugins",
+      "purpose": "SAP marketplace entry",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "marketplace.workday",
+      "localPath": "plugins/workday.svg",
+      "streamlineName": "workday",
+      "category": "plugins",
+      "purpose": "Workday marketplace entry",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "marketplace.games",
+      "localPath": "plugins/games.svg",
+      "streamlineName": "game-controller",
+      "category": "plugins",
+      "purpose": "Games category in Marketplace",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "marketplace.bookmarkSearch",
+      "localPath": "plugins/bookmark-search.svg",
+      "streamlineName": "bookmark-search-2",
+      "category": "plugins",
+      "purpose": "Bookmark search marketplace entry",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "fallback.unknownPlugin",
+      "localPath": "plugins/unknown.svg",
+      "streamlineName": "module-unknown",
+      "category": "plugins",
+      "purpose": "Fallback icon for unknown or third-party plugins",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
+    },
+    {
+      "semanticId": "plugins.envDashboards",
+      "localPath": "plugins/env-dashboards.svg",
+      "streamlineName": "env-dashboards-launcher-custom",
+      "category": "plugins",
+      "purpose": "Environment Dashboards Launcher plugin — custom icon (monitor + bar chart + launch arrow). Not a Streamline original; follows Streamline style conventions. CC BY 4.0 compatible.",
+      "downloadDate": "2025-07-25",
+      "sourcePack": "ReplyCators Custom (Streamline-style)"
+    }
+  ]
+}

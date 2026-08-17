@@ -1,0 +1,415 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReplyCators</title>
+  <link rel="stylesheet" href="../assets/styles/platform.css" />
+  <link rel="stylesheet" href="../assets/styles/dashboard.css" />
+</head>
+<body class="rc-app" data-theme="dark">
+
+  <!-- ── App Shell ───────────────────────────────────────────── -->
+  <div class="rc-shell">
+
+    <!-- ── Sidebar ──────────────────────────────────────────── -->
+    <aside class="rc-sidebar" id="rc-sidebar">
+      <div class="rc-sidebar__brand">
+        <img src="assets/icons/icon48.png" class="rc-sidebar__logo" alt="ReplyCators" />
+        <div class="rc-sidebar__brand-text">
+          <span class="rc-sidebar__name">ReplyCators</span>
+          <span class="rc-sidebar__version" id="rc-platform-version">v1.0.0</span>
+        </div>
+      </div>
+
+      <div class="rc-sidebar__search">
+        <input type="text" id="rc-search" placeholder="Search plugins..." class="rc-search-input" />
+      </div>
+
+      <nav class="rc-nav" id="rc-nav">
+        <!-- ── Platform nav items ── -->
+        <div class="rc-nav__section-title">Platform</div>
+        <button class="rc-nav__item rc-nav__item--active" data-view="dashboard">
+          <span class="rc-nav__icon">🏠</span>
+          <span class="rc-nav__label">Dashboard</span>
+        </button>
+        <button class="rc-nav__item" data-view="plugins">
+          <span class="rc-nav__icon">🧩</span>
+          <span class="rc-nav__label">Plugin Manager</span>
+          <span class="rc-nav__badge" id="rc-plugin-count">0</span>
+        </button>
+        <button class="rc-nav__item" data-view="marketplace">
+          <span class="rc-nav__icon">🏪</span>
+          <span class="rc-nav__label">Marketplace</span>
+        </button>
+        <button class="rc-nav__item" data-view="activity">
+          <span class="rc-nav__icon">📋</span>
+          <span class="rc-nav__label">Activity</span>
+        </button>
+        <button class="rc-nav__item" data-view="notifications">
+          <span class="rc-nav__icon">🔔</span>
+          <span class="rc-nav__label">Notifications</span>
+          <span class="rc-nav__badge rc-nav__badge--alert" id="rc-notif-count" style="display:none;">0</span>
+        </button>
+        <button class="rc-nav__item" data-view="feedback">
+          <span class="rc-nav__icon" id="rc-feedback-nav-icon" aria-hidden="true"></span>
+          <span class="rc-nav__label">Send Feedback</span>
+        </button>
+        <button class="rc-nav__item" data-view="diagnostics">
+          <span class="rc-nav__icon">🩺</span>
+          <span class="rc-nav__label">Diagnostics</span>
+        </button>
+        <button class="rc-nav__item" data-view="settings">
+          <span class="rc-nav__icon">⚙️</span>
+          <span class="rc-nav__label">Settings</span>
+        </button>
+
+        <!-- ── Plugin nav items (injected dynamically) ── -->
+        <div class="rc-nav__divider"></div>
+        <div class="rc-nav__section-title">Plugins</div>
+        <div id="rc-plugin-nav-items">
+          <div class="rc-nav__empty">No plugins loaded</div>
+        </div>
+      </nav>
+
+      <div class="rc-sidebar__footer">
+        <button class="rc-theme-toggle" id="rc-theme-toggle" title="Toggle dark/light mode">
+          <span id="rc-theme-icon">☀️</span>
+        </button>
+        <span class="rc-sidebar__footer-text">ReplyCators Platform</span>
+      </div>
+    </aside>
+
+    <!-- ── Main Content ──────────────────────────────────────── -->
+    <main class="rc-main" id="rc-main">
+
+      <!-- ── Topbar ── -->
+      <header class="rc-topbar">
+        <button class="rc-sidebar-toggle" id="rc-sidebar-toggle" title="Toggle sidebar">☰</button>
+        <div class="rc-topbar__breadcrumb" id="rc-breadcrumb">Dashboard</div>
+        <div class="rc-topbar__actions">
+          <button class="rc-topbar__action" id="rc-refresh-btn" title="Refresh">↻</button>
+          <div class="rc-notif-indicator" id="rc-notif-indicator">
+            🔔
+            <span class="rc-notif-dot" id="rc-notif-dot" style="display:none;"></span>
+          </div>
+        </div>
+      </header>
+
+      <!-- ── View Container ── -->
+      <div class="rc-view-container" id="rc-view-container">
+
+        <!-- DASHBOARD VIEW -->
+        <div class="rc-view rc-view--active" id="view-dashboard">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Dashboard</h1>
+            <p class="rc-view__subtitle">ReplyCators Platform Overview</p>
+          </div>
+
+          <div class="rc-stats-row" id="rc-stats-row">
+            <div class="rc-stat-card">
+              <div class="rc-stat-card__value" id="stat-total-plugins">0</div>
+              <div class="rc-stat-card__label">Total Plugins</div>
+            </div>
+            <div class="rc-stat-card rc-stat-card--green">
+              <div class="rc-stat-card__value" id="stat-active-plugins">0</div>
+              <div class="rc-stat-card__label">Active Plugins</div>
+            </div>
+            <div class="rc-stat-card rc-stat-card--amber">
+              <div class="rc-stat-card__value" id="stat-inactive-plugins">0</div>
+              <div class="rc-stat-card__label">Inactive Plugins</div>
+            </div>
+            <div class="rc-stat-card rc-stat-card--red">
+              <div class="rc-stat-card__value" id="stat-error-plugins">0</div>
+              <div class="rc-stat-card__label">Errors</div>
+            </div>
+          </div>
+
+          <div class="rc-dashboard-widgets" id="rc-dashboard-widgets">
+            <!-- Plugin dashboard components injected here -->
+          </div>
+
+          <div class="rc-quick-actions">
+            <div class="rc-section-header">Quick Actions</div>
+            <div class="rc-quick-actions__grid" id="rc-quick-actions-grid">
+              <!-- Populated from registered plugin actions -->
+            </div>
+          </div>
+        </div>
+
+        <!-- PLUGIN MANAGER VIEW -->
+        <div class="rc-view" id="view-plugins">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Plugin Manager</h1>
+            <p class="rc-view__subtitle">Manage installed plugins</p>
+          </div>
+
+          <div class="rc-filter-bar">
+            <input type="text" id="plugin-filter-input" class="rc-input" placeholder="Filter plugins..." style="max-width:260px;" />
+            <select id="plugin-filter-category" class="rc-input" style="max-width:180px;">
+              <option value="">All Categories</option>
+              <option value="crm">CRM</option>
+              <option value="itsm">ITSM</option>
+              <option value="project-management">Project Management</option>
+              <option value="cloud">Cloud</option>
+              <option value="analytics">Analytics</option>
+              <option value="productivity">Productivity</option>
+              <option value="ai-assistant">AI Assistant</option>
+              <option value="monitoring">Monitoring</option>
+              <option value="developer-tools">Developer Tools</option>
+              <option value="enterprise">Enterprise</option>
+              <option value="utility">Utility</option>
+              <option value="example">Example</option>
+            </select>
+            <select id="plugin-filter-status" class="rc-input" style="max-width:150px;">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="error">Error</option>
+            </select>
+          </div>
+
+          <div class="rc-plugin-grid" id="rc-plugin-grid">
+            <!-- Plugin cards injected here -->
+          </div>
+        </div>
+
+        <!-- MARKETPLACE VIEW -->
+        <div class="rc-view" id="view-marketplace">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Plugin Marketplace</h1>
+            <p class="rc-view__subtitle">Discover and install plugins</p>
+          </div>
+          <div class="rc-marketplace-grid" id="rc-marketplace-grid">
+            <!-- Marketplace cards -->
+          </div>
+        </div>
+
+        <!-- ACTIVITY VIEW -->
+        <div class="rc-view" id="view-activity">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Activity Log</h1>
+            <p class="rc-view__subtitle">Platform and plugin events</p>
+          </div>
+          <div class="rc-activity-toolbar">
+            <select id="activity-log-level" class="rc-input rc-input--sm">
+              <option value="">All Levels</option>
+              <option value="error">Errors</option>
+              <option value="warn">Warnings</option>
+              <option value="info">Info</option>
+              <option value="debug">Debug</option>
+            </select>
+            <select id="activity-plugin-filter" class="rc-input rc-input--sm">
+              <option value="">All Plugins</option>
+            </select>
+            <button id="activity-clear-btn" class="rc-btn rc-btn--ghost rc-btn--sm">Clear</button>
+          </div>
+          <div class="rc-log-list" id="rc-log-list">
+            <div class="rc-log-empty">No log entries yet.</div>
+          </div>
+        </div>
+
+        <!-- NOTIFICATIONS VIEW -->
+        <div class="rc-view" id="view-notifications">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Notifications</h1>
+            <p class="rc-view__subtitle">Platform and plugin notifications</p>
+          </div>
+          <div class="rc-notif-list" id="rc-notif-list">
+            <div class="rc-notif-empty">No notifications.</div>
+          </div>
+        </div>
+
+        <!-- DIAGNOSTICS VIEW -->
+        <div class="rc-view" id="view-diagnostics">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Diagnostics Center</h1>
+            <p class="rc-view__subtitle">Platform health and system information</p>
+          </div>
+          <div id="rc-diagnostics-content">
+            <button id="rc-diag-refresh" class="rc-btn rc-btn--primary">🔄 Refresh Diagnostics</button>
+            <pre id="rc-diag-output" class="rc-code-block" style="margin-top:16px;">Loading...</pre>
+          </div>
+        </div>
+
+        <!-- FEEDBACK VIEW -->
+        <div class="rc-view" id="view-feedback">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Send Feedback</h1>
+            <p class="rc-view__subtitle">Prepare a feedback email draft for your default email application</p>
+          </div>
+          <div class="rc-panel rc-feedback-panel">
+            <div class="rc-feedback-panel__intro">
+              <p>Prepare a draft email addressed to the ReplyCators support recipients. ReplyCators opens your configured email application through a standard mailto handoff. You must review the draft, attach files manually, and send it yourself.</p>
+              <button id="rc-feedback-open-dialog" class="rc-btn rc-btn--primary">Open feedback form</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SETTINGS VIEW -->
+        <div class="rc-view" id="view-settings">
+          <div class="rc-view__header">
+            <h1 class="rc-view__title">Settings</h1>
+            <p class="rc-view__subtitle">Platform and plugin settings</p>
+          </div>
+
+          <div class="rc-settings-groups">
+            <!-- Platform settings -->
+            <div class="rc-settings-group">
+              <div class="rc-settings-group__title">Platform</div>
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Theme</span>
+                  <span class="rc-settings-row__desc">Choose between dark and light mode</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="settings-theme" class="rc-input rc-input--sm">
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                    <option value="system">System</option>
+                  </select>
+                </div>
+              </div>
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Log Level</span>
+                  <span class="rc-settings-row__desc">Minimum log level to capture</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="settings-log-level" class="rc-input rc-input--sm">
+                    <option value="debug">Debug</option>
+                    <option value="info" selected>Info</option>
+                    <option value="warn">Warning</option>
+                    <option value="error">Error</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Plugin settings injected here -->
+            <div id="rc-plugin-settings-container">
+            </div>
+          </div>
+        </div>
+
+        <!-- PLUGIN VIEWS (injected dynamically) -->
+        <div id="rc-plugin-views">
+
+          <!-- CLOUDABILITY ORGID PLUGIN VIEW -->
+          <div class="rc-view" id="view-plugin-cloudability-orgid">
+            <!-- Rendered by CloudabilityOrgIdPlugin.renderView() -->
+          </div>
+
+        </div>
+
+      </div><!-- /rc-view-container -->
+    </main>
+
+    <!-- ── Notification Toast Container ── -->
+    <div class="rc-toast-container" id="rc-toast-container"></div>
+
+    <dialog id="rc-feedback-dialog" class="rc-feedback-dialog" aria-labelledby="rc-feedback-dialog-title">
+      <form method="dialog" class="rc-feedback-dialog__surface">
+        <div class="rc-feedback-dialog__header">
+          <div>
+            <h2 id="rc-feedback-dialog-title">Send Feedback</h2>
+            <p id="rc-feedback-dialog-desc" class="rc-feedback-dialog__desc">ReplyCators prepares a plain-text email draft for your default email application. Nothing is sent until you review the draft and send it from that application.</p>
+          </div>
+          <button id="rc-feedback-close" class="rc-btn rc-btn--ghost rc-btn--sm" value="cancel">Cancel</button>
+        </div>
+
+        <div id="rc-feedback-status" class="rc-feedback-status" aria-live="polite"></div>
+
+        <div class="rc-feedback-dialog__body">
+          <div class="rc-feedback-grid">
+            <div class="rc-feedback-field">
+              <label for="rc-feedback-category">Feedback category</label>
+              <select id="rc-feedback-category" class="rc-input" aria-describedby="rc-feedback-category-error">
+                <option value="">Select a category</option>
+              </select>
+              <div id="rc-feedback-category-error" class="rc-feedback-error" aria-live="polite"></div>
+            </div>
+            <div class="rc-feedback-field">
+              <label for="rc-feedback-subject">Subject</label>
+              <input id="rc-feedback-subject" class="rc-input" type="text" maxlength="160" aria-describedby="rc-feedback-subject-help rc-feedback-subject-error" />
+              <div id="rc-feedback-subject-help" class="rc-feedback-help">Required. Maximum 160 characters.</div>
+              <div id="rc-feedback-subject-error" class="rc-feedback-error" aria-live="polite"></div>
+            </div>
+          </div>
+
+          <div class="rc-feedback-field">
+            <label for="rc-feedback-message">Message or issue description</label>
+            <textarea id="rc-feedback-message" class="rc-input rc-feedback-textarea" maxlength="5000" aria-describedby="rc-feedback-message-help rc-feedback-message-error"></textarea>
+            <div id="rc-feedback-message-help" class="rc-feedback-help">Required. Maximum 5000 characters. Your message is included in the email body exactly as entered.</div>
+            <div id="rc-feedback-message-error" class="rc-feedback-error" aria-live="polite"></div>
+          </div>
+
+          <section class="rc-feedback-section" aria-labelledby="rc-feedback-recipients-title">
+            <h3 id="rc-feedback-recipients-title">Recipients</h3>
+            <p class="rc-feedback-help">The draft always uses these exact To recipients.</p>
+            <ul id="rc-feedback-recipients" class="rc-feedback-recipient-list"></ul>
+          </section>
+
+          <section class="rc-feedback-section" aria-labelledby="rc-feedback-diagnostics-title">
+            <div class="rc-feedback-section__header">
+              <div>
+                <h3 id="rc-feedback-diagnostics-title">Diagnostic summary preview</h3>
+                <p class="rc-feedback-help">Diagnostics help the recipients troubleshoot version, environment, and enabled-plugin issues. Optional fields can be excluded before opening the email client.</p>
+              </div>
+              <button id="rc-feedback-generate-diagnostics" type="button" class="rc-btn rc-btn--ghost rc-btn--sm">Generate diagnostics file</button>
+            </div>
+            <div class="rc-feedback-checkboxes">
+              <label class="rc-feedback-checkbox"><input id="rc-feedback-include-plugins" type="checkbox" checked /> Include enabled plugin IDs and versions</label>
+              <label class="rc-feedback-checkbox"><input id="rc-feedback-include-locale" type="checkbox" checked /> Include locale and active theme</label>
+              <label class="rc-feedback-checkbox"><input id="rc-feedback-include-correlation" type="checkbox" checked /> Include correlation and diagnostics file details when available</label>
+            </div>
+            <div class="rc-feedback-help">Mandatory non-sensitive fields include ReplyCators version, browser, platform, diagnostics schema version, and generation time.</div>
+            <pre id="rc-feedback-diagnostics-preview" class="rc-code-block rc-feedback-preview"></pre>
+            <div id="rc-feedback-diagnostics-file" class="rc-feedback-help"></div>
+            <div class="rc-feedback-actions-row">
+              <button id="rc-feedback-download-diagnostics" type="button" class="rc-btn rc-btn--ghost rc-btn--sm" disabled>Download Diagnostics</button>
+            </div>
+          </section>
+
+          <section class="rc-feedback-section" aria-labelledby="rc-feedback-attachments-title">
+            <div class="rc-feedback-section__header">
+              <div>
+                <h3 id="rc-feedback-attachments-title">Manual attachment reminders</h3>
+                <p class="rc-feedback-help">Attachments cannot be added automatically to your email application. After the draft opens, attach the files listed below manually.</p>
+              </div>
+              <input id="rc-feedback-attachment-picker" type="file" multiple hidden />
+              <button id="rc-feedback-add-attachments" type="button" class="rc-btn rc-btn--ghost rc-btn--sm">Select files</button>
+            </div>
+            <ul id="rc-feedback-attachments" class="rc-feedback-attachment-list"></ul>
+            <div id="rc-feedback-attachment-help" class="rc-feedback-help">Selected files are used only for reminder names and sizes. ReplyCators does not upload or attach them.</div>
+          </section>
+
+          <section class="rc-feedback-section" aria-labelledby="rc-feedback-fallback-title">
+            <h3 id="rc-feedback-fallback-title">Fallback and manual submission</h3>
+            <p class="rc-feedback-help">If the draft is too long, no mail handler is available, or the handoff fails, use the copy actions below and create the email manually.</p>
+            <div class="rc-feedback-actions-row">
+              <button id="rc-feedback-copy-addresses" type="button" class="rc-btn rc-btn--ghost rc-btn--sm">Copy Email Addresses</button>
+              <button id="rc-feedback-copy-subject" type="button" class="rc-btn rc-btn--ghost rc-btn--sm">Copy Subject</button>
+              <button id="rc-feedback-copy-body" type="button" class="rc-btn rc-btn--ghost rc-btn--sm">Copy Feedback</button>
+            </div>
+            <div id="rc-feedback-manual-instructions" class="rc-feedback-help">Manual email instructions will appear here when needed.</div>
+          </section>
+
+          <section class="rc-feedback-section" aria-labelledby="rc-feedback-privacy-title">
+            <h3 id="rc-feedback-privacy-title">Privacy notice</h3>
+            <p class="rc-feedback-help">ReplyCators uses an allowlist of approved diagnostic fields. It excludes secrets, credentials, cookies, attachment contents, unrelated form data, and full local paths containing usernames. The generated diagnostics file must be attached manually if you choose to send it.</p>
+          </section>
+        </div>
+
+        <div class="rc-feedback-dialog__footer">
+          <button id="rc-feedback-cancel" class="rc-btn rc-btn--ghost" value="cancel">Cancel</button>
+          <button id="rc-feedback-open-email" type="button" class="rc-btn rc-btn--primary">Open Email Client</button>
+        </div>
+      </form>
+    </dialog>
+
+  </div><!-- /rc-shell -->
+
+  <script src="dashboard.js" type="module"></script>
+</body>
+</html>

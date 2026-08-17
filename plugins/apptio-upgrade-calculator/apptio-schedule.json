@@ -1,0 +1,27 @@
+{
+  "_comment": "Local fallback schedule. Used only when IBM Community is unreachable and no cache exists.",
+  "source": "local",
+  "lastUpdated": "2026-07-13",
+  "releases": [
+    {
+      "version": "5.24",
+      "sandboxDate": "2026-01-05",
+      "productionDate": "2026-01-12"
+    },
+    {
+      "version": "5.26",
+      "sandboxDate": "2026-03-09",
+      "productionDate": "2026-03-16"
+    },
+    {
+      "version": "5.28",
+      "sandboxDate": "2026-07-06",
+      "productionDate": "2026-07-13"
+    },
+    {
+      "version": "5.30",
+      "sandboxDate": "2026-10-05",
+      "productionDate": "2026-10-12"
+    }
+  ]
+}

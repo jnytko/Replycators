@@ -1,0 +1,1897 @@
+/* ============================================================
+   Reply Creators — Platform Design System (Fluent UI–inspired)
+   Dark and Light mode, CSS custom properties.
+   ============================================================ */
+
+/* ── Font ───────────────────────────────────────────────────── */
+:root {
+  font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ── Dark Theme (default) ────────────────────────────────────── */
+[data-theme="dark"], .rc-app[data-theme="dark"] {
+  --rc-bg:             #1a1d21;
+  --rc-surface:        #222529;
+  --rc-surface-2:      #2a2d32;
+  --rc-surface-3:      #313438;
+  --rc-border:         #3a3d42;
+  --rc-border-light:   #2e3136;
+  --rc-text:           #e5e7eb;
+  --rc-text-muted:     #8b949e;
+  --rc-text-dim:       #656d76;
+  --rc-accent:         #4f8ef7;
+  --rc-accent-hover:   #6aa3ff;
+  --rc-accent-muted:   rgba(79,142,247,0.15);
+  --rc-green:          #2ea043;
+  --rc-green-bg:       rgba(46,160,67,0.15);
+  --rc-amber:          #e3b341;
+  --rc-amber-bg:       rgba(227,179,65,0.15);
+  --rc-red:            #f85149;
+  --rc-red-bg:         rgba(248,81,73,0.15);
+  --rc-danger:         #f85149;
+  --rc-danger-bg:      rgba(248,81,73,0.15);
+  --rc-purple:         #9b59d0;
+  --rc-purple-bg:      rgba(155,89,208,0.15);
+  --rc-shadow:         0 4px 24px rgba(0,0,0,0.4);
+  --rc-shadow-sm:      0 2px 8px rgba(0,0,0,0.3);
+  --rc-scrollbar-bg:   #2a2d32;
+  --rc-scrollbar-thumb: #444950;
+}
+
+/* ── Light Theme ─────────────────────────────────────────────── */
+[data-theme="light"], .rc-app[data-theme="light"] {
+  --rc-bg:             #f5f6f8;
+  --rc-surface:        #ffffff;
+  --rc-surface-2:      #f0f2f5;
+  --rc-surface-3:      #e8eaed;
+  --rc-border:         #d1d5db;
+  --rc-border-light:   #e5e7eb;
+  --rc-text:           #1f2328;
+  --rc-text-muted:     #57606a;
+  --rc-text-dim:       #8b949e;
+  --rc-accent:         #0969da;
+  --rc-accent-hover:   #0860ca;
+  --rc-accent-muted:   rgba(9,105,218,0.10);
+  --rc-green:          #1a7f37;
+  --rc-green-bg:       rgba(26,127,55,0.10);
+  --rc-amber:          #9a6700;
+  --rc-amber-bg:       rgba(154,103,0,0.10);
+  --rc-red:            #cf222e;
+  --rc-red-bg:         rgba(207,34,46,0.10);
+  --rc-danger:         #cf222e;
+  --rc-danger-bg:      rgba(207,34,46,0.10);
+  --rc-purple:         #7c3aed;
+  --rc-purple-bg:      rgba(124,58,237,0.10);
+  --rc-shadow:         0 4px 24px rgba(0,0,0,0.12);
+  --rc-shadow-sm:      0 2px 8px rgba(0,0,0,0.08);
+  --rc-scrollbar-bg:   #f0f2f5;
+  --rc-scrollbar-thumb: #c8cdd4;
+}
+
+/* ── Midnight Blue Theme ─────────────────────────────────────── */
+[data-theme="midnight-blue"], .rc-app[data-theme="midnight-blue"] {
+  --rc-bg:             #0d1117;
+  --rc-surface:        #131a26;
+  --rc-surface-2:      #1c2333;
+  --rc-surface-3:      #243048;
+  --rc-border:         #30415a;
+  --rc-border-light:   #253350;
+  --rc-text:           #c9d1d9;
+  --rc-text-muted:     #8b9eb8;
+  --rc-text-dim:       #5c7090;
+  --rc-accent:         #58a6ff;
+  --rc-accent-hover:   #79b8ff;
+  --rc-accent-muted:   rgba(88,166,255,0.15);
+  --rc-green:          #3fb950;
+  --rc-green-bg:       rgba(63,185,80,0.15);
+  --rc-amber:          #d29922;
+  --rc-amber-bg:       rgba(210,153,34,0.15);
+  --rc-red:            #f85149;
+  --rc-red-bg:         rgba(248,81,73,0.15);
+  --rc-danger:         #f85149;
+  --rc-danger-bg:      rgba(248,81,73,0.15);
+  --rc-purple:         #bc8cff;
+  --rc-purple-bg:      rgba(188,140,255,0.15);
+  --rc-shadow:         0 4px 24px rgba(0,0,0,0.5);
+  --rc-shadow-sm:      0 2px 8px rgba(0,0,0,0.4);
+  --rc-scrollbar-bg:   #1c2333;
+  --rc-scrollbar-thumb: #30415a;
+}
+
+/* ── Nord Theme ──────────────────────────────────────────────── */
+[data-theme="nord"], .rc-app[data-theme="nord"] {
+  --rc-bg:             #2e3440;
+  --rc-surface:        #3b4252;
+  --rc-surface-2:      #434c5e;
+  --rc-surface-3:      #4c566a;
+  --rc-border:         #4c566a;
+  --rc-border-light:   #434c5e;
+  --rc-text:           #eceff4;
+  --rc-text-muted:     #d8dee9;
+  --rc-text-dim:       #9099a8;
+  --rc-accent:         #88c0d0;
+  --rc-accent-hover:   #a3d1e0;
+  --rc-accent-muted:   rgba(136,192,208,0.15);
+  --rc-green:          #a3be8c;
+  --rc-green-bg:       rgba(163,190,140,0.15);
+  --rc-amber:          #ebcb8b;
+  --rc-amber-bg:       rgba(235,203,139,0.15);
+  --rc-red:            #bf616a;
+  --rc-red-bg:         rgba(191,97,106,0.15);
+  --rc-danger:         #bf616a;
+  --rc-danger-bg:      rgba(191,97,106,0.15);
+  --rc-purple:         #b48ead;
+  --rc-purple-bg:      rgba(180,142,173,0.15);
+  --rc-shadow:         0 4px 24px rgba(0,0,0,0.4);
+  --rc-shadow-sm:      0 2px 8px rgba(0,0,0,0.3);
+  --rc-scrollbar-bg:   #3b4252;
+  --rc-scrollbar-thumb: #4c566a;
+}
+
+/* ── Dracula Theme ───────────────────────────────────────────── */
+[data-theme="dracula"], .rc-app[data-theme="dracula"] {
+  --rc-bg:             #282a36;
+  --rc-surface:        #313244;
+  --rc-surface-2:      #3a3c4e;
+  --rc-surface-3:      #44475a;
+  --rc-border:         #44475a;
+  --rc-border-light:   #3a3c4e;
+  --rc-text:           #f8f8f2;
+  --rc-text-muted:     #bdbdbd;
+  --rc-text-dim:       #7c7c8a;
+  --rc-accent:         #bd93f9;
+  --rc-accent-hover:   #caa9f9;
+  --rc-accent-muted:   rgba(189,147,249,0.15);
+  --rc-green:          #50fa7b;
+  --rc-green-bg:       rgba(80,250,123,0.12);
+  --rc-amber:          #f1fa8c;
+  --rc-amber-bg:       rgba(241,250,140,0.12);
+  --rc-red:            #ff5555;
+  --rc-red-bg:         rgba(255,85,85,0.15);
+  --rc-danger:         #ff5555;
+  --rc-danger-bg:      rgba(255,85,85,0.15);
+  --rc-purple:         #ff79c6;
+  --rc-purple-bg:      rgba(255,121,198,0.15);
+  --rc-shadow:         0 4px 24px rgba(0,0,0,0.5);
+  --rc-shadow-sm:      0 2px 8px rgba(0,0,0,0.4);
+  --rc-scrollbar-bg:   #313244;
+  --rc-scrollbar-thumb: #44475a;
+}
+
+/* ── Solarized Dark Theme ────────────────────────────────────── */
+[data-theme="solarized-dark"], .rc-app[data-theme="solarized-dark"] {
+  --rc-bg:             #002b36;
+  --rc-surface:        #073642;
+  --rc-surface-2:      #0d4251;
+  --rc-surface-3:      #124d5d;
+  --rc-border:         #1a566b;
+  --rc-border-light:   #0d4251;
+  --rc-text:           #839496;
+  --rc-text-muted:     #657b83;
+  --rc-text-dim:       #4a6270;
+  --rc-accent:         #268bd2;
+  --rc-accent-hover:   #3a9fdf;
+  --rc-accent-muted:   rgba(38,139,210,0.15);
+  --rc-green:          #859900;
+  --rc-green-bg:       rgba(133,153,0,0.15);
+  --rc-amber:          #b58900;
+  --rc-amber-bg:       rgba(181,137,0,0.15);
+  --rc-red:            #dc322f;
+  --rc-red-bg:         rgba(220,50,47,0.15);
+  --rc-danger:         #dc322f;
+  --rc-danger-bg:      rgba(220,50,47,0.15);
+  --rc-purple:         #6c71c4;
+  --rc-purple-bg:      rgba(108,113,196,0.15);
+  --rc-shadow:         0 4px 24px rgba(0,0,0,0.5);
+  --rc-shadow-sm:      0 2px 8px rgba(0,0,0,0.4);
+  --rc-scrollbar-bg:   #073642;
+  --rc-scrollbar-thumb: #1a566b;
+}
+
+/* ── Solarized Light Theme ───────────────────────────────────── */
+[data-theme="solarized-light"], .rc-app[data-theme="solarized-light"] {
+  --rc-bg:             #fdf6e3;
+  --rc-surface:        #eee8d5;
+  --rc-surface-2:      #e7e1ce;
+  --rc-surface-3:      #ddd8c4;
+  --rc-border:         #d0c9b6;
+  --rc-border-light:   #ddd8c4;
+  --rc-text:           #657b83;
+  --rc-text-muted:     #839496;
+  --rc-text-dim:       #93a1a1;
+  --rc-accent:         #268bd2;
+  --rc-accent-hover:   #1e7bc0;
+  --rc-accent-muted:   rgba(38,139,210,0.12);
+  --rc-green:          #859900;
+  --rc-green-bg:       rgba(133,153,0,0.12);
+  --rc-amber:          #b58900;
+  --rc-amber-bg:       rgba(181,137,0,0.12);
+  --rc-red:            #dc322f;
+  --rc-red-bg:         rgba(220,50,47,0.12);
+  --rc-danger:         #dc322f;
+  --rc-danger-bg:      rgba(220,50,47,0.12);
+  --rc-purple:         #6c71c4;
+  --rc-purple-bg:      rgba(108,113,196,0.12);
+  --rc-shadow:         0 4px 24px rgba(0,0,0,0.1);
+  --rc-shadow-sm:      0 2px 8px rgba(0,0,0,0.07);
+  --rc-scrollbar-bg:   #eee8d5;
+  --rc-scrollbar-thumb: #c8c3b4;
+}
+
+/* ── Graphite Theme ──────────────────────────────────────────── */
+[data-theme="graphite"], .rc-app[data-theme="graphite"] {
+  --rc-bg:             #1c1c1e;
+  --rc-surface:        #242426;
+  --rc-surface-2:      #2c2c2e;
+  --rc-surface-3:      #3a3a3c;
+  --rc-border:         #3a3a3c;
+  --rc-border-light:   #2c2c2e;
+  --rc-text:           #ebebf5;
+  --rc-text-muted:     #8e8e93;
+  --rc-text-dim:       #636366;
+  --rc-accent:         #636eff;
+  --rc-accent-hover:   #7b83ff;
+  --rc-accent-muted:   rgba(99,110,255,0.15);
+  --rc-green:          #30d158;
+  --rc-green-bg:       rgba(48,209,88,0.15);
+  --rc-amber:          #ffd60a;
+  --rc-amber-bg:       rgba(255,214,10,0.12);
+  --rc-red:            #ff453a;
+  --rc-red-bg:         rgba(255,69,58,0.15);
+  --rc-danger:         #ff453a;
+  --rc-danger-bg:      rgba(255,69,58,0.15);
+  --rc-purple:         #bf5af2;
+  --rc-purple-bg:      rgba(191,90,242,0.15);
+  --rc-shadow:         0 4px 24px rgba(0,0,0,0.5);
+  --rc-shadow-sm:      0 2px 8px rgba(0,0,0,0.4);
+  --rc-scrollbar-bg:   #242426;
+  --rc-scrollbar-thumb: #3a3a3c;
+}
+
+/* ── High Contrast Dark Theme ────────────────────────────────── */
+[data-theme="high-contrast-dark"], .rc-app[data-theme="high-contrast-dark"] {
+  --rc-bg:             #000000;
+  --rc-surface:        #0d0d0d;
+  --rc-surface-2:      #1a1a1a;
+  --rc-surface-3:      #262626;
+  --rc-border:         #ffffff;
+  --rc-border-light:   #aaaaaa;
+  --rc-text:           #ffffff;
+  --rc-text-muted:     #d0d0d0;
+  --rc-text-dim:       #aaaaaa;
+  --rc-accent:         #ffff00;
+  --rc-accent-hover:   #ffff55;
+  --rc-accent-muted:   rgba(255,255,0,0.15);
+  --rc-green:          #00ff00;
+  --rc-green-bg:       rgba(0,255,0,0.12);
+  --rc-amber:          #ffaa00;
+  --rc-amber-bg:       rgba(255,170,0,0.15);
+  --rc-red:            #ff4444;
+  --rc-red-bg:         rgba(255,68,68,0.15);
+  --rc-danger:         #ff4444;
+  --rc-danger-bg:      rgba(255,68,68,0.15);
+  --rc-purple:         #dd88ff;
+  --rc-purple-bg:      rgba(221,136,255,0.15);
+  --rc-shadow:         0 4px 24px rgba(255,255,255,0.1);
+  --rc-shadow-sm:      0 2px 8px rgba(255,255,255,0.07);
+  --rc-scrollbar-bg:   #000000;
+  --rc-scrollbar-thumb: #ffffff;
+}
+
+/* ── High Contrast Light Theme ───────────────────────────────── */
+[data-theme="high-contrast-light"], .rc-app[data-theme="high-contrast-light"] {
+  --rc-bg:             #ffffff;
+  --rc-surface:        #f8f8f8;
+  --rc-surface-2:      #f0f0f0;
+  --rc-surface-3:      #e0e0e0;
+  --rc-border:         #000000;
+  --rc-border-light:   #444444;
+  --rc-text:           #000000;
+  --rc-text-muted:     #222222;
+  --rc-text-dim:       #555555;
+  --rc-accent:         #0000cc;
+  --rc-accent-hover:   #0000aa;
+  --rc-accent-muted:   rgba(0,0,204,0.10);
+  --rc-green:          #006600;
+  --rc-green-bg:       rgba(0,102,0,0.10);
+  --rc-amber:          #664400;
+  --rc-amber-bg:       rgba(102,68,0,0.10);
+  --rc-red:            #cc0000;
+  --rc-red-bg:         rgba(204,0,0,0.10);
+  --rc-danger:         #cc0000;
+  --rc-danger-bg:      rgba(204,0,0,0.10);
+  --rc-purple:         #660099;
+  --rc-purple-bg:      rgba(102,0,153,0.10);
+  --rc-shadow:         0 4px 24px rgba(0,0,0,0.15);
+  --rc-shadow-sm:      0 2px 8px rgba(0,0,0,0.10);
+  --rc-scrollbar-bg:   #f0f0f0;
+  --rc-scrollbar-thumb: #000000;
+}
+
+/* ── IBM Blue Theme ──────────────────────────────────────────── */
+[data-theme="ibm-blue"], .rc-app[data-theme="ibm-blue"] {
+  --rc-bg:             #161616;
+  --rc-surface:        #262626;
+  --rc-surface-2:      #393939;
+  --rc-surface-3:      #4c4c4c;
+  --rc-border:         #525252;
+  --rc-border-light:   #393939;
+  --rc-text:           #f4f4f4;
+  --rc-text-muted:     #c6c6c6;
+  --rc-text-dim:       #8d8d8d;
+  --rc-accent:         #0f62fe;
+  --rc-accent-hover:   #0353e9;
+  --rc-accent-muted:   rgba(15,98,254,0.15);
+  --rc-green:          #24a148;
+  --rc-green-bg:       rgba(36,161,72,0.15);
+  --rc-amber:          #f1c21b;
+  --rc-amber-bg:       rgba(241,194,27,0.15);
+  --rc-red:            #da1e28;
+  --rc-red-bg:         rgba(218,30,40,0.15);
+  --rc-danger:         #da1e28;
+  --rc-danger-bg:      rgba(218,30,40,0.15);
+  --rc-purple:         #8a3ffc;
+  --rc-purple-bg:      rgba(138,63,252,0.15);
+  --rc-shadow:         0 4px 24px rgba(0,0,0,0.5);
+  --rc-shadow-sm:      0 2px 8px rgba(0,0,0,0.4);
+  --rc-scrollbar-bg:   #262626;
+  --rc-scrollbar-thumb: #525252;
+}
+
+/* ── ReplyCators Signature Theme ─────────────────────────────── */
+[data-theme="replycators"], .rc-app[data-theme="replycators"] {
+  --rc-bg:             #12101a;
+  --rc-surface:        #1a1826;
+  --rc-surface-2:      #232130;
+  --rc-surface-3:      #2c2a3a;
+  --rc-border:         #3d3b52;
+  --rc-border-light:   #2d2b40;
+  --rc-text:           #e8e6f0;
+  --rc-text-muted:     #9896ae;
+  --rc-text-dim:       #6a6880;
+  --rc-accent:         #8b5cf6;
+  --rc-accent-hover:   #a070ff;
+  --rc-accent-muted:   rgba(139,92,246,0.18);
+  --rc-green:          #34d399;
+  --rc-green-bg:       rgba(52,211,153,0.15);
+  --rc-amber:          #fbbf24;
+  --rc-amber-bg:       rgba(251,191,36,0.15);
+  --rc-red:            #f87171;
+  --rc-red-bg:         rgba(248,113,113,0.15);
+  --rc-danger:         #f87171;
+  --rc-danger-bg:      rgba(248,113,113,0.15);
+  --rc-purple:         #c084fc;
+  --rc-purple-bg:      rgba(192,132,252,0.15);
+  --rc-shadow:         0 4px 24px rgba(0,0,0,0.6);
+  --rc-shadow-sm:      0 2px 8px rgba(0,0,0,0.4);
+  --rc-scrollbar-bg:   #1a1826;
+  --rc-scrollbar-thumb: #3d3b52;
+}
+
+/* ── Font Families ───────────────────────────────────────────── */
+/* Applied via data-font attribute on <body> */
+[data-font="system"]          { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+[data-font="inter"]           { font-family: "Inter", "Segoe UI", system-ui, sans-serif; }
+[data-font="roboto"]          { font-family: "Roboto", "Segoe UI", Arial, sans-serif; }
+[data-font="open-sans"]       { font-family: "Open Sans", "Segoe UI", Arial, sans-serif; }
+[data-font="ibm-plex-sans"]   { font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif; }
+[data-font="source-sans-pro"] { font-family: "Source Sans Pro", "Segoe UI", Arial, sans-serif; }
+
+/* ── UI Density ──────────────────────────────────────────────── */
+/* Applied via data-density attribute on <body>. Uses CSS custom properties
+   so every component that uses --rc-density-* inherits the setting. */
+[data-density="compact"] {
+  --rc-density-padding:   6px 10px;
+  --rc-density-row-pad:   8px 12px;
+  --rc-density-font:      11px;
+  --rc-density-card-pad:  8px 10px;
+}
+[data-density="comfortable"] {
+  --rc-density-padding:   10px 14px;
+  --rc-density-row-pad:   12px 16px;
+  --rc-density-font:      12px;
+  --rc-density-card-pad:  12px 14px;
+}
+[data-density="spacious"] {
+  --rc-density-padding:   14px 20px;
+  --rc-density-row-pad:   16px 20px;
+  --rc-density-font:      13px;
+  --rc-density-card-pad:  16px 18px;
+}
+
+/* Apply density to settings rows */
+[data-density="compact"]     .rc-settings-row { padding: 8px 12px; }
+[data-density="spacious"]    .rc-settings-row { padding: 16px 20px; }
+[data-density="compact"]     .rc-plugin-card__body { padding: 8px 10px; }
+[data-density="spacious"]    .rc-plugin-card__body { padding: 14px 16px; }
+[data-density="compact"]     .rc-view { padding: 10px; }
+[data-density="spacious"]    .rc-view { padding: 20px; }
+[data-density="compact"]     .rc-nav__item { padding: 6px 0; }
+[data-density="spacious"]    .rc-nav__item { padding: 11px 0; }
+[data-density="compact"]     .rc-sidebar--expanded .rc-nav__item { padding: 6px 10px; }
+[data-density="spacious"]    .rc-sidebar--expanded .rc-nav__item { padding: 10px 12px; }
+
+/* ── Accessibility Modifiers ─────────────────────────────────── */
+
+/* ── RC-003 fix: Larger font size ─────────────────────────────
+   Sets a larger root font size AND explicitly overrides the key
+   text elements that use hard-coded px values throughout the UI.
+   Users should notice a clear, immediate size increase everywhere. */
+[data-larger-font="true"] {
+  font-size: 15px;
+}
+/* Nav labels, breadcrumb, section titles */
+[data-larger-font="true"] .rc-nav__label          { font-size: 14px !important; }
+[data-larger-font="true"] .rc-nav__section-title  { font-size: 11px !important; }
+[data-larger-font="true"] #rc-breadcrumb          { font-size: 14px !important; }
+/* Plugin Manager list rows */
+[data-larger-font="true"] .rc-plist-name          { font-size: 14px !important; }
+[data-larger-font="true"] .rc-plist-col           { font-size: 13px !important; }
+/* Stat cards */
+[data-larger-font="true"] .rc-stat-card__value    { font-size: 26px !important; }
+[data-larger-font="true"] .rc-stat-card__label    { font-size: 12px !important; }
+/* Widget cards */
+[data-larger-font="true"] .rc-widget-card__title  { font-size: 14px !important; }
+[data-larger-font="true"] .rc-widget-card__body   { font-size: 13px !important; }
+/* Settings view */
+[data-larger-font="true"] .rc-settings-row__label { font-size: 15px !important; }
+[data-larger-font="true"] .rc-settings-row__desc  { font-size: 13px !important; }
+[data-larger-font="true"] .rc-settings-group__title { font-size: 14px !important; }
+/* Forms, labels, inputs */
+[data-larger-font="true"] .rc-label               { font-size: 14px !important; }
+[data-larger-font="true"] .rc-helper-text         { font-size: 13px !important; }
+[data-larger-font="true"] .rc-input,
+[data-larger-font="true"] .rc-textarea,
+[data-larger-font="true"] select.rc-input         { font-size: 14px !important; }
+/* Badges and tags */
+[data-larger-font="true"] .rc-badge               { font-size: 13px !important; }
+[data-larger-font="true"] .rc-tag                 { font-size: 12px !important; }
+/* Log & notification entries */
+[data-larger-font="true"] .rc-log-entry           { font-size: 13px !important; }
+[data-larger-font="true"] .rc-notif-item__title   { font-size: 14px !important; }
+[data-larger-font="true"] .rc-notif-item__body    { font-size: 13px !important; }
+/* Buttons */
+[data-larger-font="true"] .rc-btn                 { font-size: 13px !important; }
+[data-larger-font="true"] .rc-btn--sm             { font-size: 13px !important; }
+
+/* Reduced animations — remove all transitions and keyframe animations */
+[data-reduced-animations="true"] *,
+[data-reduced-animations="true"] *::before,
+[data-reduced-animations="true"] *::after {
+  animation-duration:   0.001ms !important;
+  animation-delay:      0.001ms !important;
+  transition-duration:  0.001ms !important;
+  transition-delay:     0.001ms !important;
+}
+
+/* ── RC-004 fix: High Contrast Mode ──────────────────────────────
+   True accessibility-focused high contrast: strong border colours,
+   maximum text contrast, saturated interactive elements.
+   Designed to significantly improve readability for users with low vision. */
+[data-high-contrast="true"] {
+  --rc-border:       #ffffff;
+  --rc-border-light: #cccccc;
+  --rc-text:         #ffffff;
+  --rc-text-muted:   #e0e0e0;
+  --rc-text-dim:     #bbbbbb;
+  --rc-bg:           #000000;
+  --rc-surface:      #0a0a0a;
+  --rc-surface-2:    #141414;
+  --rc-surface-3:    #1e1e1e;
+  --rc-accent:       #ffff00;
+  --rc-accent-hover: #ffe000;
+  --rc-accent-muted: rgba(255,255,0,0.2);
+  --rc-green:        #00ff88;
+  --rc-green-bg:     rgba(0,255,136,0.15);
+  --rc-amber:        #ffaa00;
+  --rc-amber-bg:     rgba(255,170,0,0.15);
+  --rc-red:          #ff4444;
+  --rc-red-bg:       rgba(255,68,68,0.15);
+}
+[data-high-contrast="true"] .rc-btn {
+  border: 2px solid #ffffff !important;
+  font-weight: 700 !important;
+}
+[data-high-contrast="true"] .rc-btn--primary {
+  background: #ffff00 !important;
+  color: #000000 !important;
+  border-color: #ffff00 !important;
+}
+[data-high-contrast="true"] .rc-input,
+[data-high-contrast="true"] .rc-textarea {
+  border: 2px solid #ffffff !important;
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+[data-high-contrast="true"] .rc-nav__item {
+  border-bottom: 1px solid #333333;
+}
+[data-high-contrast="true"] .rc-nav__item--active {
+  background: #ffff00 !important;
+  color: #000000 !important;
+  outline: 2px solid #ffffff;
+  outline-offset: -2px;
+}
+[data-high-contrast="true"] .rc-nav__item--active .rc-nav__icon,
+[data-high-contrast="true"] .rc-nav__item--active .rc-nav__label {
+  color: #000000 !important;
+}
+[data-high-contrast="true"] .rc-settings-group {
+  border: 2px solid #ffffff !important;
+}
+[data-high-contrast="true"] .rc-settings-row {
+  border-bottom: 1px solid #444444 !important;
+}
+[data-high-contrast="true"] .rc-widget-card,
+[data-high-contrast="true"] .rc-plugin-card,
+[data-high-contrast="true"] .rc-stat-card {
+  border: 2px solid #ffffff !important;
+}
+[data-high-contrast="true"] .rc-plist-row {
+  border-bottom: 1px solid #444444 !important;
+}
+[data-high-contrast="true"] .rc-toggle__slider {
+  border: 2px solid #ffffff !important;
+}
+[data-high-contrast="true"] .rc-badge {
+  border: 1px solid currentColor !important;
+  font-weight: 700 !important;
+}
+
+/* Enhanced focus indicators — prominent visible rings for keyboard users */
+[data-enhanced-focus="true"] :focus-visible {
+  outline: 3px solid var(--rc-accent) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px var(--rc-accent-muted) !important;
+}
+[data-enhanced-focus="true"] .rc-nav__item:focus-visible {
+  outline: 3px solid var(--rc-accent) !important;
+  background: var(--rc-accent-muted);
+}
+
+/* ── RC-002 fix: Show Plugin Cards ───────────────────────────────
+   When dashShowCards is false, hide all dashboard widget cards
+   AND hide the Plugin Functions section (since it is now empty).
+   The toggle sets body.dataset.dashShowCards via applyDashboardPrefs(). */
+[data-dash-show-cards="false"] .rc-widget-card { display: none !important; }
+[data-dash-show-cards="false"] #rc-widgets-section { display: none !important; }
+
+/* Dashboard compact mode */
+[data-dash-compact="true"] .rc-stats-row    { gap: 6px; }
+[data-dash-compact="true"] .rc-dashboard-widgets { gap: 6px; }
+[data-dash-compact="true"] .rc-stat-card    { padding: 7px 10px; }
+[data-dash-compact="true"] .rc-dashboard-section { margin-bottom: 10px; }
+[data-dash-compact="true"] .rc-quick-actions__grid { gap: 6px; }
+
+/* ── Toast position variants ─────────────────────────────────── */
+/* Default .rc-toast-container is bottom-right (unchanged from base CSS) */
+.rc-toast-container--bottom-right { bottom: 20px; right: 20px; left: auto; top: auto; }
+.rc-toast-container--bottom-left  { bottom: 20px; left: 20px; right: auto; top: auto; }
+.rc-toast-container--top-right    { top: 20px; right: 20px; left: auto; bottom: auto; }
+.rc-toast-container--top-left     { top: 20px; left: 20px; right: auto; bottom: auto; }
+
+/* ── Resets ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+button { cursor: pointer; font-family: inherit; font-size: inherit; }
+input, select, textarea { font-family: inherit; font-size: inherit; }
+
+/* ── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--rc-scrollbar-bg); }
+::-webkit-scrollbar-thumb {
+  background: var(--rc-scrollbar-thumb); border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--rc-text-dim); }
+
+/* ── Global focus ring — always-on, clean and minimal ─────────── */
+:focus-visible {
+  outline: 2px solid var(--rc-accent);
+  outline-offset: 2px;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.rc-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 6px; border: 1px solid transparent;
+  font-weight: 500; font-size: 13px;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease, opacity 0.12s ease;
+  white-space: nowrap; line-height: 1.4; cursor: pointer;
+  letter-spacing: 0.01em;
+}
+.rc-btn:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+.rc-btn:active:not(:disabled) { transform: translateY(1px); }
+
+.rc-btn--primary {
+  background: var(--rc-accent); color: #fff; border-color: var(--rc-accent);
+}
+.rc-btn--primary:hover:not(:disabled) {
+  background: var(--rc-accent-hover); border-color: var(--rc-accent-hover);
+}
+
+.rc-btn--secondary {
+  background: transparent; color: var(--rc-text); border-color: var(--rc-border);
+}
+.rc-btn--secondary:hover:not(:disabled) {
+  background: var(--rc-surface-2); border-color: var(--rc-border);
+}
+
+.rc-btn--ghost {
+  background: transparent; color: var(--rc-text-muted); border-color: transparent;
+}
+.rc-btn--ghost:hover:not(:disabled) {
+  background: var(--rc-surface-2); color: var(--rc-text);
+}
+
+/* Delete buttons and destructive actions */
+.rc-btn--danger {
+  background: transparent;
+  color: var(--rc-danger, var(--rc-red));
+  border-color: var(--rc-danger, var(--rc-red));
+}
+.rc-btn--danger:hover:not(:disabled) {
+  background: var(--rc-danger-bg, var(--rc-red-bg));
+}
+
+.rc-btn--sm  { padding: 5px 10px; font-size: 12px; }
+.rc-btn--xs  { padding: 3px 8px; font-size: 11px; border-radius: 4px; }
+.rc-btn-icon { font-size: 14px; }
+
+/* ── Inputs ──────────────────────────────────────────────────── */
+.rc-input {
+  background: var(--rc-surface-2);
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  color: var(--rc-text);
+  padding: 7px 10px;
+  transition: border-color 0.12s, box-shadow 0.12s;
+  outline: none;
+  width: 100%;
+}
+.rc-input:focus {
+  border-color: var(--rc-accent);
+  box-shadow: 0 0 0 3px var(--rc-accent-muted);
+}
+.rc-input:hover:not(:focus) { border-color: var(--rc-text-dim); }
+.rc-input--sm    { padding: 5px 8px; font-size: 12px; }
+.rc-input--error { border-color: var(--rc-red)    !important; box-shadow: 0 0 0 3px var(--rc-red-bg)    !important; }
+.rc-input--ok    { border-color: var(--rc-green)  !important; box-shadow: 0 0 0 3px var(--rc-green-bg)  !important; }
+.rc-input-row    { display: flex; gap: 8px; align-items: center; }
+/* Status strip below the Bob Working Directory input — always reserves space so
+   the Settings layout does not shift when the message appears or disappears.   */
+#sf-bob-working-dir-status { margin-top: 4px; display: block; }
+
+.rc-textarea {
+  background: var(--rc-surface-2);
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  color: var(--rc-text);
+  padding: 10px 12px;
+  resize: vertical;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+  line-height: 1.6;
+}
+.rc-textarea:focus {
+  border-color: var(--rc-accent);
+  box-shadow: 0 0 0 3px var(--rc-accent-muted);
+}
+.rc-textarea:hover:not(:focus) { border-color: var(--rc-text-dim); }
+.rc-textarea--mono { font-family: "Cascadia Code", "Fira Code", "Consolas", monospace; font-size: 12px; }
+
+/* ── Labels & Form ───────────────────────────────────────────── */
+.rc-form-group  { display: flex; flex-direction: column; gap: 6px; }
+.rc-label       { font-size: 12px; font-weight: 600; color: var(--rc-text); letter-spacing: 0.01em; }
+.rc-helper-text { font-size: 11px; color: var(--rc-text-muted); line-height: 1.5; }
+.rc-muted       { color: var(--rc-text-muted); }
+
+/* ── Badges & Tags ───────────────────────────────────────────── */
+.rc-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 100px; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.rc-badge--blue     { background: var(--rc-accent-muted);   color: var(--rc-accent); }
+.rc-badge--green    { background: var(--rc-green-bg);        color: var(--rc-green); }
+.rc-badge--red      { background: var(--rc-red-bg);          color: var(--rc-red); }
+.rc-badge--amber    { background: var(--rc-amber-bg);        color: var(--rc-amber); }
+.rc-badge--category { background: var(--rc-surface-3);       color: var(--rc-text-muted); }
+
+.rc-tag {
+  display: inline-flex; padding: 2px 7px; border-radius: 4px;
+  background: var(--rc-surface-3); color: var(--rc-text-muted);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.02em;
+}
+
+/* ── Status indicators ───────────────────────────────────────── */
+/* Borders match the bg tint colour (not the text colour) so they
+   don't create overwhelming same-colour triple-overlay on error/success. */
+.rc-status {
+  padding: 8px 12px; border-radius: 6px; font-size: 12px;
+  border: 1px solid transparent; line-height: 1.5;
+}
+.rc-status--neutral { background: var(--rc-surface-2); color: var(--rc-text-muted); border-color: var(--rc-border); }
+.rc-status--success { background: var(--rc-green-bg);  color: var(--rc-green);  border-color: rgba(0,0,0,0.08); }
+.rc-status--error   { background: var(--rc-red-bg);    color: var(--rc-red);    border-color: rgba(0,0,0,0.08); }
+.rc-status--warning { background: var(--rc-amber-bg);  color: var(--rc-amber);  border-color: rgba(0,0,0,0.08); }
+
+/* ── Health Dots ─────────────────────────────────────────────── */
+.rc-health { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.rc-health--active     { background: var(--rc-green); }
+.rc-health--inactive   { background: var(--rc-text-dim); }
+.rc-health--error      { background: var(--rc-red); }
+.rc-health--loading    { background: var(--rc-amber); animation: pulse 1.4s ease-in-out infinite; }
+.rc-health--registered { background: var(--rc-border); }
+.rc-health--disabled   { background: var(--rc-text-dim); opacity: 0.35; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+/* ── Toggle Switch ───────────────────────────────────────────── */
+.rc-toggle { display: inline-flex; align-items: center; cursor: pointer; }
+.rc-toggle__input { display: none; }
+.rc-toggle__slider {
+  width: 38px; height: 22px; border-radius: 11px;
+  background: var(--rc-surface-3);
+  border: 1px solid var(--rc-border);
+  transition: background 0.18s, border-color 0.18s;
+  position: relative; display: block;
+}
+.rc-toggle__slider::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--rc-text-dim);
+  transition: transform 0.18s cubic-bezier(0.34,1.3,0.64,1), background 0.18s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+.rc-toggle__input:checked + .rc-toggle__slider {
+  background: var(--rc-green); border-color: var(--rc-green);
+}
+.rc-toggle__input:checked + .rc-toggle__slider::after {
+  transform: translateX(16px); background: #fff;
+}
+
+/* ── Panel ───────────────────────────────────────────────────── */
+.rc-panel-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 20px; border-bottom: 1px solid var(--rc-border);
+  background: var(--rc-surface);
+}
+.rc-panel-title { font-size: 14px; font-weight: 600; color: var(--rc-text); }
+.rc-panel-body  { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+/* ── Documentation icon — platform standard (rc-doc-icon) ───────
+   A small icon-only button placed at the far-right of every
+   plugin panel header and widget card header. Uses the shared
+   navigation.documentation Streamline SVG via data-icon.
+   One consistent pattern replaces all Docs text-buttons.       */
+.rc-doc-icon {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.55;
+  transition: opacity 0.12s, background 0.12s;
+  line-height: 1;
+}
+.rc-doc-icon:hover,
+.rc-doc-icon:focus-visible {
+  opacity: 1;
+  background: var(--rc-surface-2);
+  outline: 2px solid var(--rc-accent);
+  outline-offset: 1px;
+}
+/* Inside a panel header the title already pushes content left;
+   remove the auto margin so the icon sits after the title gap. */
+.rc-panel-header .rc-doc-icon { margin-left: auto; }
+
+/* ── Info Cards ──────────────────────────────────────────────── */
+.rc-info-cards { display: flex; flex-direction: column; gap: 8px; }
+.rc-info-card {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: var(--rc-surface-2); border: 1px solid var(--rc-border);
+  border-radius: 8px; padding: 12px 14px;
+}
+.rc-info-card__icon    { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.rc-info-card__title   { font-size: 12px; font-weight: 600; color: var(--rc-text); margin-bottom: 3px; }
+.rc-info-card__body    { font-size: 12px; color: var(--rc-text-muted); line-height: 1.55; }
+
+/* ── Capability list ─────────────────────────────────────────── */
+.rc-capability-list {
+  list-style: none; display: flex; flex-direction: column; gap: 6px;
+  background: var(--rc-surface-2); border: 1px solid var(--rc-border);
+  border-radius: 8px; padding: 12px 14px;
+}
+.rc-capability-list li { font-size: 12px; color: var(--rc-text-muted); line-height: 1.5; }
+.rc-capability-list code {
+  background: var(--rc-surface-3); padding: 1px 5px; border-radius: 3px;
+  font-family: monospace; font-size: 11px; color: var(--rc-accent);
+}
+.rc-example-card { border-radius: 10px; padding: 20px; text-align: center; }
+.rc-example-card--blue   { background: var(--rc-accent-muted); border: 1px solid var(--rc-accent); }
+.rc-example-card--green  { background: var(--rc-green-bg);     border: 1px solid var(--rc-green); }
+.rc-example-card--purple { background: var(--rc-purple-bg);    border: 1px solid var(--rc-purple); }
+.rc-example-card h2 { font-size: 22px; margin-bottom: 8px; color: var(--rc-text); }
+.rc-example-card p  { color: var(--rc-text-muted); font-size: 13px; }
+
+/* ── Code Block ──────────────────────────────────────────────── */
+.rc-code-block {
+  background: var(--rc-surface-2); border: 1px solid var(--rc-border);
+  border-radius: 8px; padding: 14px; font-size: 11px;
+  font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+  color: var(--rc-text-muted); overflow: auto; white-space: pre-wrap;
+  word-break: break-all; max-height: 400px; line-height: 1.6;
+}
+
+/* ── Toast Notifications ─────────────────────────────────────── */
+.rc-toast-container {
+  position: fixed; bottom: 20px; right: 20px;
+  display: flex; flex-direction: column; gap: 8px; z-index: 9999;
+  max-width: 320px;
+}
+.rc-toast {
+  padding: 11px 16px 11px 14px; border-radius: 10px; box-shadow: var(--rc-shadow);
+  border: 1px solid var(--rc-border); background: var(--rc-surface);
+  display: flex; flex-direction: column; gap: 3px;
+  animation: slideIn 0.18s ease; position: relative;
+}
+.rc-toast--success { border-left: 3px solid var(--rc-green); }
+.rc-toast--error   { border-left: 3px solid var(--rc-red); }
+.rc-toast--warning { border-left: 3px solid var(--rc-amber); }
+.rc-toast--info    { border-left: 3px solid var(--rc-accent); }
+.rc-toast--exit    { opacity: 0; transform: translateX(12px); transition: all 0.4s ease; }
+.rc-toast__title   { font-size: 12px; font-weight: 600; color: var(--rc-text); padding-right: 16px; }
+.rc-toast__message { font-size: 12px; color: var(--rc-text-muted); line-height: 1.5; }
+.rc-toast__close {
+  position: absolute; top: 8px; right: 10px;
+  background: none; border: none; color: var(--rc-text-dim);
+  font-size: 14px; line-height: 1; padding: 2px; cursor: pointer;
+  border-radius: 3px; transition: color 0.1s, background 0.1s;
+}
+.rc-toast__close:hover { color: var(--rc-text); background: var(--rc-surface-2); }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Preview toolbar ─────────────────────────────────────────── */
+.rc-preview-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.rc-preview-label   { font-size: 11px; font-weight: 600; color: var(--rc-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.rc-preview-actions { display: flex; gap: 6px; }
+
+/* ── Section titles ──────────────────────────────────────────── */
+.rc-section-title, .rc-section-header {
+  font-size: 11px; font-weight: 600; color: var(--rc-text-dim);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+
+/* ── Filter bar ──────────────────────────────────────────────── */
+.rc-filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+
+/* ── Empty state ─────────────────────────────────────────────── */
+/* Modern empty state: no dashed border; subtle background surface, centered icon. */
+.rc-empty-state {
+  padding: 36px 24px; text-align: center;
+  color: var(--rc-text-dim); font-size: 13px; line-height: 1.6;
+  background: var(--rc-surface-2); border: 1px solid var(--rc-border);
+  border-radius: 10px;
+}
+.rc-empty-state::before {
+  content: attr(data-icon);
+  display: block; font-size: 28px; margin-bottom: 10px;
+  opacity: 0.5;
+}
+
+/* ── Settings rows ───────────────────────────────────────────── */
+.rc-settings-groups     { display: flex; flex-direction: column; gap: 16px; }
+.rc-settings-group      {
+  background: var(--rc-surface); border: 1px solid var(--rc-border);
+  border-radius: 10px; overflow: hidden;
+}
+.rc-settings-group__title {
+  padding: 9px 16px; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.09em;
+  color: var(--rc-text-dim); background: var(--rc-surface-2);
+  border-bottom: 1px solid var(--rc-border);
+}
+.rc-settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 16px; gap: 16px; border-bottom: 1px solid var(--rc-border-light);
+  transition: background 0.1s;
+}
+.rc-settings-row:hover        { background: var(--rc-surface-2); }
+.rc-settings-row:last-child   { border-bottom: none; }
+.rc-settings-row__info        { flex: 1; min-width: 0; }
+.rc-settings-row__label       { font-size: 13px; font-weight: 500; color: var(--rc-text); display: block; }
+.rc-settings-row__desc        { font-size: 11px; color: var(--rc-text-muted); margin-top: 2px; display: block; line-height: 1.5; }
+.rc-settings-row__control     { flex-shrink: 0; }
+
+/* ── Notifications Center — shared ops layer ─────────────────── */
+/*
+ * These tokens are the single source of truth for layout, spacing, and
+ * empty/loading states across the Notifications, Activity, and Diagnostics
+ * tabs.  Each tab is a different dataset rendered through the same shell.
+ *
+ * .rc-ops-section-header  — tab-level section label row (label + count/action)
+ * .rc-ops-scroll          — shared scrollable content container for all lists
+ * .rc-ops-empty           — unified empty / loading state block for all tabs
+ */
+.rc-ops-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  min-height: 22px;
+}
+.rc-ops-section-header__label {
+  font-size: 11px; font-weight: 600;
+  color: var(--rc-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.rc-ops-section-header__count {
+  font-size: 11px;
+  color: var(--rc-text-dim);
+  background: var(--rc-surface-3);
+  padding: 1px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.rc-ops-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 440px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.rc-ops-scroll::-webkit-scrollbar       { width: 4px; }
+.rc-ops-scroll::-webkit-scrollbar-thumb { background: var(--rc-border); border-radius: 3px; }
+.rc-ops-empty {
+  padding: 36px 24px;
+  text-align: center;
+  color: var(--rc-text-dim);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* ── Activity log ────────────────────────────────────────────── */
+.rc-activity-toolbar {
+  display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center;
+}
+/* Shared alias — cache & diagnostics inner toolbars reuse the same spacing */
+.rc-cache-toolbar {
+  display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: flex-start;
+}
+.rc-log-list {
+  /* Inherits shared scroll behaviour via .rc-ops-scroll — kept for backward compat */
+  display: flex; flex-direction: column; gap: 1px;
+  max-height: 440px; overflow-y: auto; overflow-x: hidden;
+}
+.rc-log-list::-webkit-scrollbar       { width: 4px; }
+.rc-log-list::-webkit-scrollbar-thumb { background: var(--rc-border); border-radius: 3px; }
+.rc-log-entry {
+  display: grid; grid-template-columns: 70px 46px 130px 1fr;
+  gap: 8px; align-items: center;
+  padding: 5px 8px; border-radius: 4px; font-size: 11px;
+  border-left: 2px solid transparent;
+}
+.rc-log-entry--debug { color: var(--rc-text-dim); }
+.rc-log-entry--info  { color: var(--rc-text-muted); border-left-color: var(--rc-accent); }
+.rc-log-entry--warn  { color: var(--rc-amber); border-left-color: var(--rc-amber); background: var(--rc-amber-bg); }
+.rc-log-entry--error { color: var(--rc-red); border-left-color: var(--rc-red); background: var(--rc-red-bg); }
+.rc-log-entry__time  { font-family: monospace; opacity: 0.6; }
+.rc-log-entry__level { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+.rc-log-entry__plugin{ color: var(--rc-accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rc-log-entry__msg   { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* .rc-log-empty is an alias for .rc-ops-empty — keep for JS backward compat */
+.rc-log-empty        { padding: 36px 24px; text-align: center; color: var(--rc-text-dim); font-size: 12px; line-height: 1.6; }
+
+/* ── Notifications ───────────────────────────────────────────── */
+.rc-notif-list  { display: flex; flex-direction: column; gap: 6px; max-height: 440px; overflow-y: auto; overflow-x: hidden; }
+.rc-notif-list::-webkit-scrollbar       { width: 4px; }
+.rc-notif-list::-webkit-scrollbar-thumb { background: var(--rc-border); border-radius: 3px; }
+/* .rc-notif-empty is an alias for .rc-ops-empty — keep for JS backward compat */
+.rc-notif-empty { padding: 36px 24px; text-align: center; color: var(--rc-text-dim); font-size: 12px; line-height: 1.6; }
+.rc-notif-item {
+  padding: 10px 14px; border-radius: 8px; border: 1px solid var(--rc-border);
+  background: var(--rc-surface); border-left: 3px solid var(--rc-border);
+}
+.rc-notif-item--success { border-left-color: var(--rc-green);  background: var(--rc-green-bg); }
+.rc-notif-item--error   { border-left-color: var(--rc-red);    background: var(--rc-red-bg); }
+.rc-notif-item--warning { border-left-color: var(--rc-amber);  background: var(--rc-amber-bg); }
+.rc-notif-item--info    { border-left-color: var(--rc-accent); background: var(--rc-accent-muted); }
+.rc-notif-item__header {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 4px; flex-wrap: wrap;
+}
+.rc-notif-item__icon    { font-size: 13px; flex-shrink: 0; }
+.rc-notif-item__title   { font-size: 12px; font-weight: 600; color: var(--rc-text); flex: 1; min-width: 0; }
+.rc-notif-item__plugin  {
+  font-size: 10px; color: var(--rc-text-dim);
+  background: var(--rc-surface-3); padding: 2px 6px; border-radius: 4px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.rc-notif-item__time    { font-size: 10px; color: var(--rc-text-dim); white-space: nowrap; flex-shrink: 0; }
+.rc-notif-item__body    { font-size: 12px; color: var(--rc-text-muted); line-height: 1.55; }
+
+/* ── Cloudability OrgID Plugin ───────────────────────────────── */
+.cld-status-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cld-status-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+.cld-status-card__label {
+  color: var(--rc-text-muted);
+  flex-shrink: 0;
+}
+.cld-status-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rc-text);
+  white-space: nowrap;
+}
+.cld-status-path {
+  font-size: 10px;
+  color: var(--rc-text-dim);
+  font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+  word-break: break-all;
+  text-align: right;
+}
+
+.cld-result-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cld-result-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.cld-result-card__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rc-text);
+}
+.cld-result-card__source {
+  font-size: 10px;
+  color: var(--rc-text-dim);
+  background: var(--rc-surface-3);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.cld-orgid-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cld-orgid-display {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+  border: 1px solid var(--rc-border);
+  background: var(--rc-surface-2);
+  color: var(--rc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all;
+}
+.cld-orgid-display--empty {
+  color: var(--rc-text-dim);
+  font-style: italic;
+  font-weight: 400;
+}
+.cld-orgid-display--success {
+  background: var(--rc-green-bg);
+  border-color: var(--rc-green);
+  color: var(--rc-green);
+}
+
+.cld-orgname-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+.cld-orgname-label {
+  color: var(--rc-text-muted);
+  flex-shrink: 0;
+}
+.cld-orgname-value {
+  color: var(--rc-text);
+  font-weight: 500;
+}
+
+.cld-action-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ── cld-primary-block — Hero OrgID display area ─────────────
+   Sits directly inside .rc-plugin-body as the first (primary)
+   child. Visually prominent background separates it from
+   secondary guidance content below.                           */
+.cld-primary-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  background: var(--rc-surface-2, var(--rc-surface));
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+}
+.cld-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SIDE PANEL — PLATFORM.CSS RESPONSIVE OVERRIDES
+   These rules extend dashboard.css and apply to shared platform
+   components that are defined in platform.css.
+   All rules scoped to body.rc-sidepanel.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Activity Log ─────────────────────────────────────────────
+   Remove the fixed max-height so the log fills the panel height.
+   The view container already scrolls; no need for inner cap.     */
+body.rc-sidepanel .rc-log-list {
+  max-height: none;
+  overflow-y: visible;
+}
+
+/* ── Diagnostics code block ───────────────────────────────────
+   Let JSON output expand to its natural size in the side panel.  */
+body.rc-sidepanel .rc-code-block {
+  max-height: none;
+}
+
+/* ── Panel header — allow badge to wrap at narrow widths ─────── */
+body.rc-sidepanel .rc-panel-header {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ── Cloudability: status card rows wrap on narrow panels ─────── */
+body.rc-sidepanel .cld-status-card__row {
+  flex-wrap: wrap;
+}
+
+/* ── Edge Bookmark Finder — results list ─────────────────────────
+   The results div has inline max-height:420px set in JS.
+   In side panel mode we let it grow freely (the view container
+   already provides scrolling via overflow-y:auto).               */
+body.rc-sidepanel #bm-results {
+  max-height: none !important;
+  overflow-y: visible !important;
+}
+
+/* ── rc-select — styled dropdown (mirrors rc-input) ──────────────────────── */
+.rc-select {
+  background: var(--rc-surface-2);
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  color: var(--rc-text);
+  padding: 5px 8px;
+  transition: border-color 0.15s;
+  outline: none;
+}
+.rc-select:focus { border-color: var(--rc-accent); box-shadow: 0 0 0 2px var(--rc-accent-muted); }
+
+/* ── rc-file-input — native file picker, styled to fit theme ─────────────── */
+.rc-file-input {
+  display: block;
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  cursor: pointer;
+  width: 100%;
+}
+.rc-file-input::-webkit-file-upload-button {
+  background: var(--rc-surface-3);
+  border: 1px solid var(--rc-border);
+  border-radius: 4px;
+  color: var(--rc-text);
+  padding: 3px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  margin-right: 6px;
+}
+.rc-file-input::-webkit-file-upload-button:hover {
+  background: var(--rc-surface-2);
+}
+
+/* ── rc-required — asterisk on required fields ───────────────────────────── */
+.rc-required {
+  color: var(--rc-red);
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+/* ── rc-status-bar — inline status text strip ────────────────────────────── */
+.rc-status-bar {
+  font-size: 11px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--rc-border);
+  background: var(--rc-surface-2);
+  color: var(--rc-text-muted);
+}
+.rc-status-bar.ok     { background: var(--rc-green-bg);  color: var(--rc-green);  border-color: var(--rc-green); }
+.rc-status-bar.warn   { background: var(--rc-amber-bg);  color: var(--rc-amber);  border-color: var(--rc-amber); }
+.rc-status-bar.err    { background: var(--rc-red-bg);    color: var(--rc-red);    border-color: var(--rc-red); }
+.rc-status-bar.info   { background: var(--rc-accent-muted); color: var(--rc-accent); border-color: var(--rc-accent); }
+
+/* ============================================================
+   Unified Prompt Execution Panel
+   Used by every prompt — Understand Case, Research Case,
+   custom prompts, and any future prompt — without exception.
+   ============================================================ */
+
+/* ── Attachment section ────────────────────────────────────── */
+.sf-unified-attach-section {
+  margin-bottom: 8px;
+}
+
+.sf-unified-attach-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.sf-unified-attach-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sf-unified-attach-count {
+  font-size: 10px;
+  color: var(--rc-text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── File list ─────────────────────────────────────────────── */
+.sf-unified-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 5px;
+}
+
+.sf-unified-file-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--rc-surface-2);
+  border: 1px solid var(--rc-border-light);
+  border-radius: 4px;
+  padding: 3px 5px;
+  min-height: 26px;
+}
+
+.sf-unified-file-name {
+  flex: 1;
+  font-size: 11px;
+  color: var(--rc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* ── Add-file button ───────────────────────────────────────── */
+.sf-unified-add-btn {
+  width: 100%;
+  text-align: center;
+  font-size: 11px;
+  padding: 4px 0;
+  border-style: dashed;
+  margin-top: 2px;
+}
+
+.sf-unified-add-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Additional Requests section ───────────────────────────── */
+.sf-unified-addl-section {
+  margin-bottom: 8px;
+}
+
+.sf-unified-addl-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 42px;
+  font-size: 11px;
+}
+
+/* ── Execute button row ────────────────────────────────────── */
+.sf-unified-btn-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.sf-unified-btn-row .rc-btn--primary {
+  flex: 1;
+}
+
+/* ============================================================
+   PLATFORM UI STANDARD — Shared Plugin Components
+   Version: 1.43.0
+   These classes form the canonical design system for all plugins.
+   Every new plugin MUST use these components. Existing plugins are
+   being progressively migrated to this standard.
+   See AGENTS.md §PLUGIN UI STANDARDS for governance rules.
+   ============================================================ */
+
+/* ── rc-plugin-page — Standard plugin page wrapper ──────────────
+   Use this as the outermost wrapper for every plugin view.
+   Replaces ad-hoc .rc-view padding and stray style="" overrides.
+   Controls the vertical rhythm from header to content.           */
+.rc-plugin-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* ── rc-plugin-header — Standard plugin header ──────────────────
+   Every plugin view must start with this header block.
+   Contains: icon + name + status badge + doc button (right-aligned).
+   Replaces: .sf-plugin-bar, .rc-panel-header custom implementations.
+   Canonical structure:
+     <div class="rc-plugin-header">
+       <span data-icon="..." class="rc-plugin-header__icon"></span>
+       <span class="rc-plugin-header__name">Plugin Name</span>
+       <span class="rc-badge rc-badge--blue">Status</span>  <!-- optional -->
+       <button class="rc-doc-icon" ...>...</button>
+     </div>                                                          */
+.rc-plugin-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--rc-border);
+  background: var(--rc-surface);
+  flex-shrink: 0;
+  min-height: 44px;
+}
+.rc-plugin-header__icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;       /* hard guard: prevents oversized icons from expanding header */
+}
+/* Enforce icon dimensions even if an img carries inline width/height attributes */
+.rc-plugin-header__icon img {
+  width: 20px !important;
+  height: 20px !important;
+  display: block;
+  flex-shrink: 0;
+}
+.rc-plugin-header__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rc-text);
+  flex: 1;           /* fills available space; pushes version + doc icon right */
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* rc-plugin-header__version — mandatory version pill on every plugin header.
+   Display the plugin's semantic version (e.g. v4.0.3).
+   Use rc-badge rc-badge--neutral for status-override badges on top of this. */
+.rc-plugin-header__version {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--rc-accent-muted);
+  color: var(--rc-accent);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+/* .rc-doc-icon already has margin-left:auto in its base definition.
+   When __version is present it still floats to the far right via flex. */
+
+/* ── rc-plugin-body — Standard plugin content area ──────────────
+   Scrollable content region below the plugin header.
+   Direct child of .rc-plugin-page.                               */
+.rc-plugin-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.rc-plugin-body::-webkit-scrollbar       { width: 4px; }
+.rc-plugin-body::-webkit-scrollbar-thumb { background: var(--rc-border); border-radius: 3px; }
+
+/* ── rc-plugin-section — Standard section within a plugin body ──
+   A titled content block. The heading row + content below it.
+   Canonical structure:
+     <div class="rc-plugin-section">
+       <div class="rc-plugin-section__header">
+         <span class="rc-plugin-section__title">Section Title</span>
+         <div class="rc-plugin-section__actions"><!-- optional buttons --></div>
+       </div>
+       <!-- section content -->
+     </div>                                                         */
+.rc-plugin-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rc-plugin-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 20px;
+}
+.rc-plugin-section__title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rc-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.rc-plugin-section__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── rc-plugin-card — Standard card component ───────────────────
+   Consistent surface card used by all plugins.
+   Replaces: .cld-result-card, .auc-stat, and ad-hoc card patterns.
+   Canonical structure:
+     <div class="rc-plugin-card">
+       <div class="rc-plugin-card__header">
+         <span class="rc-plugin-card__title">Title</span>
+         <span class="rc-plugin-card__meta">Meta</span>       <!-- optional -->
+       </div>
+       <div class="rc-plugin-card__body"><!-- content --></div>
+       <div class="rc-plugin-card__footer"><!-- actions --></div>  <!-- optional -->
+     </div>                                                         */
+.rc-plugin-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.rc-plugin-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rc-border-light);
+  background: var(--rc-surface);
+  flex-wrap: wrap;
+}
+.rc-plugin-card__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rc-text);
+}
+.rc-plugin-card__meta {
+  font-size: 10px;
+  color: var(--rc-text-dim);
+  background: var(--rc-surface-3);
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.rc-plugin-card__body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+.rc-plugin-card__footer {
+  padding: 8px 14px;
+  border-top: 1px solid var(--rc-border-light);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── rc-plugin-action-bar — Standard primary action bar ─────────
+   A consistent bar for primary actions. Placed directly below the
+   plugin header (above tabs or content), or below a section header.
+   Primary action is always first (rc-btn--primary).
+   Canonical structure:
+     <div class="rc-plugin-action-bar">
+       <button class="rc-btn rc-btn--primary">Primary Action</button>
+       <button class="rc-btn rc-btn--secondary rc-btn--sm">Secondary</button>
+       <div class="rc-plugin-action-bar__spacer"></div>       <!-- pushes next items right -->
+       <button class="rc-btn rc-btn--ghost rc-btn--sm">Ghost</button>
+     </div>                                                         */
+.rc-plugin-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.rc-plugin-action-bar__spacer {
+  flex: 1;
+}
+
+/* ── rc-plugin-tabs — Standard tab bar for plugins ──────────────
+   Replaces all custom tab implementations: sf-inner-tabs, and
+   one-off rc-unified-tabs usage.
+   Canonical structure:
+     <div class="rc-plugin-tabs" role="tablist">
+       <button class="rc-plugin-tab rc-plugin-tab--active" role="tab">Tab 1</button>
+       <button class="rc-plugin-tab" role="tab">Tab 2</button>
+     </div>                                                         */
+.rc-plugin-tabs {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--rc-border);
+  background: var(--rc-bg);
+  flex-shrink: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.rc-plugin-tabs::-webkit-scrollbar { display: none; }
+.rc-plugin-tab {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0 14px;
+  height: 36px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  color: var(--rc-text-muted);
+  border: none;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  user-select: none;
+  flex-shrink: 0;
+  transition: color 0.12s, background 0.12s;
+}
+.rc-plugin-tab:hover:not(.rc-plugin-tab--active) {
+  color: var(--rc-text);
+  background: var(--rc-accent-muted);
+}
+.rc-plugin-tab--active {
+  color: var(--rc-accent);
+  border-bottom-color: var(--rc-accent);
+  font-weight: 600;
+}
+
+/* ── rc-plugin-tab-panel — Standard tab panel ───────────────────
+   Canonical structure:
+     <div class="rc-plugin-tab-panel rc-plugin-tab-panel--active" role="tabpanel">
+       ...content...
+     </div>                                                         */
+.rc-plugin-tab-panel {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.rc-plugin-tab-panel--active {
+  display: flex;
+  flex-direction: column;
+}
+/* Overflow variant for panels whose direct children manage their own scroll
+   (e.g. Salesforce Extract tab — sf-extract-workspace handles scroll internally).
+   overflow-y is set to hidden rather than auto to prevent double scrollbars.     */
+.rc-plugin-tab-panel--overflow-hidden {
+  overflow-y: hidden;
+}
+
+/* ── rc-plugin-empty — Standard empty state for plugins ─────────
+   Replaces: ad-hoc .sf-lib-empty, .sf-dl-empty, and custom empty divs.
+   Canonical structure:
+     <div class="rc-plugin-empty">
+       <span data-icon="..." class="rc-plugin-empty__icon" aria-hidden="true"></span>
+       <p class="rc-plugin-empty__title">Nothing here yet</p>
+       <p class="rc-plugin-empty__body">Descriptive message.</p>
+     </div>                                                         */
+.rc-plugin-empty {
+  padding: 36px 24px;
+  text-align: center;
+  color: var(--rc-text-dim);
+  font-size: 12px;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.rc-plugin-empty__icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;
+  margin-bottom: 4px;
+}
+.rc-plugin-empty__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rc-text-muted);
+}
+.rc-plugin-empty__body {
+  font-size: 12px;
+  color: var(--rc-text-dim);
+  max-width: 280px;
+}
+
+/* ── rc-plugin-loading — Standard loading state for plugins ─────
+   Canonical structure:
+     <div class="rc-plugin-loading">
+       <span data-icon="states.loading" aria-hidden="true"></span>
+       Loading...
+     </div>                                                         */
+.rc-plugin-loading {
+  padding: 36px 24px;
+  text-align: center;
+  color: var(--rc-text-muted);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* ── rc-plugin-status — Standard inline status strip ────────────
+   Replaces: .rc-status-bar usage in plugin contexts.
+   Modifiers: --success, --warning, --error, --info              */
+.rc-plugin-status {
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--rc-border);
+  background: var(--rc-surface-2);
+  color: var(--rc-text-muted);
+  line-height: 1.4;
+}
+.rc-plugin-status--success { background: var(--rc-green-bg);      color: var(--rc-green);  border-color: transparent; }
+.rc-plugin-status--warning { background: var(--rc-amber-bg);      color: var(--rc-amber);  border-color: transparent; }
+.rc-plugin-status--error   { background: var(--rc-red-bg);        color: var(--rc-red);    border-color: transparent; }
+.rc-plugin-status--info    { background: var(--rc-accent-muted);  color: var(--rc-accent); border-color: transparent; }
+
+/* ── rc-plugin-kv — Key-value row (label: value pattern) ────────
+   Standard way to display metadata rows in plugin cards.
+   Canonical structure:
+     <div class="rc-plugin-kv">
+       <span class="rc-plugin-kv__label">Label</span>
+       <span class="rc-plugin-kv__value">Value</span>
+     </div>                                                         */
+.rc-plugin-kv {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+.rc-plugin-kv__label {
+  color: var(--rc-text-muted);
+  flex-shrink: 0;
+}
+.rc-plugin-kv__value {
+  color: var(--rc-text);
+  font-weight: 500;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── rc-plugin-stat — Standard stat tile ────────────────────────
+   Replaces: .auc-stat, ad-hoc stat patterns.
+   Canonical structure:
+     <div class="rc-plugin-stat">
+       <span class="rc-plugin-stat__value">42</span>
+       <span class="rc-plugin-stat__label">Items</span>
+     </div>                                                         */
+.rc-plugin-stat {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 80px;
+}
+.rc-plugin-stat__value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--rc-text);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.rc-plugin-stat__label {
+  font-size: 10px;
+  color: var(--rc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── rc-plugin-stats-row — Row of stat tiles ────────────────────
+   Container for rc-plugin-stat tiles in a horizontal row.        */
+.rc-plugin-stats-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── rc-plugin-list — Standard scrollable list container ────────
+   Wraps rc-plugin-list-item rows.                                */
+.rc-plugin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 400px;
+}
+.rc-plugin-list::-webkit-scrollbar       { width: 4px; }
+.rc-plugin-list::-webkit-scrollbar-thumb { background: var(--rc-border); border-radius: 3px; }
+
+/* Side Panel: let lists expand freely — the view container scrolls */
+body.rc-sidepanel .rc-plugin-list {
+  max-height: none;
+  overflow-y: visible;
+}
+
+/* ── rc-plugin-list-item — Standard interactive list row ────────
+   Implements RC-UX010: entire row is the click target.
+   Canonical structure:
+     <div class="rc-plugin-list-item" role="button" tabindex="0">
+       <span class="rc-plugin-list-item__icon" aria-hidden="true"></span>
+       <div class="rc-plugin-list-item__content">
+         <span class="rc-plugin-list-item__title">Title</span>
+         <span class="rc-plugin-list-item__meta">Meta text</span>
+       </div>
+       <div class="rc-plugin-list-item__actions"><!-- secondary actions --></div>
+     </div>                                                         */
+.rc-plugin-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+  text-align: left;
+  color: var(--rc-text);
+}
+.rc-plugin-list-item:hover {
+  background: var(--rc-surface-2);
+  border-color: var(--rc-text-dim);
+}
+.rc-plugin-list-item:focus-visible {
+  outline: 2px solid var(--rc-accent);
+  outline-offset: 1px;
+}
+.rc-plugin-list-item__icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rc-text-muted);
+}
+.rc-plugin-list-item__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rc-plugin-list-item__title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--rc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rc-plugin-list-item__meta {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rc-plugin-list-item__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ── rc-panel-header--slim — Compact panel header variant ───────
+   Already used for Snake and Apptio Docs Finder.
+   Standardized height and padding.                               */
+.rc-panel-header--slim {
+  padding: 8px 14px;
+  min-height: 36px;
+}
+
+/* ── Side-panel responsive overrides for plugin standard ─────── */
+body.rc-sidepanel .rc-plugin-header {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+body.rc-sidepanel .rc-plugin-body {
+  padding: 14px;
+}
