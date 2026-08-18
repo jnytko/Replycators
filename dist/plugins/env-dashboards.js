@@ -370,22 +370,15 @@
   /* ── click handler (delegated - attached once in onNavigate) ─────────────── */
 
   function handleOpen(dashboardId) {
-    // Query ALL active tabs across every window, then pick the first one
-    // that belongs to a supported customer URL.
-    // Using { active: true } (all windows) avoids the chrome.windows.getLastFocused()
-    // pitfall where the "last focused" window is a Grafana/Splunk tab just opened
-    // by the previous click, which would cause the wrong environment to be resolved.
-    chrome.tabs.query({ active: true }, function (tabs) {
-      var env = null;
-      var usedUrl = '';
-      for (var i = 0; i < (tabs || []).length; i++) {
-        var candidate = extractEnv(tabs[i].url);
-        if (candidate) {
-          env = candidate;
-          usedUrl = tabs[i].url;
-          break;
-        }
-      }
+    // Query ONLY the active tab in the focused window (Issue #6).
+    // currentWindow: true in the popup/side panel context resolves to the window
+    // hosting the extension UI - always the user's currently focused window.
+    // This prevents selecting a customer tab from a background window and
+    // launching a dashboard for the wrong environment.
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      var tab = (tabs || [])[0];
+      var env = tab && tab.url ? extractEnv(tab.url) : null;
+      var usedUrl = tab ? (tab.url || '') : '';
 
       if (!env) {
         app().addNotification(

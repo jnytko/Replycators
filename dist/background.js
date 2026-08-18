@@ -306,22 +306,33 @@ async function orgIdWriteCache(data) {
 }
 
 /**
- * Returns the currently ACTIVE Cloudability tab, or null.
+ * Returns the currently ACTIVE Cloudability tab in the FOCUSED window, or null.
  *
- * "Active" means the tab the user is currently looking at in any normal window.
- * A Cloudability tab that exists in the background is NOT returned.
- * No fallback to background tabs — the caller must treat null as "no active tab".
+ * "Active" means the tab the user is currently looking at in the window they
+ * currently have focused.  Chrome's Tab.active flag is per-window, so a
+ * Cloudability tab that is active in an UNFOCUSED background window is never
+ * returned.  Only the focused window contributes customer context.
+ *
+ * Fixes Issue #6: previously used chrome.windows.getAll({ populate: true })
+ * which traversed all windows in implementation-defined order and could select
+ * a Cloudability tab from a background window, resolving the wrong customer OrgID.
+ *
+ * Implementation: getLastFocused() provides the focused window ID; a targeted
+ * tabs.query({ active: true, windowId }) then confirms whether the focused
+ * window's active tab is a Cloudability URL.
  */
-function orgIdGetActiveTab() {
+async function orgIdGetActiveTab() {
   return new Promise(resolve => {
-    chrome.windows.getAll({ populate: true, windowTypes: ['normal'] }, windows => {
-      for (const win of windows) {
-        const active = (win.tabs || []).find(
-          t => t.active && t.url && ORGID_URL_PATTERN.test(t.url)
-        );
-        if (active) { resolve(active); return; }
+    chrome.windows.getLastFocused({ populate: false, windowTypes: ['normal'] }, focusedWin => {
+      if (chrome.runtime.lastError || !focusedWin?.id) {
+        resolve(null);
+        return;
       }
-      resolve(null); // active tab is not Cloudability — do nothing
+      chrome.tabs.query({ active: true, windowId: focusedWin.id }, tabs => {
+        if (chrome.runtime.lastError) { resolve(null); return; }
+        const tab = (tabs || []).find(t => t.url && ORGID_URL_PATTERN.test(t.url));
+        resolve(tab ?? null);
+      });
     });
   });
 }

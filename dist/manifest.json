@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ReplyCators",
   "short_name": "ReplyCators",
-  "version": "1.46.1",
+  "version": "1.46.2",
   "description": "A plugin-based platform for intelligent reply creation and data extraction across enterprise tools.",
   "author": "ReplyCators Platform Team",
 

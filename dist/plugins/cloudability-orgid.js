@@ -39,17 +39,21 @@
   }
 
   function findCloudabilityTab(callback) {
-    // Return the ACTIVE Cloudability tab only - never a background tab.
-    // If the user's active tab is not Cloudability, callback receives null
-    // and retrieval is skipped entirely.
-    chrome.windows.getAll({ populate: true, windowTypes: ['normal'] }, windows => {
-      for (const win of windows) {
-        const active = (win.tabs || []).find(
-          t => t.active && t.url && CLD_URL_PATTERN.test(t.url)
-        );
-        if (active) { callback(active); return; }
+    // Return the ACTIVE Cloudability tab in the FOCUSED window only.
+    // Chrome's Tab.active flag is per-window; querying all windows could select
+    // a Cloudability tab from a background window, resolving the wrong customer
+    // OrgID (Issue #6).  currentWindow: true in the dashboard context (popup/
+    // side panel) resolves to the window hosting the extension UI, which is
+    // always the user's currently focused window.
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      var tab = null;
+      for (var i = 0; i < (tabs || []).length; i++) {
+        if (tabs[i].url && CLD_URL_PATTERN.test(tabs[i].url)) {
+          tab = tabs[i];
+          break;
+        }
       }
-      callback(null); // active tab is not Cloudability
+      callback(tab); // null if focused window's active tab is not Cloudability
     });
   }
 
