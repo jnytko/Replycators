@@ -1,6 +1,6 @@
 ﻿{
   "name": "replycators",
-  "version": "1.46.0",
+  "version": "1.46.1",
   "description": "ReplyCators — Plugin-based Microsoft Edge Extension Platform",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "postbuild":      "node build/sync-root.js",
     "watch":          "webpack --config build/webpack.config.js --mode development --watch",
     "typecheck":      "tsc --noEmit",
-    "lint":           "eslint src --ext .ts,.tsx --report-unused-disable-directives",
+    "lint":           "echo 'Lint is deferred until RC-015 Phase 2 (TypeScript migration). ESLint is not installed. See AGENTS.md §26 and TD-003.' && exit 0",
     "clean":          "rimraf dist",
     "sync":           "node build/sync-root.js",
     "sync:verify":    "node build/sync-root.js --verify",
