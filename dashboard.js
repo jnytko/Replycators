@@ -1,6 +1,6 @@
 ﻿/**
  * ReplyCators — Dashboard Controller
- * v1.45.6
+ * v1.46.0
  *
  * Application shell and orchestrator for the ReplyCators plugin-based Edge extension.
  * Owns: startup coordination, session restoration, shared services (window.ReplyCatorsApp),
@@ -2524,6 +2524,10 @@ function _announcePreflightStatus(message) {
 // The CHECK-05b check will detect a runtime mismatch, but a build-time sync failure
 // will silently break the Salesforce Execute workflow.
 const _BOB_HELPER_PORT_DIAG = 47123;
+// Minimum Bob CLI major version required for BobShell 2.0 features (Salesforce Execute).
+// If the detected major version is below this value the Bob Version check emits a warn card.
+// Suppress the check entirely when Bob 1.0 mode is intentionally active (bobUseBob1 === true).
+const _BOB_MIN_MAJOR_VERSION = 2;
 
 async function loadPreflightChecks() {
   // ── Concurrency guard ──────────────────────────────────────────────────────
@@ -2820,6 +2824,63 @@ async function loadPreflightChecks() {
     });
   });
 
+  // ── CHECK-NEW-BOBVER: Bob CLI version validation ────────────────────────────
+  // Reads bobVersionOk / bobVersionWarning from the /cli-check response.
+  // F-13: reuses _getCliCheckResponse() — no second RC_PREFLIGHT_CLI_CHECK message.
+  // Guard 1: sfEnabled — skip if SF plugin is disabled (matches all SF checks).
+  // Guard 2: _restoredSfSettings?.bobUseBob1 — skip if Bob 1.0 mode is intentionally active
+  //          (issue #22: users in Bob 1.0 mode must never see a misleading 'update required' warn).
+  const checkBobVersion = () => new Promise(resolve => {
+    if (!sfEnabled) {
+      resolve({ status: 'skip', label: 'Bob Version',
+        detail: 'Salesforce plugin disabled - skipped.' });
+      return;
+    }
+    const useBob1 = _restoredSfSettings?.bobUseBob1 === true;
+    if (useBob1) {
+      resolve({ status: 'info', label: 'Bob Version',
+        detail: 'Bob 1.0 mode active - version check skipped.' });
+      return;
+    }
+    _getCliCheckResponse().then(response => {
+      if (!response) {
+        resolve({ status: 'info', label: 'Bob Version',
+          detail: 'Could not reach background worker for version check.',
+          onRetry: () => _retryPreflightSingle(checkBobVersion, 'bob-version', myGen) });
+        return;
+      }
+      if (!response.ok && response.serverDown) {
+        resolve({ status: 'skip', label: 'Bob Version',
+          detail: 'Helper server not running - see Bob Helper Server check.' });
+        return;
+      }
+      if (!response.ok) {
+        resolve({ status: 'warn', label: 'Bob Version',
+          detail: 'Version check returned an error: ' + (response.error || 'unknown'),
+          onRetry: () => _retryPreflightSingle(checkBobVersion, 'bob-version', myGen) });
+        return;
+      }
+      if (!response.bobFound) {
+        resolve({ status: 'skip', label: 'Bob Version',
+          detail: 'Bob CLI not found - see Bob CLI (IBM Bob) check.' });
+        return;
+      }
+      if (response.bobVersionOk === null || response.bobVersionOk === undefined) {
+        resolve({ status: 'info', label: 'Bob Version',
+          detail: 'Version unavailable - cannot determine if Bob meets the minimum requirement.' });
+        return;
+      }
+      if (response.bobVersionOk === false) {
+        resolve({ status: 'warn', label: 'Bob Version',
+          detail: response.bobVersionWarning || 'Bob version below minimum required - update recommended.',
+          remediation: 'Update IBM Bob to version ' + _BOB_MIN_MAJOR_VERSION + '.x or later.' });
+      } else {
+        resolve({ status: 'pass', label: 'Bob Version',
+          detail: 'Bob ' + (response.bobVersion || '(version unknown)') + ' meets the minimum version requirement.' });
+      }
+    });
+  });
+
   // ── CHECK-NEW-NODE: Node.js runtime (via helper) ────────────────────────────
   // Reports the Node.js runtime that is running the helper server.
   // Dependency: helper server must be running (skips gracefully if not).
@@ -3015,7 +3076,7 @@ async function loadPreflightChecks() {
   const GROUPS = {
     'Storage':          { title: 'Storage',               checks: [checkStorage],                                                                 panel: 'cache' },
     'Permissions':      { title: 'Browser Permissions',   checks: [checkPermSalesforce, checkPermCloudability, checkPermIbm, checkPermBookmarks], panel: 'checks' },
-    'LocalRuntime':     { title: 'Local Runtime',         checks: [checkBobHelper, checkBobHelperPortSync, checkBobCli, checkNodeRuntime, checkBobWorkingDir], panel: 'checks' },
+    'LocalRuntime':     { title: 'Local Runtime',         checks: [checkBobHelper, checkBobHelperPortSync, checkBobCli, checkBobVersion, checkNodeRuntime, checkBobWorkingDir], panel: 'checks' },
     'ExternalServices': { title: 'External Services',     checks: [checkIbmDocsApi],                                                             panel: 'checks' },
     'BrowserContext':   { title: 'Active Browser Context',checks: [checkSalesforceTab, checkCloudabilityTab],                                    panel: 'checks' },
   };
@@ -3217,7 +3278,7 @@ async function restorePreflightResults() {
   // F-07: sizes must equal the lengths of the corresponding 'checks' arrays there.
   //   Storage:          1 check  (checkStorage)
   //   Permissions:      4 checks (checkPermSalesforce, checkPermCloudability, checkPermIbm, checkPermBookmarks)
-  //   LocalRuntime:     5 checks (checkBobHelper, checkBobHelperPortSync, checkBobCli, checkNodeRuntime, checkBobWorkingDir)
+  //   LocalRuntime:     6 checks (checkBobHelper, checkBobHelperPortSync, checkBobCli, checkBobVersion, checkNodeRuntime, checkBobWorkingDir)
   //   ExternalServices: 1 check  (checkIbmDocsApi)
   //   BrowserContext:   2 checks (checkSalesforceTab, checkCloudabilityTab)
   // If a check is added to any group in loadPreflightChecks(), update the size here.
@@ -3227,7 +3288,7 @@ async function restorePreflightResults() {
   const GROUP_META = {
     Storage:          { title: 'Storage',               panel: 'cache',  size: 1 },
     Permissions:      { title: 'Browser Permissions',   panel: 'checks', size: 4 },
-    LocalRuntime:     { title: 'Local Runtime',         panel: 'checks', size: 5 },
+    LocalRuntime:     { title: 'Local Runtime',         panel: 'checks', size: 6 },
     ExternalServices: { title: 'External Services',     panel: 'checks', size: 1 },
     BrowserContext:   { title: 'Active Browser Context',panel: 'checks', size: 2 },
   };

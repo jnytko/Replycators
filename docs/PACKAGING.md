@@ -145,7 +145,7 @@ Complete every item before `npm run package`.
 **Release artefact:**
 ```powershell
 npm run package
-Rename-Item "build\replycators.zip" "build\replycators-1.45.6.zip"
+Rename-Item "build\replycators.zip" "build\replycators-1.46.0.zip"
 ```
 
 ---

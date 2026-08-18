@@ -359,6 +359,25 @@ const server = http.createServer((req, res) => {
       } catch (_) { /* non-fatal */ }
     }
 
+    // Derive bobVersionOk and bobVersionWarning from the captured bobVersion string.
+    // bobVersionOk: true  = version >= BOB_MIN_MAJOR_VERSION; false = below minimum; null = unknown.
+    // bobVersionWarning: human-readable upgrade message when bobVersionOk is false.
+    // Version strings beginning with a digit (e.g. "2.0.0") are parseable.
+    // Non-numeric-prefix strings (e.g. unparseable values) leave bobVersionOk as null.
+    const BOB_MIN_MAJOR_VERSION = 2;
+    let bobVersionOk = null;
+    let bobVersionWarning = null;
+    if (bobCommand && bobVersion !== null) {
+      if (/^\d/.test(bobVersion)) {
+        const major = parseInt(bobVersion, 10);
+        bobVersionOk = major >= BOB_MIN_MAJOR_VERSION;
+        if (!bobVersionOk) {
+          bobVersionWarning = 'Bob version ' + bobVersion + ' detected - Bob ' + BOB_MIN_MAJOR_VERSION + '.x or later is required.';
+        }
+      }
+      // else: non-numeric prefix - bobVersionOk stays null (unknown)
+    }
+
     let dirOk = null;
     let dirError = null;
     const parsedUrl = new URL(req.url, 'http://localhost');
@@ -378,6 +397,8 @@ const server = http.createServer((req, res) => {
         bobFound:    bobCommand !== null,
         bobBasename: bobCommand ? path.basename(bobCommand) : null,
         bobVersion,
+        bobVersionOk,
+        bobVersionWarning: bobVersionWarning || null,
         nodeFound:   nodeExe !== null,
         nodeBasename,
         nodeVersion: process.versions?.node || null,

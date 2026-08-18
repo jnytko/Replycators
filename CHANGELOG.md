@@ -9,6 +9,34 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.46.0] - 2026-08-17
+### Diagnostics - Add Bob version validation check (Issues #20, #22)
+**Type:** Enhancement
+**Summary:** Adds a new "Bob Version" check to the Local Runtime group in the Diagnostics panel. The check reads `bobVersionOk` and `bobVersionWarning` from the `/cli-check` response (added to `bob-helper-server.js` as additive fields) and emits a `warn` card when the detected Bob CLI major version is below the minimum required (v2). The check correctly uses the F-13 shared `_getCliCheckResponse()` lazy promise so exactly one `RC_PREFLIGHT_CLI_CHECK` message fires per diagnostics run. Two mandatory guards are implemented: the `sfEnabled` guard (skip if Salesforce plugin is disabled, matching all SF-related checks) and the `bobUseBob1` guard (emit `info` card when Bob 1.0 mode is intentionally active, suppressing a misleading "update required" warning). The `restorePreflightResults()` F-07 size constant for the `LocalRuntime` group is updated from 5 to 6 to match the new check count, preventing silent cache discard on next Diagnostics open. A `_BOB_MIN_MAJOR_VERSION = 2` constant is defined alongside `_BOB_HELPER_PORT_DIAG` for maintainability.
+**Files changed:**
+- `dashboard.js` - `_BOB_MIN_MAJOR_VERSION = 2` constant; `checkBobVersion` function; added to `GROUPS['LocalRuntime'].checks`; `restorePreflightResults()` comment and `GROUP_META.LocalRuntime.size` updated from 5 to 6; version header bumped to v1.46.0
+- `dashboard.html` - Version display bumped to v1.46.0
+- `manifest.json` - Version bumped to 1.46.0
+- `package.json` - Version bumped to 1.46.0
+- `tools/bob-helper-server.js` - `/cli-check` response extended with `bobVersionOk` (boolean|null) and `bobVersionWarning` (string|null); `BOB_MIN_MAJOR_VERSION = 2` constant defined locally
+- `AGENTS.md` - Version field updated to 1.46.0
+- `docs/PACKAGING.md` - Release artefact rename command updated to 1.46.0
+- `dist/*` - Mirror synced
+**Breaking changes:** None. Server-side fields are additive; existing consumers of `/cli-check` are unaffected. `bob-helper-server.js` must be restarted to serve the new fields.
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.2
+- Cloudability OrgID: 4.0.3
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.2
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.2
+- Environment Dashboards Launcher: 1.3.0
+
+---
+
 ## [1.45.6] - 2025-07-19
 ### Salesforce Case Extractor - ASCII punctuation compliance and documentation corrections (D-001, D-002, D-004)
 **Type:** Bug Fix
