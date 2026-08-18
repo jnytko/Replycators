@@ -375,6 +375,29 @@
     }
   }
 
+  // ─── Salesforce URL helper ────────────────────────────────────────────────
+  // Single source of truth for "is this a Salesforce URL?" used by tab
+  // listeners (pre-filter) and tab query functions (getSalesforceTabs,
+  // getActiveSalesforceTab). Parses the hostname for exact boundary matching;
+  // prevents substring spoofing (e.g. "notsalesforce.com" or a query param
+  // containing "salesforce.com"). Issue #13 fix.
+  //
+  // Valid hostnames:
+  //   salesforce.com, *.salesforce.com
+  //   lightning.force.com, *.lightning.force.com
+  function isSalesforceUrl(url) {
+    if (!url) return false;
+    try {
+      const hostname = new URL(url).hostname.toLowerCase();
+      return hostname === 'salesforce.com'
+        || hostname.endsWith('.salesforce.com')
+        || hostname === 'lightning.force.com'
+        || hostname.endsWith('.lightning.force.com');
+    } catch (_) {
+      return false; // unparseable URL - not Salesforce
+    }
+  }
+
   // ─── Tab change listeners for auto-detection ──────────────────────────────
   // Registered once from init() so the Dashboard widget stays accurate even
   // when the user never navigates to the SF plugin page.
@@ -385,10 +408,8 @@
   // Fixed by:
   //   (1) Removing the `|| changeInfo.url` branch - only `status === 'complete'`
   //       triggers detection (page fully loaded, not mid-SPA nav).
-  //   (2) Adding a Salesforce URL pre-filter - non-SF tabs are ignored before any
-  //       async work is started, including `sfRefreshDetectionBanner()`.
-  const SF_URL_PATTERN = /\.(salesforce|lightning\.force)\.com\//i;
-
+  //   (2) Adding a Salesforce URL pre-filter via isSalesforceUrl() - non-SF tabs
+  //       are ignored before any async work is started.
   function registerTabListeners() {
     if (_tabListenersRegistered) return;
     _tabListenersRegistered = true;
@@ -404,7 +425,7 @@
       chrome.tabs.get(tabId, tab => {
         if (chrome.runtime.lastError || !tab?.url) return;
         // Only trigger the detection pipeline when switching to a Salesforce tab.
-        if (!SF_URL_PATTERN.test(tab.url)) return;
+        if (!isSalesforceUrl(tab.url)) return;
         sfRefreshDetectionBanner();
       });
     });
@@ -415,7 +436,7 @@
     // pipeline on every URL change.
     chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       if (changeInfo.status !== 'complete') return;
-      if (!tab?.url || !SF_URL_PATTERN.test(tab.url)) return;
+      if (!isSalesforceUrl(tab?.url)) return;
       sfRefreshDetectionBanner();
     });
 
@@ -1520,7 +1541,7 @@
     return new Promise(resolve => {
       const query = activeOnly ? { active: true } : {};
       chrome.tabs.query(query, tabs => {
-        resolve((tabs || []).filter(t => t.url && /salesforce\.com|lightning\.force\.com/i.test(t.url)));
+        resolve((tabs || []).filter(t => isSalesforceUrl(t.url)));
       });
     });
   }
@@ -1544,9 +1565,7 @@
         // one the user is currently looking at.
         const sorted = windows.slice().sort((a, b) => (b.focused ? 1 : 0) - (a.focused ? 1 : 0));
         for (const win of sorted) {
-          const active = (win.tabs || []).find(t =>
-            t.active && t.url && /salesforce\.com|lightning\.force\.com/i.test(t.url)
-          );
+          const active = (win.tabs || []).find(t => t.active && isSalesforceUrl(t.url));
           if (active) { resolve(active); return; }
         }
         // No active Salesforce tab found in any window - return null.

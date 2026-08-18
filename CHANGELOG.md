@@ -9,6 +9,35 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.46.3] - 2026-08-19
+### Salesforce Case Extractor - Consolidate Salesforce URL matching to a single hostname-parsing helper (Issue #13)
+**Type:** Bug Fix
+**Summary:** Fixes a silent detection gap where `SF_URL_PATTERN` (the tab listener pre-filter) used a stricter regex than the inline literals in `getSalesforceTabs()` and `getActiveSalesforceTab()`. A Salesforce tab URL without a trailing slash (e.g. `https://myorg.salesforce.com` before redirect) passed the extraction-time checks but failed the listener gate, causing the status badge to remain stale on tab switch. The fix replaces all three divergent patterns with a single `isSalesforceUrl(url)` helper that uses the native `URL` constructor for exact hostname boundary matching, eliminating both the detection gap and a substring spoofing surface (e.g. `notsalesforce.com` or a query param containing `salesforce.com` would previously match the permissive inline regex).
+**Files changed:**
+- `plugins/salesforce-case-extractor.js` - `SF_URL_PATTERN` constant removed; `isSalesforceUrl(url)` helper added; tab listener gate (lines 428, 439) and both tab query functions (`getSalesforceTabs` line 1544, `getActiveSalesforceTab` line 1568) updated to use the helper
+- `dashboard.js` - PLUGINS[] Salesforce Case Extractor version bumped to 4.12.3; file header comment bumped to v1.46.3
+- `dashboard.html` - Salesforce plugin header version bumped to v4.12.3; platform version display bumped to v1.46.3
+- `manifest.json` - Version bumped to 1.46.3
+- `package.json` - Version bumped to 1.46.3
+- `AGENTS.md` - Platform version and Salesforce Case Extractor Plugin Inventory version updated
+- `docs/PACKAGING.md` - Release artefact rename command updated to 1.46.3
+- `dist/*` - Mirror synced
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.3
+- Cloudability OrgID: 4.0.4
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.2
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.2
+- Environment Dashboards Launcher: 1.3.0
+
+---
+
+
 ## [1.46.2] - 2026-08-18
 ### Background / Cloudability OrgID / Env Dashboards - Resolve active customer context from focused window only (Issue #6)
 **Type:** Bug Fix
