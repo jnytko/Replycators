@@ -37,7 +37,7 @@ Local Node.js HTTP service that bridges the ReplyCators Edge extension and IBM B
 | Bind address | `127.0.0.1:47123` (loopback only) |
 | Protocol | HTTP/1.1 - JSON request / JSON response |
 | Lifecycle | Manual start per session - not auto-launched |
-| State model | Stateless - no in-memory session state |
+| State model | In-memory status cache (120s TTL) for terminal execution states |
 | Execution engine | PowerShell only (`powershell.exe`) |
 | Launcher template | `tools/bob-launcher-template.ps1` |
 | npm dependencies | None - Node.js built-ins only |
@@ -48,9 +48,9 @@ Local Node.js HTTP service that bridges the ReplyCators Edge extension and IBM B
 
 - Extension popup sends `RC_EXECUTE_BOB` message to `background.js`
 - `background.js` POSTs to `http://127.0.0.1:47123/execute`
-- Server validates working directory, writes prompt to `<workingDir>\<requestId>.txt` (or `%TEMP%\replycators-bob-helper\<requestId>.txt` when no working directory is set)
+- Server validates working directory, writes all artifact files to `%TEMP%\replycators-bob-helper\` regardless of whether a working directory is configured
 - Server spawns `powershell.exe` pointing directly at `tools/bob-launcher-template.ps1` - no per-request copy is made; all request-specific data is passed via environment variables
-- PowerShell executes `bob --trust -y --include-directories="<workingDir>"` with prompt piped via stdin
+- PowerShell executes Bob with the prompt held in memory; `workingDir` is used only as `Set-Location` context and `--include-directories` argument
 
 ---
 
@@ -152,13 +152,13 @@ End-to-end flow from Execute button click to Bob terminal window:
 5. `background.js` POSTs `{ prompt, workingDir, requestId, diagnosticMode }` to `http://127.0.0.1:47123/execute`
 6. Server validates `workingDir` (must exist, absolute, no `%` or `"`, no `..` segments)
 7. Server resolves `bob.ps1` path via `where.exe` (cached 60 seconds)
-8. Server writes the prompt text to `<workingDir>\<requestId>.txt` (UTF-8)
-9. Server spawns `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/bob-launcher-template.ps1` with env vars injected: `RC_BOB_COMMAND`, `RC_PROMPT_FILE`, `RC_WORKING_DIR`, `RC_INCLUDE_DIR`, `RC_DIAG_MODE`
+8. Server writes the prompt text to `%TEMP%\replycators-bob-helper\<requestId>.txt` (UTF-8, always in system temp regardless of working directory setting)
+9. Server spawns `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/bob-launcher-template.ps1` with env vars injected: `RC_BOB_COMMAND`, `RC_PROMPT_FILE`, `RC_WORKING_DIR`, `RC_INCLUDE_DIR`, `RC_DIAG_MODE`, `RC_STATUS_FILE`
 10. PowerShell process is detached (`stdio: 'ignore'`, `child.unref()`) - fire-and-forget
 11. Server immediately returns `{ ok: true, requestId, childPid, ... }` to the extension
-12. PowerShell launcher opens a new visible terminal window and calls `Get-Content -Raw <promptFile> | & bob.ps1 --trust -y --include-directories="<workingDir>"`
+12. PowerShell launcher reads prompt into memory, deletes the `.txt` immediately, then invokes Bob
 13. IBM Bob runs in the terminal window and displays its response
-14. Prompt `.txt` file cleaned up by server on next startup or graceful shutdown
+14. Server deletes `.status.json` ~20 seconds after reading a terminal state from disk (deferred server-side cleanup)
 
 ---
 
@@ -176,9 +176,17 @@ Key implementation details:
 - The helper has no mechanism to track, cancel, or monitor running Bob processes after spawn
 
 **Temp file lifecycle:**
-- Prompt `.txt` files are written to `<workingDir>` (or `%TEMP%\replycators-bob-helper\` when no working dir is set)
-- On startup: files older than 7 days in `%TEMP%\replycators-bob-helper\` are deleted
-- On graceful shutdown (SIGINT, SIGTERM): all tracked temp files are deleted
+
+| File | Written to | Deleted by | When |
+|------|-----------|-----------|------|
+| `<requestId>.txt` | `%TEMP%\replycators-bob-helper\` | Launcher (`Remove-Item`) | Immediately after prompt is read into memory |
+| `<requestId>.lock` | `%TEMP%\replycators-bob-helper\` | Launcher (`Remove-LockFile`) | Immediately after prompt is read into memory |
+| `<requestId>.status.json` | `%TEMP%\replycators-bob-helper\` | Server (`setTimeout` 20s) | ~20 seconds after first terminal-state read; retained on crash path |
+
+- On startup: files older than 24 hours in `%TEMP%\replycators-bob-helper\` are deleted (crash recovery)
+- On graceful shutdown (SIGINT, SIGTERM): all remaining files in `%TEMP%\replycators-bob-helper\` are deleted
+- The working directory is never used for artifact file placement; it is passed to Bob only as context (`Set-Location` / `--include-directories`)
+- An in-memory status cache (120s TTL) serves terminal-state responses after `.status.json` deletion
 
 ---
 
@@ -234,6 +242,7 @@ Port override: set `REPLYCATORS_BOB_HELPER_PORT` env var before starting. Also u
 
 - Bound to `127.0.0.1` loopback only - not accessible from network.
 - Working directory validated: must exist, must be a directory, must not contain `%`, `"`, or `..` path traversal sequences.
-- Prompt files written to `<workingDir>\<requestId>.txt`, cleaned up after execution.
+- All artifact files written to `%TEMP%\replycators-bob-helper\` (system temp) regardless of working directory setting - the user's project folder is never used for IPC file placement.
+- Prompt `.txt` deleted by launcher immediately after reading; `.status.json` deleted by server ~20s after terminal-state read.
 - No authentication - relies on OS-level localhost isolation.
 - No `chrome.runtime.connectNative()` - native messaging is not used.

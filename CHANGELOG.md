@@ -9,6 +9,37 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.46.4] - 2026-08-19
+### Bob Helper - Isolate IPC artifact files to system temp and add prompt-file active cleanup (Issue #14)
+**Type:** Bug Fix + Enhancement
+**Summary:** Fixes a P1 security and UX defect where Bob Helper artifact files (`<requestId>.txt`, `.status.json`) were written directly into the user's configured Bob Working Directory (their IDE project folder) when one was set. Prompt `.txt` files could contain Salesforce case data and persist indefinitely in the project folder after a server crash because the in-memory `_usedPromptDirs` tracking was lost on restart and `cleanupOldTempFiles()` only scanned `TEMP_ROOT`. The fix unconditionally routes all artifact files to `TEMP_ROOT`, deletes the `.txt` immediately after the launcher reads it into memory, and deletes `.status.json` ~20 seconds after the server reads a terminal state from disk. An in-memory status cache (120s TTL) ensures late status polls after file deletion do not receive spurious 404 responses. Issue #15 (status 404 after file deletion) is resolved as part of this fix.
+**Files changed:**
+- `tools/bob-helper-server.js` - `resolvePromptDir()` simplified to always return `TEMP_ROOT`; `_usedPromptDirs` Set and working-directory loop in `cleanupAllTempFiles()` removed; `readStatusFile()` simplified to single TEMP_ROOT path with cache fallback, terminal-state caching, and deferred `unlinkSync`; `_statusCache`, `_cacheStatus()`, `_readStatusFromCache()`, `STATUS_CACHE_TTL_MS`, `STATUS_FILE_DELETE_DELAY_MS` added; `setInterval` cache eviction added with `.unref()` (setInterval count: 1, budget: <= 2)
+- `tools/bob-launcher-template.ps1` - prompt `.txt` deleted immediately after `Remove-LockFile` (prompt held in memory for Bob invocation)
+- `docs/BOB-HELPER-SERVER.md` - Architecture, Execution Flow (steps 8, 12, 14), Process Management temp file lifecycle (new table, corrected 7-day -> 24-hour eviction threshold, working-dir placement removed), Key Properties state model, Security section all updated
+- `manifest.json` - Version bumped to 1.46.4
+- `package.json` - Version bumped to 1.46.4
+- `dashboard.html` - Platform version display bumped to v1.46.4
+- `dashboard.js` - File header comment bumped to v1.46.4
+- `AGENTS.md` - Platform version updated to 1.46.4
+- `docs/PACKAGING.md` - Release artefact rename command updated to 1.46.4
+- `dist/*` - Mirror synced
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.3
+- Cloudability OrgID: 4.0.4
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.2
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.2
+- Environment Dashboards Launcher: 1.3.0
+
+---
+
+
 ## [1.46.3] - 2026-08-19
 ### Salesforce Case Extractor - Consolidate Salesforce URL matching to a single hostname-parsing helper (Issue #13)
 **Type:** Bug Fix

@@ -54,6 +54,27 @@ const BOB_RESOLVE_TTL_MS = 60 * 1000; // 60 seconds (reduced from 5 min so a fre
 let _bobCommandCache = undefined; // undefined = never resolved; null = not found
 let _bobCommandResolvedAt = 0;
 
+// ── In-memory status cache ────────────────────────────────────────────────────
+// When readStatusFile() reads a terminal state (completed|failed) from disk it
+// caches the result here. If a status poll arrives after the .status.json file
+// has been deleted by the deferred cleanup, the cache serves the final state so
+// the extension does not receive a spurious 404.
+// TTL is intentionally generous (120s) to cover any realistic polling window.
+const STATUS_CACHE_TTL_MS    = 120 * 1000; // 120 seconds
+const STATUS_FILE_DELETE_DELAY_MS = 20 * 1000; // 20 seconds after terminal state read
+const _statusCache = new Map(); // requestId -> { status, expiresAt }
+
+function _cacheStatus(requestId, status) {
+  _statusCache.set(requestId, { status, expiresAt: Date.now() + STATUS_CACHE_TTL_MS });
+}
+
+function _readStatusFromCache(requestId) {
+  const entry = _statusCache.get(requestId);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) { _statusCache.delete(requestId); return null; }
+  return entry.status;
+}
+
 function log(message, extra) {
   if (!DEBUG_ENABLED) return;
   const timestamp = new Date().toISOString();
@@ -131,19 +152,29 @@ function writeStatusFile(promptPath, status) {
 }
 
 function readStatusFile(requestId) {
-  // Status files may be in TEMP_ROOT or in a working directory tracked via
-  // _usedPromptDirs. Search all known locations.
-  const candidates = [TEMP_ROOT, ..._usedPromptDirs];
-  for (const dir of candidates) {
-    const filePath = path.join(dir, requestId + '.status.json');
-    try {
-      if (fs.existsSync(filePath)) {
-        const raw = fs.readFileSync(filePath, 'utf8');
-        return JSON.parse(raw);
+  // All status files are written to TEMP_ROOT (resolvePromptDir always returns TEMP_ROOT).
+  // Fall back to the in-memory status cache when the file has already been deleted by
+  // the deferred cleanup scheduled after a terminal-state read (see _statusCache below).
+  const filePath = path.join(TEMP_ROOT, requestId + '.status.json');
+  try {
+    if (fs.existsSync(filePath)) {
+      const status = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      // Cache terminal states on read so late polls within STATUS_CACHE_TTL_MS still
+      // return the correct final state after the file is deleted by the deferred cleanup.
+      if (status.state === 'completed' || status.state === 'failed') {
+        _cacheStatus(requestId, status);
+        // Schedule server-side deletion of the status file after a short grace period.
+        // Using setTimeout here (owned by the server) eliminates the need for any
+        // Start-Sleep in the detached PowerShell launcher.
+        // The timer is unref()'d so it does not prevent clean Node.js shutdown.
+        setTimeout(() => {
+          try { fs.unlinkSync(filePath); } catch (_) { /* non-fatal */ }
+        }, STATUS_FILE_DELETE_DELAY_MS).unref();
       }
-    } catch (_) { /* skip unreadable file */ }
-  }
-  return null;
+      return status;
+    }
+  } catch (_) { /* skip unreadable file */ }
+  return _readStatusFromCache(requestId);
 }
 
 // Delete temp files older than maxAgeMs from TEMP_ROOT.
@@ -178,9 +209,9 @@ function cleanupOldTempFiles(maxAgeMs) {
 // Lock-aware: skip any .txt file whose sibling .lock still exists (launcher
 // may still be reading the prompt). Status files are deleted unconditionally.
 function cleanupAllTempFiles() {
+  // All artifact files are written to TEMP_ROOT only (resolvePromptDir always returns
+  // TEMP_ROOT). No working-directory scan is needed.
   let deleted = 0;
-
-  // 1. TEMP_ROOT files.
   try {
     if (fs.existsSync(TEMP_ROOT)) {
       const entries = fs.readdirSync(TEMP_ROOT);
@@ -197,35 +228,16 @@ function cleanupAllTempFiles() {
     }
   } catch (_) { /* non-fatal */ }
 
-  // 2. Prompt .txt files written directly into tracked working directories.
-  for (const promptDir of _usedPromptDirs) {
-    try {
-      if (!fs.existsSync(promptDir)) continue;
-      const entries = fs.readdirSync(promptDir);
-      for (const entry of entries) {
-        if (!entry.endsWith('.txt') && !entry.endsWith('.lock') && !entry.endsWith('.status.json')) continue;
-        const filePath = path.join(promptDir, entry);
-        try {
-          // Protect .txt files still locked by the launcher.
-          if (entry.endsWith('.txt') && hasLockFile(filePath)) continue;
-          fs.unlinkSync(filePath);
-          deleted++;
-        } catch (_) { /* skip - may be open by running Bob process */ }
-      }
-    } catch (_) { /* non-fatal */ }
-  }
-
   if (deleted > 0) {
     process.stdout.write(`Bob helper: cleaned up ${deleted} temp file(s) on shutdown.\n`);
   }
 }
 
-const _usedPromptDirs = new Set();
-
-function resolvePromptDir(workingDir) {
-  if (!workingDir) return TEMP_ROOT;
-  _usedPromptDirs.add(workingDir);
-  return workingDir;
+// Always write artifact files to TEMP_ROOT regardless of workingDir.
+// workingDir is passed to the launcher only as RC_WORKING_DIR (Bob's Set-Location context)
+// and as spawnOpts.cwd — never used for IPC file placement.
+function resolvePromptDir() {
+  return TEMP_ROOT;
 }
 
 function writePromptFile(requestId, prompt, workingDir) {
@@ -586,4 +598,14 @@ server.listen(PORT, HOST, () => {
 
   cleanupOldTempFiles(OLD_FILE_MAX_AGE_MS);
   _registerShutdownCleanup();
+
+  // Evict expired entries from the in-memory status cache every 60 seconds.
+  // unref() prevents this timer from keeping the Node.js process alive after SIGTERM.
+  // setInterval count after this addition: 1 (budget per AGENTS.md §16: <= 2).
+  setInterval(() => {
+    const now = Date.now();
+    for (const [id, entry] of _statusCache) {
+      if (now > entry.expiresAt) _statusCache.delete(id);
+    }
+  }, 60 * 1000).unref();
 });

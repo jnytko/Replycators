@@ -84,10 +84,13 @@ try {
 
     $promptBasename = Split-Path -Path $env:RC_PROMPT_FILE -Leaf
 
-    # Read prompt content and release lock before invoking Bob.
-    # Lock deletion signals to the server cleanup that the file is safe to remove.
+    # Read prompt content into memory, release lock, then delete the prompt file.
+    # The prompt is held in $promptContent for the duration of Bob execution.
+    # Deleting the .txt immediately after reading ensures it never persists in the
+    # user's working directory. The server-side deferred cleanup handles .status.json.
     $promptContent = Get-Content -Path $env:RC_PROMPT_FILE -Raw -Encoding UTF8
     Remove-LockFile
+    try { Remove-Item -Path $env:RC_PROMPT_FILE -Force -ErrorAction SilentlyContinue } catch {}
 
     # v1.45.0: Explicitly set BOB_API_KEY in this PowerShell session's environment
     # so it is visible to any Node.js process that bob.ps1 spawns internally.
