@@ -9,6 +9,34 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.46.1] - 2026-08-18
+### Background - Centralize Bob Helper fetch timeout handling (Issue #5)
+**Type:** Refactor
+**Summary:** Introduces `fetchBobHelper(url, fetchOptions, timeoutMs)` - a single utility function that encapsulates the `AbortController + setTimeout` timeout pattern shared by all four Bob Helper message handlers. Each of the four handlers (`RC_PREFLIGHT_CLI_CHECK`, `RC_BOB_HEALTH`, `RC_EXECUTE_BOB`, `RC_BOB_STATUS`) previously implemented an identical inline boilerplate block. All four now delegate the timeout/abort plumbing to the shared utility while retaining their own response parsing, error message strings, logging, and `sendResponse` calls. No behavior change - all per-endpoint timeout values (3000/4000/10000 ms) are preserved as named arguments.
+**Files changed:**
+- `background.js` - `fetchBobHelper()` utility added (~line 603); four handler boilerplate blocks replaced with calls to the utility; header comment bumped to v1.46.1
+- `manifest.json` - Version bumped to 1.46.1
+- `package.json` - Version bumped to 1.46.1
+- `dashboard.html` - Version display bumped to v1.46.1
+- `dashboard.js` - File header comment bumped to v1.46.1
+- `AGENTS.md` - Version field updated to 1.46.1
+- `docs/PACKAGING.md` - Release artefact rename command updated to 1.46.1
+- `dist/*` - Mirror synced
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.2
+- Cloudability OrgID: 4.0.3
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.2
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.2
+- Environment Dashboards Launcher: 1.3.0
+
+---
+
 ## [1.46.0] - 2026-08-17
 ### Diagnostics - Add Bob version validation check (Issues #20, #22)
 **Type:** Enhancement

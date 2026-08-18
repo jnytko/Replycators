@@ -600,6 +600,27 @@ function logBobHelper(level, requestId, phase, details, extra) {
   platformLogger.info(prefix, extra ?? '');
 }
 
+// ─── Bob Helper fetch utility ─────────────────────────────────────────────────
+// Centralizes the AbortController + setTimeout pattern shared by all four Bob
+// Helper message handlers (RC_PREFLIGHT_CLI_CHECK, RC_BOB_HEALTH, RC_EXECUTE_BOB,
+// RC_BOB_STATUS). Each handler retains its own response parsing, error messaging,
+// logging, and sendResponse call - only the timeout boilerplate is abstracted.
+//
+// Timeout values are intentionally per-endpoint (passed by each caller):
+//   /health:    3000 ms  - lightweight probe, fast failure expected
+//   /cli-check: 4000 ms  - runs bob --version subprocess, needs extra margin
+//   /execute:   10000 ms - fire-and-forget spawn, helper confirms quickly
+//   /status:    3000 ms  - file read only, no subprocess
+async function fetchBobHelper(url, fetchOptions, timeoutMs) {
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...fetchOptions, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 
 function bootstrapBackground() {
   platformLogger.info('ReplyCators background service worker started');
@@ -931,12 +952,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (dirParam) {
       cliCheckUrl += '?dir=' + encodeURIComponent(dirParam);
     }
-    const controller  = new AbortController();
-    const timeoutId   = setTimeout(() => controller.abort(), 4000);
-
-    fetch(cliCheckUrl, { method: 'GET', signal: controller.signal })
+    fetchBobHelper(cliCheckUrl, { method: 'GET' }, 4000)
       .then(async response => {
-        clearTimeout(timeoutId);
         let payload = null;
         try { payload = await response.json(); } catch (_) { payload = null; }
         if (response.ok && payload) {
@@ -946,7 +963,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
       })
       .catch(err => {
-        clearTimeout(timeoutId);
         const isTimeout = err?.name === 'AbortError';
         sendResponse({
           ok: false,
@@ -964,12 +980,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // GET /health, or { ok: false, error: '...' } otherwise.
   if (type === 'RC_BOB_HEALTH') {
     const healthUrl = `http://127.0.0.1:${BOB_HELPER_PORT}/health`;
-    const controller = new AbortController();
-    const timeoutId  = setTimeout(() => controller.abort(), 3000); // short timeout for a health probe
-
-    fetch(healthUrl, { method: 'GET', signal: controller.signal })
+    fetchBobHelper(healthUrl, { method: 'GET' }, 3000) // short timeout for a health probe
       .then(async response => {
-        clearTimeout(timeoutId);
         let payload = null;
         try { payload = await response.json(); } catch (_) { payload = null; }
         if (response.ok) {
@@ -979,7 +991,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
       })
       .catch(err => {
-        clearTimeout(timeoutId);
         const errMsg = err?.name === 'AbortError'
           ? 'Bob helper did not respond within 3 s.'
           : 'Bob helper unreachable: ' + String(err);
@@ -1029,18 +1040,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       timestamp: new Date(startedAt).toISOString(),
     });
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), helperTimeoutMs);
-
-    fetch(helperUrl, {
+    fetchBobHelper(helperUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt: trimmedPrompt, requestId, workingDir, diagnosticMode, bobApiKey }),
-      signal: controller.signal,
-    })
+    }, helperTimeoutMs)
       .then(async response => {
         const elapsedMs = Date.now() - startedAt;
-        clearTimeout(timeoutId);
         let payload = null;
         try {
           payload = await response.json();
@@ -1068,7 +1074,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({ ...(payload || {}), requestId, elapsedMs });
       })
       .catch(err => {
-        clearTimeout(timeoutId);
         const elapsedMs = Date.now() - startedAt;
         const errMsg = err?.name === 'AbortError'
           ? 'Bob helper timed out before responding.'
@@ -1093,12 +1098,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
     }
     const statusUrl = `http://127.0.0.1:${BOB_HELPER_PORT}/status/${encodeURIComponent(statusRequestId)}`;
-    const controller = new AbortController();
-    const timeoutId  = setTimeout(() => controller.abort(), 3000);
-
-    fetch(statusUrl, { method: 'GET', signal: controller.signal })
+    fetchBobHelper(statusUrl, { method: 'GET' }, 3000)
       .then(async response => {
-        clearTimeout(timeoutId);
         let payload = null;
         try { payload = await response.json(); } catch (_) { payload = null; }
         if (response.ok && payload) {
@@ -1108,7 +1109,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
       })
       .catch(err => {
-        clearTimeout(timeoutId);
         const isTimeout = err?.name === 'AbortError';
         sendResponse({
           ok: false,
