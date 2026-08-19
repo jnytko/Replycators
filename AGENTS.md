@@ -60,7 +60,7 @@
 | Property | Value |
 |----------|-------|
 | Working directory | `[root]\WatsonX\ReplyCators\` |
-| Extension version | **1.46.4** |
+| Extension version | **1.46.7** |
 | Release status | **Production** |
 
 ReplyCators is a plugin-hosting Microsoft Edge extension (Manifest V3). A single dashboard UI hosts multiple plugins. The platform provides shared navigation, settings, storage, notifications, logging, and plugin lifecycle management. Plugins provide business functionality.
@@ -492,7 +492,7 @@ All plugin logic is extracted from `dashboard.js` into self-contained modules un
 | Snake | `plugin-snake` | `com.replycators.snake` | 1.0.1 | Games |
 | Example Plugin | `plugin-example` | `com.replycators.example-plugin` | 1.0.2 | Template |
 | Apptio Documentation Finder | `plugin-apptio-docs-finder` | `com.replycators.apptio-docs-finder` | 1.0.2 | Productivity |
-| Environment Dashboards Launcher | `plugin-env-dashboards` | `com.replycators.env-dashboards` | 1.3.0 | Support |
+| Environment Dashboards Launcher | `plugin-env-dashboards` | `com.replycators.env-dashboards` | 1.4.0 | Support |
 
 ### Plugin Source Locations
 

@@ -1,6 +1,6 @@
 ﻿/**
  * ReplyCators — Dashboard Controller
- * v1.46.4
+ * v1.46.7
  *
  * Application shell and orchestrator for the ReplyCators plugin-based Edge extension.
  * Owns: startup coordination, session restoration, shared services (window.ReplyCatorsApp),
@@ -1527,7 +1527,7 @@ const PLUGINS = [
   {
     id: 'com.replycators.env-dashboards',
     name: 'Environment Dashboards Launcher',
-    version: '1.3.0',
+    version: '1.4.0',
     description: 'Launches Splunk and Grafana monitoring dashboards for any customer environment with one click. Auto-resolves Namespace, Cluster, Region, and AWS datasource from the environment name. Supports *.apptio.com and *.apps.papt.to tab detection.',
     author: 'ReplyCators Platform',
     category: 'apptione',
@@ -1620,20 +1620,20 @@ function navigateToPluginDoc(viewId) {
 // Any plugin ID present in PLUGINS but absent from this list is appended at
 // the end (before Example Plugin) so new plugins never silently disappear.
 const DEFAULT_PLUGIN_ORDER = [
-  // Primary: high-frequency CRM, cloud, and support tools
-  'com.replycators.salesforce-extractor',
-  'com.replycators.cloudability-orgid',
-  'com.replycators.env-dashboards',
-  // Primary: productivity and search tools
-  'com.replycators.tab-search',
-  'com.replycators.workspace-starter',
-  'com.replycators.apptio-docs-finder',
-  'com.replycators.edge-bookmark-finder',
-  // Secondary: enterprise utilities
-  'com.replycators.apptio-planning-upgrade-calculator',
-  // Tertiary: games and reference
-  'com.replycators.snake',
-  'com.replycators.example-plugin',
+  // #1 - #4: primary CRM, cloud, docs, and environment support tools
+  'com.replycators.salesforce-extractor',           // #1
+  'com.replycators.cloudability-orgid',             // #2
+  'com.replycators.apptio-docs-finder',             // #3
+  'com.replycators.env-dashboards',                 // #4
+  // #5 - #7: productivity and workspace tools
+  'com.replycators.workspace-starter',              // #5
+  'com.replycators.tab-search',                     // #6
+  'com.replycators.edge-bookmark-finder',           // #7
+  // #8: enterprise utilities
+  'com.replycators.apptio-planning-upgrade-calculator', // #8
+  // #9 - #10: games and reference
+  'com.replycators.snake',                          // #9
+  'com.replycators.example-plugin',                 // #10
 ];
 
 // Dashboard widget display order — array of plugin IDs.

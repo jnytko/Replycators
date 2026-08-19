@@ -9,6 +9,86 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.46.7] - 2026-08-20
+### Platform - Quick Actions audit: Cloudability OrgID added; developer documentation updated
+**Type:** Enhancement + Documentation
+**Summary:** Platform-wide audit of Dashboard Quick Actions coverage. Cloudability OrgID (dashboard order #2, used on every cloud cost case) was the only high-frequency production plugin without a Quick Action card. Card added. Three developer-facing documents were also missing all Quick Actions guidance - `docs/AI-PLUGIN-KIT.md`, `PLUGIN-SDK.md`, and `tools/create-plugin.js` now include eligibility criteria, registration pattern, label conventions, ordering rule, and a reference table of current Quick Actions so future plugin authors know exactly when and how to expose Dashboard shortcuts.
+**Files changed:**
+- `dashboard.html` - Cloudability OrgID Quick Action card added (between "Extract SF Case" and "Search Tabs")
+- `docs/AI-PLUGIN-KIT.md` - New "Quick Actions integration" section added; section added to table of contents; Quick Action evaluation checklist item added to Workflow B scratch checklist
+- `PLUGIN-SDK.md` - New "Quick Actions" section added; section added to table of contents
+- `tools/create-plugin.js` - "QUICK ACTIONS" evaluation step added to registration instructions output
+- `dist/*` - Mirror synced
+**Breaking changes:** None - additive only. All existing Quick Actions unchanged.
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.3
+- Cloudability OrgID: 4.0.4
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.2
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.2
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
+
+## [1.46.6] - 2026-08-20
+### Environment Dashboards Launcher - Open Blank launch mode (v1.4.0)
+**Type:** Feature
+**Summary:** Adds a second launch mode to every dashboard card - "Open Blank". Clicking "Open Blank" opens the target dashboard at its base URL with no injected parameters: no environment prefix, no namespace, no cluster, no datasource, no region, and no Splunk form fields. The existing "Open" action is fully preserved and unchanged. Both buttons appear side-by-side in each card's action row. A `BLANK_URLS` lookup table maps each dashboard ID to its base URL; future dashboards automatically gain Open Blank support by adding a single entry to this table.
+**Files changed:**
+- `plugins/env-dashboards.js` - `BLANK_URLS` map added; `handleOpenBlank()` function added; `buildCard()` and `buildCardPvc()` updated to render both Open and Open Blank buttons with `data-action` attribute; delegated click handler updated to route by `data-action`; card `role="button"` / `tabindex="0"` / `data-dashboard-id` moved from card div to individual buttons (correct accessibility model); keyboard handler on card removed (buttons are individually focusable and keyboard-activated natively); version bumped 1.3.0 - 1.4.0; emoji literals replaced with HTML entity equivalents
+- `styles/dashboard.css` - `.edl-open-blank-btn` rule added (subtle opacity differentiation from primary Open)
+- `dashboard.html` - Plugin header version badge updated to v1.4.0
+- `dashboard.js` - PLUGINS[] env-dashboards version updated to 1.4.0
+- `dist/*` - Mirror synced
+**Breaking changes:** None - existing Open behavior is fully preserved. Cards no longer carry `role="button"` on the card container div; click-to-open is now on individual buttons (correct semantic HTML).
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.3
+- Cloudability OrgID: 4.0.4
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.2
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.2
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
+
+## [1.46.5] - 2026-08-19
+### Backup & Restore - Post-import advisory toast when Bob Working Directory or API key was restored (Issue #17)
+**Type:** Enhancement
+**Summary:** After a successful import that restores `rc:session:sf-settings` with a non-empty `bobWorkingDir`, an advisory info toast now appears informing the user that the Bob Working Directory should be verified on this machine and that the API key (never included in backups) must be re-entered. The advisory fires only when `rc:session:sf-settings` was actually written to storage, determined by the new `writtenKeys` array in `applyImport()`'s return value - backups without an SF section, imports using the keep-existing strategy that skip the sf-settings key, and backups with an empty `bobWorkingDir` all remain silent. Blocked acceptance criterion (keep-existing all-conflict scenario) deferred to Issue #27.
+**Files changed:**
+- `plugins/backup-restore.js` - `applyImport()` return value extended with `writtenKeys: keysToSnapshot` (array of written key names, additive alongside existing `keysWritten` count); advisory toast block added in apply click handler success path after status display
+- `dist/plugins/backup-restore.js` - Mirror synced
+- `manifest.json` - Version bumped to 1.46.5
+- `package.json` - Version bumped to 1.46.5
+- `dashboard.html` - Platform version display bumped to v1.46.5
+- `dashboard.js` - File header comment bumped to v1.46.5
+- `AGENTS.md` - Platform version updated to 1.46.5
+- `dist/*` - Mirror synced
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.3
+- Cloudability OrgID: 4.0.4
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.2
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.2
+- Environment Dashboards Launcher: 1.3.0
+
+---
+
 ## [1.46.4] - 2026-08-19
 ### Bob Helper - Isolate IPC artifact files to system temp and add prompt-file active cleanup (Issue #14)
 **Type:** Bug Fix + Enhancement

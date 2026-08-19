@@ -15,6 +15,7 @@
 - Plugin registration
 - Lifecycle implementation
 - UI and navigation integration
+- Quick Actions integration
 - Settings integration
 - Storage integration
 - Messaging and events
@@ -429,6 +430,7 @@ function saveData(data) {
 - [ ] Script loaded before `dashboard.js` in `dashboard.html`
 - [ ] `_safeInit`, `onNavigate` delegate, and `onLeave` block wired in `dashboard.js`
 - [ ] No manual nav button added to `dashboard.html`
+- [ ] Evaluated whether a Quick Action is warranted (see §Quick Actions integration)
 
 ---
 
@@ -632,6 +634,85 @@ Forms:    .rc-form-group, .rc-label, .rc-input, .rc-textarea, .rc-helper-text
 States:   .rc-status--neutral/ok/warn/error, .rc-empty-state, .rc-empty-state__title
 Badges:   .rc-badge, .rc-badge--blue, .rc-badge--green, .rc-badge--amber
 ```
+
+---
+
+## Quick Actions integration
+
+Quick Actions appear at the top of the Dashboard view, above all plugin widgets. They are the fastest path to any plugin - one click from anywhere in the extension.
+
+### When to add a Quick Action
+
+Add a Quick Action when the plugin:
+
+- Represents a workflow users open frequently (every session or multiple times per day)
+- Benefits from one-click access without needing to scroll Plugin Functions
+- Is useful immediately after opening ReplyCators, without requiring prior context
+- Provides high platform-wide utility (CRM, search, monitoring, workspace launch)
+
+### When NOT to add a Quick Action
+
+Do NOT add a Quick Action when the plugin:
+
+- Is used only occasionally or for niche troubleshooting scenarios
+- Requires deep prior setup or context before it is useful
+- Would duplicate an existing Quick Action
+- Is a developer template or reference implementation (e.g. Example Plugin)
+- Is a game or entertainment feature
+
+### Current Quick Actions (reference)
+
+| Label | Plugin | Rationale |
+|---|---|---|
+| Extract SF Case | Salesforce Case Extractor | Primary daily workflow for all support engineers |
+| Get OrgID | Cloudability OrgID | Constant lookup during cloud cost case handling |
+| Search Tabs | Tab Search | Universal browser productivity - daily use |
+| Launch Workspace | Workspace Starter | Daily startup workflow |
+| Search Docs | Apptio Documentation Finder | Constant reference lookup during case handling |
+| Open Dashboards | Environment Dashboards Launcher | Monitoring and environment diagnostics - daily use |
+| Find Bookmark | Edge Bookmark Finder | Browser-wide search utility |
+| Options | Platform settings | Universal access to configuration |
+
+Plugins intentionally excluded from Quick Actions: Apptio Planning Upgrade Calculator (occasional/specialized), Snake (entertainment), Example Plugin (developer template).
+
+### How to register a Quick Action
+
+A Quick Action is a single `<button class="rc-action-card">` element inside `#rc-quick-actions-section > .rc-quick-actions__grid` in `dashboard.html`.
+
+```html
+<button class="rc-action-card" data-view="plugin-<slug>"
+        data-plugin-action="com.replycators.<slug>"
+        title="One sentence describing what this action does">
+  <span class="rc-action-card__icon" aria-hidden="true">
+    <span data-icon="plugins.<semanticId>"></span>
+  </span>
+  <span class="rc-action-card__label">Short Label</span>
+</button>
+```
+
+Key attributes:
+
+| Attribute | Required | Purpose |
+|---|---|---|
+| `data-view` | Yes | Navigates to this view ID on click - handled by dashboard.js delegated click handler |
+| `data-plugin-action` | Yes | When the plugin is disabled, `applyPluginVisibility()` hides this card automatically |
+| `title` | Yes | Tooltip shown on hover - describe the action in one sentence |
+| `data-icon` | Yes | Semantic icon ID from `ICON_REGISTRY` in `plugins/shared/icon-helper.js` |
+
+### Label naming conventions
+
+- 2-3 words maximum
+- Use a verb phrase: "Extract SF Case", "Search Tabs", "Get OrgID", "Launch Workspace"
+- Match the plugin's primary action, not its name
+- No trailing punctuation
+
+### Ordering rule
+
+Quick Actions are ordered by frequency of use - most frequently used workflows appear first. Add new Quick Actions after existing plugin actions and before the platform "Options" card, which must always be last.
+
+### No Quick Action? Use the widget instead
+
+Every plugin already has a widget card in Plugin Functions. If a plugin does not qualify for a Quick Action, users reach it via its widget or the sidebar nav - both are built automatically from `PLUGINS[]`.
 
 ---
 

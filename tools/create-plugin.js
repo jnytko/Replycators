@@ -804,6 +804,34 @@ In #view-settings, add a settings group for your plugin:
 ──────────────────────────────────────────────────────────────────
 ` : ''}
 ──────────────────────────────────────────────────────────────────
+QUICK ACTIONS (evaluate for every new plugin)
+──────────────────────────────────────────────────────────────────
+Decide whether this plugin deserves a Quick Action card on the Dashboard.
+
+Add a Quick Action when the plugin is used frequently (every session or
+multiple times per day) and benefits from one-click access. Do NOT add
+one for occasional-use, niche, or template plugins.
+
+If a Quick Action is warranted, add before the platform "Options" card
+in #rc-quick-actions-section > .rc-quick-actions__grid in dashboard.html:
+
+    <button class="rc-action-card" data-view="plugin-${slug}"
+            data-plugin-action="${id}"
+            title="One sentence describing what this action does">
+      <span class="rc-action-card__icon" aria-hidden="true">
+        <span data-icon="${icon}"></span>
+      </span>
+      <span class="rc-action-card__label">Verb Phrase</span>
+    </button>
+
+Label: 2-3 words, verb phrase (e.g. "Search Tabs", "Get OrgID").
+data-plugin-action is mandatory - it enables automatic visibility
+management when the plugin is toggled in Plugin Manager.
+
+See docs/AI-PLUGIN-KIT.md section "Quick Actions integration" for
+the full eligibility criteria and reference table.
+
+──────────────────────────────────────────────────────────────────
 DOCUMENTATION REQUIREMENT (mandatory - platform standard)
 ──────────────────────────────────────────────────────────────────
 Before the plugin is considered complete you must:

@@ -1,9 +1,9 @@
-﻿/**
+/**
  * Environment Dashboards Launcher - ReplyCators Plugin
  * plugins/env-dashboards.js
  *
  * Plugin ID : com.replycators.env-dashboards
- * Version   : 1.3.0
+ * Version   : 1.4.0
  *
  * Architecture
  * ------------
@@ -21,8 +21,16 @@
  *   *.apps.papt.to      e.g. csbox-us-east-r12.apps.papt.to/biit/data/...
  *
  * Storage key
- * ───────────
- *   rc:plugin:com.replycators.env-dashboards:state  →  { lastEnv: string }
+ * -----------
+ *   rc:plugin:com.replycators.env-dashboards:state  ->  { lastEnv: string }
+ *
+ * Launch modes (v1.4.0)
+ * ---------------------
+ *   Open       - existing behaviour: reads env from active tab, injects all
+ *                dynamic parameters into the dashboard URL.
+ *   Open Blank - new: opens the dashboard base URL with no injected parameters.
+ *                Useful when the engineer wants to start from the dashboard's
+ *                own defaults rather than a pre-filtered view.
  */
 (function () {
   'use strict';
@@ -255,9 +263,7 @@
       ? '<span class="edl-badge edl-badge--splunk">Splunk</span>'
       : '<span class="edl-badge edl-badge--grafana">Grafana</span>';
     return (
-      '<div class="edl-dash-card" role="button" tabindex="0"' +
-          ' data-dashboard-id="' + esc(id) + '"' +
-          ' title="Open ' + esc(name) + ' in a new tab">' +
+      '<div class="edl-dash-card">' +
         '<div class="edl-dash-card__header">' +
           '<div class="edl-dash-card__title-row">' + badge +
             '<span class="edl-dash-card__name">' + esc(name) + '</span>' +
@@ -267,9 +273,14 @@
         (note ? '<div class="edl-dash-card__note">' + esc(note) + '</div>' : '') +
         '<div class="edl-dash-card__actions">' +
           '<button class="rc-btn rc-btn--primary rc-btn--sm edl-open-btn"' +
-              ' data-dashboard-id="' + esc(id) + '"' +
-              ' type="button" title="Open ' + esc(name) + ' in a new tab">' +
-            '↗ Open' +
+              ' data-dashboard-id="' + esc(id) + '" data-action="open"' +
+              ' type="button" title="Open ' + esc(name) + ' with environment parameters">' +
+            '&#8599; Open' +
+          '</button>' +
+          '<button class="rc-btn rc-btn--secondary rc-btn--sm edl-open-btn edl-open-blank-btn"' +
+              ' data-dashboard-id="' + esc(id) + '" data-action="open-blank"' +
+              ' type="button" title="Open ' + esc(name) + ' without any parameters">' +
+            '&#8599; Open Blank' +
           '</button>' +
         '</div>' +
       '</div>'
@@ -285,9 +296,7 @@
     var name = 'AKP BIIT Persistent Volumes';
     var badge = '<span class="edl-badge edl-badge--grafana">Grafana</span>';
     return (
-      '<div class="edl-dash-card" role="button" tabindex="0"' +
-          ' data-dashboard-id="' + id + '"' +
-          ' title="Open ' + name + ' in a new tab">' +
+      '<div class="edl-dash-card">' +
         '<div class="edl-dash-card__header">' +
           '<div class="edl-dash-card__title-row">' + badge +
             '<span class="edl-dash-card__name">' + name + '</span>' +
@@ -297,7 +306,7 @@
           'Cluster, region and namespace are auto-filled from the environment.' +
         '</div>' +
         '<div class="edl-pvc-callout">' +
-          '<span class="edl-pvc-callout__icon">👆</span>' +
+          '<span class="edl-pvc-callout__icon">&#128070;</span>' +
           '<div class="edl-pvc-callout__text">' +
             '<strong>Manual step required in Grafana:</strong><br>' +
             'After opening, select the <code>persistentvolumeclaim</code> ' +
@@ -306,9 +315,14 @@
         '</div>' +
         '<div class="edl-dash-card__actions">' +
           '<button class="rc-btn rc-btn--primary rc-btn--sm edl-open-btn"' +
-              ' data-dashboard-id="' + id + '"' +
-              ' type="button" title="Open ' + name + ' in a new tab">' +
-            '↗ Open' +
+              ' data-dashboard-id="' + id + '" data-action="open"' +
+              ' type="button" title="Open ' + name + ' with environment parameters">' +
+            '&#8599; Open' +
+          '</button>' +
+          '<button class="rc-btn rc-btn--secondary rc-btn--sm edl-open-btn edl-open-blank-btn"' +
+              ' data-dashboard-id="' + id + '" data-action="open-blank"' +
+              ' type="button" title="Open ' + name + ' without any parameters">' +
+            '&#8599; Open Blank' +
           '</button>' +
         '</div>' +
       '</div>'
@@ -367,7 +381,21 @@
       '</div>';
   }
 
-  /* ── click handler (delegated - attached once in onNavigate) ─────────────── */
+  /* ── base URLs for Open Blank (no env resolution needed) ─────────────────── */
+
+  /**
+   * Base URL for each dashboard - opened as-is by handleOpenBlank().
+   * No query parameters are appended; the dashboard loads with its own defaults.
+   * Add new dashboards here and they automatically gain Open Blank support.
+   */
+  var BLANK_URLS = {
+    'string-usage':         SPLUNK_BASE + 'string_usage',
+    'calculation-profiler': SPLUNK_BASE + 'cetools_r12_background_calculation_profiler',
+    'grafana-deployments':  GRAFANA_BASE + 'XDLxmR6Wz/akp-biit-deployments',
+    'grafana-pvc':          PVC_BASE,
+  };
+
+  /* ── click handlers (delegated - attached once in onNavigate) ─────────────── */
 
   function handleOpen(dashboardId) {
     // Query ONLY the active tab in the focused window (Issue #6).
@@ -437,6 +465,27 @@
     });
   }
 
+  /**
+   * Open Blank - opens the dashboard base URL only.
+   * Environment detection, parameter injection, region mapping, and all URL
+   * builder logic are completely bypassed. The dashboard loads in its default
+   * state exactly as if the URL was typed manually into the address bar.
+   */
+  function handleOpenBlank(dashboardId) {
+    var dashUrl = BLANK_URLS[dashboardId];
+    if (!dashUrl) {
+      app().addLog('warning', PLUGIN_ID, 'Open Blank: unknown dashboard id: ' + dashboardId);
+      return;
+    }
+    chrome.tabs.create({ url: dashUrl, active: true });
+    app().addNotification(
+      'Dashboard Opened (Blank)',
+      dashboardId.replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); }) + ' - no parameters',
+      'success', PLUGIN_ID
+    );
+    app().addLog('info', PLUGIN_ID, 'Opened ' + dashboardId + ' blank (no parameters)');
+  }
+
   /* ── Tab system ──────────────────────────────────────────────────────────── */
 
   var _activeTab = 'dashboards'; // 'dashboards' | 'notifications'
@@ -478,20 +527,19 @@
       _eventsAttached = true;
       var container = document.getElementById('edl-container');
       if (container) {
-        // Delegated handler: click bubbles from .edl-open-btn / .edl-dash-card up to #edl-container
+        // Delegated handler: routes to Open or Open Blank based on data-action attribute.
+        // data-action="open"       -> handleOpen()      (env-aware, params injected)
+        // data-action="open-blank" -> handleOpenBlank() (base URL only, no params)
         container.addEventListener('click', function (e) {
           var btn = e.target.closest('[data-dashboard-id]');
           if (!btn) return;
           e.preventDefault();
-          handleOpen(btn.dataset.dashboardId);
-        });
-        // Keyboard activation for card role="button"
-        container.addEventListener('keydown', function (e) {
-          if (e.key !== 'Enter' && e.key !== ' ') return;
-          var card = e.target.closest('.edl-dash-card[data-dashboard-id]');
-          if (!card) return;
-          e.preventDefault();
-          handleOpen(card.dataset.dashboardId);
+          e.stopPropagation();
+          if (btn.dataset.action === 'open-blank') {
+            handleOpenBlank(btn.dataset.dashboardId);
+          } else {
+            handleOpen(btn.dataset.dashboardId);
+          }
         });
       }
     }

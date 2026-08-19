@@ -4384,6 +4384,14 @@ body.rc-sidepanel .edl-card-grid {
   flex-wrap: wrap;
 }
 
+/* Open Blank button - secondary style, visually distinct from primary Open */
+.edl-open-blank-btn {
+  opacity: 0.85;
+}
+.edl-open-blank-btn:hover {
+  opacity: 1;
+}
+
 .edl-url-details {
   flex: 1;
   min-width: 0;

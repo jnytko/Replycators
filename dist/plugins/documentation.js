@@ -853,8 +853,8 @@
       ${ul([
         'Open the customer environment in any browser tab (<code>*.apptio.com</code> or <code>*.apps.papt.to</code>).',
         'Open ReplyCators and navigate to <strong>Environment Dashboards Launcher</strong>.',
-        'Click <strong>↗ Open</strong> on any dashboard card.',
-        'The dashboard opens in a new tab with all parameters pre-filled.',
+        'Click <strong>&#8599; Open</strong> on any dashboard card to launch with all parameters pre-filled.',
+        'Click <strong>&#8599; Open Blank</strong> to open the same dashboard at its default state with no parameters.',
       ])}
 
       ${h3('Supported Dashboards')}
@@ -895,12 +895,12 @@
         'The specific <strong>persistentvolumeclaim</strong> cannot be derived from the environment name - ' +
         'select it from the dropdown in Grafana after opening to see data.')}
 
-      ${h3('Plugin View Tabs')}
+      ${h3('Launch Modes')}
       ${table(
-        ['Tab', 'Content'],
+        ['Button', 'Behaviour'],
         [
-          ['Dashboards',    'All available dashboard cards - click ↗ Open to launch'],
-          ['Notifications', 'Plugin-scoped notification history'],
+          ['<strong>&#8599; Open</strong>',       'Reads env from active browser tab, injects all dynamic parameters (prefix, namespace, cluster, datasource, region) into the dashboard URL.'],
+          ['<strong>&#8599; Open Blank</strong>',  'Opens the dashboard base URL with no injected parameters. Dashboard loads in its default state - useful for exploratory browsing or when no customer tab is active.'],
         ]
       )}
       ${p('Access full documentation via the <strong>Docs</strong> button in the plugin view header, or through the Documentation section in the sidebar.')}

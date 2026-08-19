@@ -870,7 +870,7 @@
       // Clear rollback snapshot on success
       _rollbackSnap = null;
 
-      return { ok: true, keysWritten: keysToSnapshot.length };
+      return { ok: true, keysWritten: keysToSnapshot.length, writtenKeys: keysToSnapshot };
 
     } catch (err) {
       // ── Rollback ──────────────────────────────────────────────────────────
@@ -1273,6 +1273,19 @@
         const result = await applyImport(envelopeToApply);
         _setStatus(applyStatusEl, 'Import applied: ' + result.keysWritten + ' setting(s) restored.', 'ok');
         _currentImport = null;
+
+        // Advisory toast: fire when sf-settings was actually written and contains a bobWorkingDir.
+        // Informs the user that the Bob Working Directory may need re-verification on this machine
+        // and that the API key (never included in backups) must be re-entered. Issue #17.
+        if (result.writtenKeys && result.writtenKeys.includes('rc:session:sf-settings')) {
+          const sfData = envelopeToApply.sections?.['com.replycators.salesforce-extractor']?.['rc:session:sf-settings'];
+          if (sfData?.bobWorkingDir) {
+            app().showToast(
+              'Bob configuration restored - verify your Bob Working Directory is valid on this machine and re-enter your API key in Settings.',
+              'info'
+            );
+          }
+        }
 
         // Check if reload is required - use envelopeToApply (not _currentImport which is now null)
         const preview = buildPreview(envelopeToApply);
