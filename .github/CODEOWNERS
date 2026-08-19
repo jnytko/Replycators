@@ -3,36 +3,36 @@
 # Requires branch protection to be effective.
 # Enable "Require review from Code Owners" in GitHub Settings > Branches > main.
 #
-# Format: <file-pattern>  <@owner>
-# Replace @owner with the actual GitHub username(s) of the project maintainer(s).
-# Example: AGENTS.md  @jnytko
+# Format: <file-pattern>  @owner
+# Current repository owner: @jnytko
+# To add a second owner: append their username, e.g. AGENTS.md  @jnytko @contributor2
 #
 # Documentation: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # ── Repository governance files ───────────────────────────────────────────────
 # Changes to the authoritative briefing or changelog require owner review.
-AGENTS.md                          @owner
-CHANGELOG.md                       @owner
-PLUGIN-SDK.md                      @owner
+AGENTS.md                          @jnytko
+CHANGELOG.md                       @jnytko
+PLUGIN-SDK.md                      @jnytko
 
 # ── Extension manifest ────────────────────────────────────────────────────────
 # Any permission, host_permission, or web_accessible_resources change is security-sensitive.
-manifest.json                      @owner
-dist/manifest.json                 @owner
+manifest.json                      @jnytko
+dist/manifest.json                 @jnytko
 
 # ── CI/CD pipeline ────────────────────────────────────────────────────────────
 # Changes to workflows affect all contributors and CI behaviour.
-.github/                           @owner
+.github/                           @jnytko
 
 # ── Application orchestrator ──────────────────────────────────────────────────
 # High regression risk - changes here can silently break unrelated plugins.
-dashboard.js                       @owner
-dist/dashboard.js                  @owner
+dashboard.js                       @jnytko
+dist/dashboard.js                  @jnytko
 
 # ── Background service worker ─────────────────────────────────────────────────
-background.js                      @owner
-dist/background.js                 @owner
+background.js                      @jnytko
+dist/background.js                 @jnytko
 
 # ── Security policy ───────────────────────────────────────────────────────────
-SECURITY.md                        @owner
-tools/bob-helper-server.js         @owner
+SECURITY.md                        @jnytko
+tools/bob-helper-server.js         @jnytko

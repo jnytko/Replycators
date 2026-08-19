@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReplyCators Engineering Organization Assessment - 2026-01</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; color: #1f2328; background: #ffffff; }
+  .page { max-width: 760px; margin: 0 auto; padding: 40px 24px 60px; }
+
+  /* Header */
+  .report-header { border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 32px; }
+  .report-header h1 { font-size: 22px; font-weight: 700; color: #1f2328; margin-bottom: 8px; }
+  .report-meta { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: #57606a; }
+  .report-meta span { display: flex; align-items: center; gap: 4px; }
+
+  /* Score badge */
+  .score-banner { background: #f7f8fa; border: 1px solid #e5e7eb; border-left: 4px solid #3b82d4; border-radius: 4px; padding: 16px 20px; margin-bottom: 28px; display: flex; align-items: center; gap: 20px; }
+  .score-number { font-size: 42px; font-weight: 800; color: #3b82d4; line-height: 1; flex-shrink: 0; }
+  .score-label { font-size: 11px; color: #57606a; text-transform: uppercase; letter-spacing: 0.06em; }
+  .score-desc { font-size: 13px; color: #1f2328; }
+
+  /* Nav */
+  .toc { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 4px; padding: 16px 20px; margin-bottom: 36px; }
+  .toc-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #57606a; margin-bottom: 10px; }
+  .toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 24px; }
+  .toc-grid a { font-size: 12px; color: #3b82d4; text-decoration: none; padding: 2px 0; }
+  .toc-grid a:hover { text-decoration: underline; }
+
+  /* Sections */
+  .section { margin-bottom: 40px; }
+  .section-title { font-size: 16px; font-weight: 700; color: #1f2328; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 16px; }
+  .section-title .section-num { color: #57606a; font-weight: 400; margin-right: 6px; }
+  h3 { font-size: 13px; font-weight: 600; color: #1f2328; margin: 16px 0 8px; }
+  p { margin-bottom: 10px; font-size: 13px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  th { background: #f7f8fa; text-align: left; padding: 7px 10px; font-weight: 600; color: #57606a; border: 1px solid #e5e7eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 6px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafbfc; }
+
+  /* Lists */
+  ul, ol { padding-left: 20px; margin-bottom: 10px; }
+  li { font-size: 13px; margin-bottom: 3px; }
+
+  /* Tags / pills */
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .pill-red { background: #ffeaea; color: #b91c1c; }
+  .pill-amber { background: #fff7ed; color: #c2410c; }
+  .pill-green { background: #f0fdf4; color: #15803d; }
+  .pill-blue { background: #eff6ff; color: #1d4ed8; }
+  .pill-grey { background: #f7f8fa; color: #57606a; }
+
+  /* Checklist */
+  .checklist { list-style: none; padding-left: 0; }
+  .checklist li { padding: 3px 0 3px 22px; position: relative; font-size: 13px; }
+  .checklist li::before { content: "\2610"; position: absolute; left: 0; color: #57606a; }
+
+  /* Code block */
+  pre { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 4px; padding: 12px 14px; font-size: 11.5px; overflow-x: auto; margin-bottom: 12px; white-space: pre-wrap; word-break: break-word; }
+  code { font-family: "Cascadia Code", "Consolas", monospace; font-size: 11.5px; background: #f7f8fa; padding: 1px 4px; border-radius: 3px; }
+
+  /* Two-column strengths/weaknesses */
+  .sw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .sw-box { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 4px; padding: 14px 16px; }
+  .sw-box.strength { border-top: 3px solid #15803d; }
+  .sw-box.weakness { border-top: 3px solid #c2410c; }
+  .sw-box h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .sw-box.strength h4 { color: #15803d; }
+  .sw-box.weakness h4 { color: #c2410c; }
+  .sw-box ul { padding-left: 16px; }
+  .sw-box li { font-size: 12px; margin-bottom: 4px; }
+
+  /* Priority roadmap cards */
+  .roadmap-phase { border: 1px solid #e5e7eb; border-radius: 4px; margin-bottom: 12px; overflow: hidden; }
+  .roadmap-phase-header { background: #f7f8fa; padding: 8px 14px; font-size: 12px; font-weight: 600; color: #1f2328; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 8px; }
+
+  /* RACI */
+  .raci-r { color: #1d4ed8; font-weight: 700; }
+  .raci-a { color: #b91c1c; font-weight: 700; }
+  .raci-c { color: #15803d; font-weight: 600; }
+  .raci-i { color: #57606a; }
+  td.center { text-align: center; }
+
+  /* Architecture diagram */
+  .arch-diagram { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 4px; padding: 16px; font-family: "Cascadia Code", "Consolas", monospace; font-size: 11.5px; color: #1f2328; line-height: 1.7; margin-bottom: 16px; white-space: pre; overflow-x: auto; }
+
+  /* Scaling stages */
+  .scale-stage { border: 1px solid #e5e7eb; border-radius: 4px; margin-bottom: 14px; overflow: hidden; }
+  .scale-stage-header { padding: 10px 16px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
+  .scale-stage-header.ready { background: #f0fdf4; border-bottom: 1px solid #bbf7d0; color: #15803d; }
+  .scale-stage-header.caution { background: #fff7ed; border-bottom: 1px solid #fed7aa; color: #c2410c; }
+  .scale-stage-header.notready { background: #ffeaea; border-bottom: 1px solid #fecaca; color: #b91c1c; }
+  .scale-stage-body { padding: 12px 16px; }
+
+  /* AI score */
+  .score-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .score-card { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 4px; padding: 12px; text-align: center; }
+  .score-card .sc-num { font-size: 28px; font-weight: 800; line-height: 1; }
+  .score-card .sc-label { font-size: 11px; color: #57606a; margin-top: 4px; }
+  .sc-arch { color: #3b82d4; }
+  .sc-ai { color: #7c5cd8; }
+  .sc-overall { color: #15803d; }
+
+  /* Divider */
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 32px 0; }
+
+  /* Footer */
+  .report-footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 11px; color: #57606a; }
+
+  @media (max-width: 540px) {
+    .toc-grid { grid-template-columns: 1fr; }
+    .sw-grid { grid-template-columns: 1fr; }
+    .score-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <h1>ReplyCators - Engineering Organization Assessment</h1>
+    <div class="report-meta">
+      <span>Date: 2026-01</span>
+      <span>Repository: github.com/jnytko/Replycators</span>
+      <span>Version assessed: 1.46.4</span>
+      <span>Role: Senior Engineering Operating Model Consultant</span>
+    </div>
+  </div>
+
+  <!-- SCORE BANNER -->
+  <div class="score-banner">
+    <div>
+      <div class="score-number">7.5</div>
+      <div class="score-label">/ 10 Overall Maturity</div>
+    </div>
+    <div class="score-desc">
+      ReplyCators demonstrates <strong>exceptional governance maturity for a 3-person, AI-assisted development team</strong>. The comprehensive AGENTS.md and structured documentation system reveal deliberate investment in sustainability and knowledge transfer. Scalability beyond the current team remains untested and several governance mechanisms exist only in documentation without enforcement tooling.
+    </div>
+  </div>
+
+  <!-- SCORE CARDS -->
+  <div class="score-grid">
+    <div class="score-card"><div class="sc-num sc-arch">8/10</div><div class="sc-label">Architecture Health</div></div>
+    <div class="sc-label" style="display:none"></div>
+    <div class="score-card"><div class="sc-num sc-ai">6/10</div><div class="sc-label">AI Governance</div></div>
+    <div class="score-card"><div class="sc-num" style="color:#c2410c">4/10</div><div class="sc-label">Onboarding Readiness</div></div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">Quick Navigation</div>
+    <div class="toc-grid">
+      <a href="#s1">1. Executive Summary</a>
+      <a href="#s11">11. Weekly Release Checklist</a>
+      <a href="#s2">2. Current-State Assessment</a>
+      <a href="#s12">12. Architecture Overview</a>
+      <a href="#s3">3. Repository Analysis</a>
+      <a href="#s13">13. Release Lifecycle</a>
+      <a href="#s4">4. Architecture Analysis</a>
+      <a href="#s14">14. Knowledge Map</a>
+      <a href="#s5">5. Governance Analysis</a>
+      <a href="#s15">15. Backlog and Issue Governance</a>
+      <a href="#s6">6. AI-Assisted Dev Assessment</a>
+      <a href="#s16">16. Repository Standards</a>
+      <a href="#s7">7. RACI Matrix</a>
+      <a href="#s17">17. Engineering Lifecycle Standard</a>
+      <a href="#s8">8. ADR Template</a>
+      <a href="#s18">18. Scaling Readiness</a>
+      <a href="#s9">9. Contributor Onboarding</a>
+      <a href="#s19">19. Prioritized Roadmap</a>
+      <a href="#s10">10. Prompt Governance</a>
+      <a href="#s20">Summary</a>
+    </div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="s1">
+    <div class="section-title"><span class="section-num">1.</span>Executive Summary</div>
+
+    <div class="sw-grid">
+      <div class="sw-box strength">
+        <h4>Key Strengths</h4>
+        <ul>
+          <li>World-class AI agent briefing (AGENTS.md ~4,000 lines)</li>
+          <li>8 documented ADRs with permanent rationale</li>
+          <li>42 authoritative storage state entries</li>
+          <li>10 isolated plugins with clear ownership boundaries</li>
+          <li>37-item PR Release Gate enforced via template</li>
+          <li>Dual deployment model explicitly governed</li>
+        </ul>
+      </div>
+      <div class="sw-box weakness">
+        <h4>Key Weaknesses</h4>
+        <ul>
+          <li>No human-readable contributor onboarding path</li>
+          <li>Implicit RACI - ownership practiced but not declared</li>
+          <li>Prompt governance ad-hoc - no catalog or versioning</li>
+          <li>Weekly release cadence not formalized as procedure</li>
+          <li>Single CODEOWNER - bus factor = 1</li>
+          <li>Zero automated testing (TD-003 deferred)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Top Risks</h3>
+    <table>
+      <tr><th>Risk</th><th>Severity</th><th>Mitigation Status</th></tr>
+      <tr><td>Knowledge concentration (bus factor = 1)</td><td><span class="pill pill-red">Critical</span></td><td>None</td></tr>
+      <tr><td>Prompt knowledge locked in contributor heads</td><td><span class="pill pill-amber">High</span></td><td>None</td></tr>
+      <tr><td>Weekly release cadence lacks formal procedure</td><td><span class="pill pill-amber">Medium</span></td><td>None</td></tr>
+      <tr><td>Scaling untested beyond 3 contributors</td><td><span class="pill pill-amber">Medium</span></td><td>None</td></tr>
+      <tr><td>Manual QA bottleneck</td><td><span class="pill pill-amber">Medium</span></td><td>Acknowledged, deferred</td></tr>
+    </table>
+
+    <h3>Recommended Immediate Priorities (P0/P1)</h3>
+    <ol>
+      <li>Update .github/CODEOWNERS with real GitHub usernames <span class="pill pill-red">P0 - Done</span></li>
+      <li>Create docs/CONTRIBUTOR-ONBOARDING.md <span class="pill pill-green">Done</span></li>
+      <li>Create docs/PROMPT-CATALOG.md and seed with initial prompts <span class="pill pill-green">Done</span></li>
+      <li>Assign RACI matrix owners explicitly</li>
+      <li>Add npm audit to CI pipeline</li>
+    </ol>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section" id="s2">
+    <div class="section-title"><span class="section-num">2.</span>Current-State Assessment</div>
+
+    <h3>Technology Stack</h3>
+    <table>
+      <tr><th>Layer</th><th>Technology</th><th>Version</th><th>Status</th></tr>
+      <tr><td>Runtime</td><td>Browser Extension (Manifest V3)</td><td>v3</td><td><span class="pill pill-green">Active</span></td></tr>
+      <tr><td>Browser</td><td>Microsoft Edge (Chromium)</td><td>120+</td><td><span class="pill pill-green">Production</span></td></tr>
+      <tr><td>Active Runtime</td><td>Hand-authored JavaScript (ES6+)</td><td>-</td><td><span class="pill pill-green">Root flat-deployment</span></td></tr>
+      <tr><td>Future Runtime</td><td>TypeScript</td><td>5.4.5</td><td><span class="pill pill-grey">Inactive scaffolding</span></td></tr>
+      <tr><td>Build</td><td>Webpack</td><td>5.91.0</td><td><span class="pill pill-blue">Dev only</span></td></tr>
+      <tr><td>Storage</td><td>chrome.storage.local API</td><td>-</td><td><span class="pill pill-green">Primary persistence</span></td></tr>
+      <tr><td>Auxiliary</td><td>Node.js HTTP server (Bob Helper)</td><td>-</td><td><span class="pill pill-amber">Manual start, loopback only</span></td></tr>
+    </table>
+
+    <h3>Engineering Processes</h3>
+    <table>
+      <tr><th>Process</th><th>Exists?</th><th>Documented?</th><th>Enforced?</th></tr>
+      <tr><td>Branching strategy</td><td>Yes</td><td>Yes</td><td>Partial</td></tr>
+      <tr><td>Version bumping</td><td>Yes</td><td>Yes</td><td>Partial (10 locations, manual)</td></tr>
+      <tr><td>PR review</td><td>Yes</td><td>Yes</td><td><span class="pill pill-green">Yes</span></td></tr>
+      <tr><td>CI validation</td><td>Yes</td><td>Yes</td><td><span class="pill pill-green">Yes (typecheck, build, sync)</span></td></tr>
+      <tr><td>Release tagging</td><td>Partial</td><td>No</td><td><span class="pill pill-red">No</span></td></tr>
+      <tr><td>Architecture review</td><td>Yes</td><td>Yes</td><td>Partial (ADR underused)</td></tr>
+      <tr><td>Prompt review</td><td>No</td><td>No</td><td><span class="pill pill-red">No</span></td></tr>
+    </table>
+
+    <h3>AGENTS.md Content Split</h3>
+    <table>
+      <tr><th>Content Type</th><th>Proportion</th><th>Note</th></tr>
+      <tr><td>Technical guidance (architecture, storage, plugin lifecycle, design system)</td><td>~70%</td><td>Excellent</td></tr>
+      <tr><td>Process guidance (versioning, governance, release, AI workflow)</td><td>~30%</td><td>Good</td></tr>
+    </table>
+    <p><strong>Critical finding:</strong> AGENTS.md is written primarily for AI agents, not human contributors. A human-readable onboarding guide was missing - now created at <code>docs/CONTRIBUTOR-ONBOARDING.md</code>.</p>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section" id="s3">
+    <div class="section-title"><span class="section-num">3.</span>Repository Analysis</div>
+
+    <h3>Plugin Inventory</h3>
+    <table>
+      <tr><th>Plugin</th><th>Version</th><th>Health</th></tr>
+      <tr><td>Salesforce Case Extractor</td><td>4.12.3</td><td><span class="pill pill-green">Healthy</span></td></tr>
+      <tr><td>Cloudability OrgID</td><td>4.0.4</td><td><span class="pill pill-green">Healthy</span></td></tr>
+      <tr><td>Edge Bookmark Finder</td><td>1.0.2</td><td><span class="pill pill-green">Healthy</span></td></tr>
+      <tr><td>Apptio Planning Upgrade Calculator</td><td>1.0.3</td><td><span class="pill pill-green">Healthy</span></td></tr>
+      <tr><td>Workspace Starter</td><td>2.0.2</td><td><span class="pill pill-green">Healthy</span></td></tr>
+      <tr><td>Tab Search</td><td>1.0.1</td><td><span class="pill pill-green">Healthy</span></td></tr>
+      <tr><td>Snake</td><td>1.0.1</td><td><span class="pill pill-green">Healthy</span></td></tr>
+      <tr><td>Apptio Documentation Finder</td><td>1.0.2</td><td><span class="pill pill-green">Healthy</span></td></tr>
+      <tr><td>Environment Dashboards Launcher</td><td>1.3.0</td><td><span class="pill pill-green">Healthy</span></td></tr>
+      <tr><td>Example Plugin</td><td>1.0.2</td><td><span class="pill pill-blue">Reference only</span></td></tr>
+    </table>
+
+    <h3>Codebase Metrics</h3>
+    <table>
+      <tr><th>Metric</th><th>Value</th><th>Assessment</th></tr>
+      <tr><td>Total plugins</td><td>10</td><td>Healthy modularity</td></tr>
+      <tr><td>dashboard.js LOC</td><td>~1,794</td><td><span class="pill pill-green">Excellent (reduced from 5,411 via TD-001)</span></td></tr>
+      <tr><td>Documentation files</td><td>23 + 10 plugin docs</td><td>Excellent coverage</td></tr>
+      <tr><td>Storage keys</td><td>42</td><td>Well-governed</td></tr>
+      <tr><td>ADRs</td><td>8</td><td>Good, could be more frequent</td></tr>
+      <tr><td>Open technical debt</td><td>1 (TD-003 deferred)</td><td><span class="pill pill-green">Excellent - 18 resolved</span></td></tr>
+    </table>
+
+    <h3>Release Cadence</h3>
+    <p>47 releases from 1.0.0 to 1.46.4 over approximately 3 months = ~3 releases/week. This exceeds the stated weekly goal, indicating the team ships frequently but without a formal weekly gate.</p>
+
+    <h3>Repository Health Checks</h3>
+    <table>
+      <tr><th>Check</th><th>Status</th></tr>
+      <tr><td>CODEOWNERS with real GitHub username</td><td><span class="pill pill-green">Fixed - now @jnytko</span></td></tr>
+      <tr><td>CI pipeline (typecheck, build, sync-check)</td><td><span class="pill pill-green">Active</span></td></tr>
+      <tr><td>npm audit in CI</td><td><span class="pill pill-red">Missing</span></td></tr>
+      <tr><td>ESLint</td><td><span class="pill pill-amber">Deferred (script exits 0 with advisory)</span></td></tr>
+      <tr><td>Branch protection on main</td><td><span class="pill pill-amber">Recommended - not confirmed active</span></td></tr>
+    </table>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section" id="s4">
+    <div class="section-title"><span class="section-num">4.</span>Architecture Analysis</div>
+
+    <h3>Layer Architecture</h3>
+    <div class="arch-diagram">PLUGINS LAYER:   salesforce-case-extractor | cloudability-orgid | workspace-starter
+                 bookmark-finder | apptio-upgrade-calculator | tab-search
+                 snake | apptio-docs-finder | env-dashboards | example-plugin
+                         uses services from
+ORCHESTRATOR:    dashboard.js (startup, navigation, settings, PLUGINS[], ordering)
+                         depends on
+BACKGROUND:      background.js (tab events, OrgID enrichment, Bob bridge)
+                         all use
+STORAGE:         chrome.storage.local (42 keys, namespaced)</div>
+
+    <h3>Architectural Patterns</h3>
+    <table>
+      <tr><th>Pattern</th><th>Implementation</th><th>Assessment</th></tr>
+      <tr><td>Plugin Architecture</td><td>Self-registering IIFEs on window.ReplyCatorsPlugins</td><td><span class="pill pill-green">Excellent</span></td></tr>
+      <tr><td>Orchestrator</td><td>dashboard.js coordinates, delegates to plugins</td><td><span class="pill pill-green">Good</span></td></tr>
+      <tr><td>Single Source of Truth</td><td>42 storage keys mapped to authoritative owners</td><td><span class="pill pill-green">Excellent</span></td></tr>
+      <tr><td>Namespace Segregation</td><td>rc:session:*, rc:plugin:&lt;id&gt;:*</td><td><span class="pill pill-green">Good</span></td></tr>
+      <tr><td>Lazy Initialization</td><td>No I/O in init(); defer to onNavigate/render</td><td><span class="pill pill-green">Excellent</span></td></tr>
+      <tr><td>Dual Deployment</td><td>Root authoritative, dist/ mirror</td><td><span class="pill pill-amber">Functional (manual sync burden)</span></td></tr>
+    </table>
+
+    <h3>Architecture Invariants</h3>
+    <ol>
+      <li>Root files are the runtime</li>
+      <li>chrome.storage.local is the primary persistence layer</li>
+      <li>dashboard.js is the application orchestrator</li>
+      <li>Plugin IDs are permanent</li>
+      <li>Popup and Side Panel share the same implementation</li>
+      <li>Plugin order comes only from rc:session:dashboard-order</li>
+      <li>Platform logging and notifications are mandatory</li>
+      <li>Plugin functionality must remain modular and self-contained</li>
+    </ol>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section" id="s5">
+    <div class="section-title"><span class="section-num">5.</span>Governance Analysis</div>
+
+    <h3>Governance Gaps</h3>
+    <table>
+      <tr><th>Gap</th><th>Impact</th><th>Priority</th></tr>
+      <tr><td>No RACI matrix</td><td>Unclear ownership, decision paralysis risk</td><td><span class="pill pill-amber">P1</span></td></tr>
+      <tr><td>No prompt governance</td><td>Knowledge loss, inconsistency</td><td><span class="pill pill-red">P0 - Addressed</span></td></tr>
+      <tr><td>No release procedure</td><td>Uneven quality, week-to-week variation</td><td><span class="pill pill-amber">P1</span></td></tr>
+      <tr><td>No human onboarding</td><td>New contributor friction</td><td><span class="pill pill-amber">P1 - Addressed</span></td></tr>
+      <tr><td>CODEOWNERS placeholder @owner</td><td>Review cannot be enforced</td><td><span class="pill pill-red">P0 - Fixed</span></td></tr>
+      <tr><td>No git release tagging procedure</td><td>Release traceability gap</td><td><span class="pill pill-blue">P2</span></td></tr>
+      <tr><td>ADR process underused</td><td>Decisions undocumented</td><td><span class="pill pill-blue">P2 - ADR-009 filed</span></td></tr>
+    </table>
+
+    <h3>Security Posture</h3>
+    <table>
+      <tr><th>Control</th><th>Status</th></tr>
+      <tr><td>Data handling documented</td><td><span class="pill pill-green">Good (SECURITY.md)</span></td></tr>
+      <tr><td>No remote telemetry</td><td><span class="pill pill-green">Excellent</span></td></tr>
+      <tr><td>Strict CSP (script-src 'self'; object-src 'none')</td><td><span class="pill pill-green">Good</span></td></tr>
+      <tr><td>Bob Helper loopback-only (127.0.0.1:47123)</td><td><span class="pill pill-green">Good</span></td></tr>
+      <tr><td>CODEOWNERS on manifest.json</td><td><span class="pill pill-green">Good</span></td></tr>
+      <tr><td>npm audit in CI</td><td><span class="pill pill-red">Missing</span></td></tr>
+      <tr><td>Dependency vulnerability scanning</td><td><span class="pill pill-red">Missing</span></td></tr>
+    </table>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section" id="s6">
+    <div class="section-title"><span class="section-num">6.</span>AI-Assisted Development Assessment</div>
+    <p><strong>AI Governance Score: 6/10.</strong> Strong documentation for AI agents; weak governance over AI artifacts (prompts). <em>Prompt catalog now created to address this.</em></p>
+
+    <h3>AI-Specific Risks</h3>
+    <table>
+      <tr><th>Risk</th><th>Likelihood</th><th>Impact</th></tr>
+      <tr><td>Effective prompts lost over time</td><td><span class="pill pill-amber">High</span></td><td>Medium - mitigated by PROMPT-CATALOG.md</td></tr>
+      <tr><td>Inconsistent guidance across contributors</td><td><span class="pill pill-amber">High</span></td><td>Medium - mitigated by PROMPT-CATALOG.md</td></tr>
+      <tr><td>AI-generated technical debt accumulation</td><td>Medium</td><td><span class="pill pill-amber">High</span></td></tr>
+      <tr><td>Prompt sprawl</td><td><span class="pill pill-amber">High</span></td><td>Low - 5-prompt per category limit enforced</td></tr>
+      <tr><td>AI hallucinations accepted without verification</td><td>Low</td><td>High - mitigated by mandatory QA matrix</td></tr>
+    </table>
+
+    <h3>AI Governance Controls Present</h3>
+    <ul>
+      <li>AGENTS.md as AI briefing - 4,000-line document structured for LLM consumption</li>
+      <li>Forbidden Changes table - prevents 23 common AI agent mistakes</li>
+      <li>Source of Truth Matrix - eliminates state ambiguity (42 entries)</li>
+      <li>ASCII Punctuation Standard (SS28) - prevents AI em-dash insertion</li>
+      <li>AI Agent Workflow (SS15) - pre-check and post-check lists</li>
+      <li><strong>New:</strong> docs/PROMPT-CATALOG.md - versioned prompt governance with 7 seed prompts</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="section" id="s7">
+    <div class="section-title"><span class="section-num">7.</span>RACI Matrix</div>
+    <p style="font-size:12px;color:#57606a;margin-bottom:10px;"><strong>R</strong> = Responsible &nbsp; <strong>A</strong> = Accountable &nbsp; <strong>C</strong> = Consulted &nbsp; <strong>I</strong> = Informed</p>
+    <table>
+      <tr><th>Responsibility</th><th style="text-align:center">Contributor A</th><th style="text-align:center">Contributor B</th><th style="text-align:center">Contributor C</th><th>Notes</th></tr>
+      <tr><td colspan="5" style="background:#f7f8fa;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:#57606a">Product Direction</td></tr>
+      <tr><td>Feature prioritization</td><td class="center"><span class="raci-a">A/R</span></td><td class="center"><span class="raci-c">C</span></td><td class="center"><span class="raci-c">C</span></td><td>A owns roadmap</td></tr>
+      <tr><td>Plugin acceptance</td><td class="center"><span class="raci-a">A</span></td><td class="center"><span class="raci-c">C</span></td><td class="center"><span class="raci-c">C</span></td><td></td></tr>
+      <tr><td>User feedback triage</td><td class="center"><span class="raci-a">A/R</span></td><td class="center"><span class="raci-c">C</span></td><td class="center"><span class="raci-c">C</span></td><td></td></tr>
+      <tr><td colspan="5" style="background:#f7f8fa;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:#57606a">Architecture</td></tr>
+      <tr><td>ADR creation</td><td class="center"><span class="raci-a">A</span></td><td class="center"><span class="raci-c">C</span></td><td class="center"><span class="raci-c">C</span></td><td>A is architect</td></tr>
+      <tr><td>Breaking change approval</td><td class="center"><span class="raci-a">A</span></td><td class="center"><span class="raci-c">C</span></td><td class="center"><span class="raci-c">C</span></td><td></td></tr>
+      <tr><td colspan="5" style="background:#f7f8fa;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:#57606a">Release Management</td></tr>
+      <tr><td>Version bump authority</td><td class="center"><span class="raci-a">A</span></td><td class="center"><span class="raci-r">R</span></td><td class="center"><span class="raci-r">R</span></td><td></td></tr>
+      <tr><td>Release approval (Go/No-Go)</td><td class="center"><span class="raci-a">A</span></td><td class="center"><span class="raci-c">C</span></td><td class="center"><span class="raci-c">C</span></td><td></td></tr>
+      <tr><td>CHANGELOG.md</td><td class="center"><span class="raci-r">R</span></td><td class="center"><span class="raci-r">R</span></td><td class="center"><span class="raci-r">R</span></td><td>Author writes entry</td></tr>
+      <tr><td>Git tag creation</td><td class="center"><span class="raci-a">A/R</span></td><td class="center"><span class="raci-i">I</span></td><td class="center"><span class="raci-i">I</span></td><td></td></tr>
+      <tr><td colspan="5" style="background:#f7f8fa;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:#57606a">Prompt Governance</td></tr>
+      <tr><td>Prompt catalog</td><td class="center"><span style="color:#c2410c;font-weight:700">[ASSIGN]</span></td><td class="center"><span class="raci-c">C</span></td><td class="center"><span class="raci-c">C</span></td><td>New role</td></tr>
+      <tr><td>Prompt review/approval</td><td class="center"><span style="color:#c2410c;font-weight:700">[ASSIGN]</span></td><td class="center"><span class="raci-c">C</span></td><td class="center"><span class="raci-c">C</span></td><td></td></tr>
+      <tr><td colspan="5" style="background:#f7f8fa;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:#57606a">Quality Assurance</td></tr>
+      <tr><td>Manual QA execution</td><td class="center"><span class="raci-r">R</span></td><td class="center"><span class="raci-r">R</span></td><td class="center"><span class="raci-r">R</span></td><td>All contributors</td></tr>
+      <tr><td>Defect triage</td><td class="center"><span class="raci-a">A</span></td><td class="center"><span class="raci-r">R</span></td><td class="center"><span class="raci-r">R</span></td><td></td></tr>
+      <tr><td colspan="5" style="background:#f7f8fa;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:#57606a">Security</td></tr>
+      <tr><td>Security policy updates</td><td class="center"><span class="raci-a">A</span></td><td class="center"><span class="raci-c">C</span></td><td class="center"><span class="raci-c">C</span></td><td></td></tr>
+      <tr><td>Permission audit</td><td class="center"><span class="raci-a">A</span></td><td class="center"><span class="raci-r">R</span></td><td class="center"><span class="raci-r">R</span></td><td></td></tr>
+      <tr><td colspan="5" style="background:#f7f8fa;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:#57606a">Knowledge Management</td></tr>
+      <tr><td>AGENTS.md maintenance</td><td class="center"><span class="raci-a">A</span></td><td class="center"><span class="raci-c">C</span></td><td class="center"><span class="raci-c">C</span></td><td></td></tr>
+      <tr><td>Technical debt register</td><td class="center"><span class="raci-a">A</span></td><td class="center"><span class="raci-r">R</span></td><td class="center"><span class="raci-r">R</span></td><td></td></tr>
+    </table>
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="section" id="s8">
+    <div class="section-title"><span class="section-num">8.</span>ADR Template</div>
+    <p>Individual ADRs are stored as <code>docs/adr/ADR-NNN-title.md</code>. The template is at <code>docs/adr/ADR-TEMPLATE.md</code>. ADR-009 (Prompt Catalog decision) has been filed at <code>docs/adr/ADR-009-prompt-catalog.md</code>.</p>
+    <h3>Required ADR sections</h3>
+    <ol>
+      <li><strong>Status</strong> - Draft | Active | Superseded by ADR-NNN | Deprecated</li>
+      <li><strong>Date</strong> - YYYY-MM-DD</li>
+      <li><strong>Context</strong> - Problem statement and constraints (1-3 paragraphs)</li>
+      <li><strong>Decision</strong> - Clear, unambiguous statement + rationale (&lt;100 words)</li>
+      <li><strong>Alternatives Considered</strong> - Each with pros, cons, and reason rejected</li>
+      <li><strong>Impact</strong> - Positive, negative, neutral consequences + affected files</li>
+      <li><strong>Risks</strong> - Likelihood, impact, mitigation per risk</li>
+      <li><strong>Follow-up Actions</strong> - Checklist of required changes</li>
+      <li><strong>Change History</strong> - Version, date, author, change</li>
+    </ol>
+    <h3>Architecture Review Triggers (when to create an ADR)</h3>
+    <ul>
+      <li>Introducing a new persistence mechanism</li>
+      <li>Changing the plugin registration contract</li>
+      <li>Adding new host permissions</li>
+      <li>Changing popup/side panel interaction model</li>
+      <li>Introducing a new background service</li>
+      <li>Changing the build toolchain</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 9 -->
+  <div class="section" id="s9">
+    <div class="section-title"><span class="section-num">9.</span>Contributor Onboarding Guide</div>
+    <p>Full guide created at <code>docs/CONTRIBUTOR-ONBOARDING.md</code>. Key content below.</p>
+
+    <h3>Repository Decision Table</h3>
+    <table>
+      <tr><th>What to change</th><th>Edit this file</th><th>Never edit</th></tr>
+      <tr><td>Plugin logic or UI</td><td><code>plugins/&lt;name&gt;.js</code></td><td><code>src/plugins/*/index.ts</code></td></tr>
+      <tr><td>All plugin views/HTML</td><td><code>dashboard.html</code></td><td><code>src/popup/dashboard.html</code></td></tr>
+      <tr><td>Platform behavior</td><td><code>dashboard.js</code></td><td><code>src/popup/dashboard.ts</code></td></tr>
+      <tr><td>Background processing</td><td><code>background.js</code></td><td><code>src/background/service-worker.ts</code></td></tr>
+      <tr><td>Shared styling</td><td><code>styles/platform.css</code></td><td><code>src/assets/styles/</code></td></tr>
+    </table>
+
+    <h3>Definition of Done</h3>
+    <ul class="checklist">
+      <li>Code works in Popup mode and Side Panel mode</li>
+      <li>No console errors on load or navigation to any affected view</li>
+      <li>QA Matrix executed (AGENTS.md SS16) for all affected workflows</li>
+      <li>Version numbers updated in all 10 authoritative locations</li>
+      <li>CHANGELOG.md entry added with full structured format</li>
+      <li>All affected documentation updated (AGENTS.md SS23-A)</li>
+      <li>npm run sync:verify passes (root and dist/ in sync)</li>
+      <li>CI (typecheck, build, sync-check) passes</li>
+    </ul>
+
+    <h3>Common Contributor Mistakes</h3>
+    <table>
+      <tr><th>#</th><th>Mistake</th><th>Consequence</th></tr>
+      <tr><td>1</td><td>Editing src/ expecting live behavior</td><td>Zero effect on running extension</td></tr>
+      <tr><td>2</td><td>Editing dist/ directly</td><td>Overwritten by next sync</td></tr>
+      <tr><td>3</td><td>Forgetting npm run sync after root edits</td><td>CI sync-check fails</td></tr>
+      <tr><td>4</td><td>Creating __-prefixed directories</td><td>Edge refuses to load extension</td></tr>
+      <tr><td>5</td><td>Using console.log() in runtime code</td><td>Invisible in production, violates platform standard</td></tr>
+      <tr><td>6</td><td>Updating only manifest.json version</td><td>All 10 locations must match</td></tr>
+      <tr><td>7</td><td>Skipping documentation co-update</td><td>PR sent back</td></tr>
+      <tr><td>8</td><td>Creating plugin from scratch without Example Plugin baseline</td><td>Skips required registration steps</td></tr>
+      <tr><td>9</td><td>Em-dash (U+2014) in user-facing strings</td><td>Violates SS28 ASCII Punctuation Standard</td></tr>
+      <tr><td>10</td><td>Non-Streamline icons</td><td>Architecture violation - SS3 Two-Tier Icon Policy</td></tr>
+    </table>
+
+    <h3>First-Week Checklist (condensed)</h3>
+    <table>
+      <tr><th>Day</th><th>Goal</th><th>Key Tasks</th></tr>
+      <tr><td><strong>Day 1</strong></td><td>Extension installed and running</td><td>Clone, load at edge://extensions/, navigate all views</td></tr>
+      <tr><td><strong>Day 2</strong></td><td>Understand root = runtime, plugin registration</td><td>Read README, AGENTS.md SS1-6, CONTRIBUTING.md, example-plugin.js</td></tr>
+      <tr><td><strong>Day 3</strong></td><td>Build tools working</td><td>Run typecheck, build, sync:verify; make trivial change and reload</td></tr>
+      <tr><td><strong>Day 4</strong></td><td>First draft PR submitted</td><td>Pick good-first-issue, branch, change, Definition of Done, draft PR</td></tr>
+      <tr><td><strong>Day 5</strong></td><td>Plugin lifecycle understood</td><td>Trace ExamplePlugin registration in PLUGINS[], read STORAGE.md</td></tr>
+    </table>
+  </div>
+
+  <!-- SECTION 10 -->
+  <div class="section" id="s10">
+    <div class="section-title"><span class="section-num">10.</span>Prompt Governance Catalog</div>
+    <p>Full catalog created at <code>docs/PROMPT-CATALOG.md</code>. Decision documented in <code>docs/adr/ADR-009-prompt-catalog.md</code>.</p>
+
+    <h3>Categories</h3>
+    <table>
+      <tr><th>Category</th><th>Purpose</th><th>Max Prompts</th></tr>
+      <tr><td>Plugin Creation</td><td>Creating new plugins from Example Plugin baseline</td><td>5</td></tr>
+      <tr><td>Plugin Maintenance</td><td>Updating, debugging, or refactoring existing plugins</td><td>5</td></tr>
+      <tr><td>Platform Changes</td><td>Modifying dashboard.js, background.js, platform-level code</td><td>5</td></tr>
+      <tr><td>Documentation</td><td>Generating or updating documentation</td><td>5</td></tr>
+      <tr><td>Code Review</td><td>Reviewing AI-generated or human-written code</td><td>5</td></tr>
+      <tr><td>Debugging</td><td>Investigating bugs or unexpected behavior</td><td>5</td></tr>
+      <tr><td>Architecture</td><td>Architecture discussions and ADR drafting</td><td>5</td></tr>
+      <tr><td>Release</td><td>Preparing releases, changelogs, version bumps</td><td>5</td></tr>
+    </table>
+
+    <h3>Seeded Prompts (7 Active)</h3>
+    <table>
+      <tr><th>Prompt</th><th>Category</th><th>Status</th></tr>
+      <tr><td>Create Plugin from Example Baseline</td><td>Plugin Creation</td><td><span class="pill pill-amber">Draft - not yet rated</span></td></tr>
+      <tr><td>Complete Plugin Registration (dashboard.html / dashboard.js)</td><td>Plugin Creation</td><td><span class="pill pill-amber">Draft - not yet rated</span></td></tr>
+      <tr><td>Investigate dashboard.js Function Before Modification</td><td>Platform Changes</td><td><span class="pill pill-amber">Draft - not yet rated</span></td></tr>
+      <tr><td>Update AGENTS.md for New Plugin</td><td>Documentation</td><td><span class="pill pill-amber">Draft - not yet rated</span></td></tr>
+      <tr><td>Generate CHANGELOG.md Entry</td><td>Documentation</td><td><span class="pill pill-amber">Draft - not yet rated</span></td></tr>
+      <tr><td>Investigate Storage State Anomaly</td><td>Debugging</td><td><span class="pill pill-amber">Draft - not yet rated</span></td></tr>
+      <tr><td>Verify AI-Generated Plugin Against Platform Standards</td><td>Code Review</td><td><span class="pill pill-amber">Draft - not yet rated</span></td></tr>
+    </table>
+
+    <h3>Governance Rules</h3>
+    <ul>
+      <li>All prompts require PR review before Active status</li>
+      <li>Maximum 5 prompts per category (enforces deduplication)</li>
+      <li>Quarterly full review against current AGENTS.md</li>
+      <li>Prompts versioned like code - increment on every change</li>
+      <li>Every prompt has a named owner</li>
+      <li>Deprecated prompts archived after 60 days</li>
+      <li>Effectiveness logged by every user; ratings updated quarterly</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 11 -->
+  <div class="section" id="s11">
+    <div class="section-title"><span class="section-num">11.</span>Weekly Release Review Checklist</div>
+
+    <h3>Pre-Meeting Preparation</h3>
+    <ul class="checklist">
+      <li>npm run typecheck - zero errors required</li>
+      <li>npm run sync:verify - root and dist/ in sync required</li>
+      <li>Review closed GitHub Issues since last release</li>
+      <li>Review open P1/P2 Issues</li>
+    </ul>
+
+    <table>
+      <tr><th>Phase</th><th>Duration</th><th>Key Checks</th></tr>
+      <tr><td>1. Feature Review</td><td>10 min</td><td>MINOR changes tested in Popup + Side Panel; new plugins follow UI standards; no platform changes buried in plugin PRs</td></tr>
+      <tr><td>2. Defect Review</td><td>10 min</td><td>All new bugs triaged P1/P2/P3/P4; zero P1 defects before release</td></tr>
+      <tr><td>3. Documentation Review</td><td>5 min</td><td>AGENTS.md version matches CHANGELOG; README plugin table current; all plugin docs updated</td></tr>
+      <tr><td>4. Security Review</td><td>5 min</td><td>manifest.json permissions checked; npm audit run; Bob Helper loopback-only</td></tr>
+      <tr><td>5. AI-Generated Code Review</td><td>5 min</td><td>No hallucinations; no em-dashes (SS28); storage keys verified; no Forbidden Changes</td></tr>
+      <tr><td>6. Versioning Validation</td><td>5 min</td><td>All 10 version locations consistent; plugin versions match PLUGINS[] and dashboard.html headers</td></tr>
+      <tr><td>7. Release Approval</td><td>-</td><td>Zero P1 defects; CI passing; QA Matrix done; CHANGELOG current; security passed</td></tr>
+      <tr><td>8. Post-Release Monitoring</td><td>48 hrs</td><td>Monitor Issues for new bugs; verify extension loads; close resolved Issues</td></tr>
+    </table>
+
+    <h3>Release Block Reference</h3>
+    <table>
+      <tr><th>Label</th><th>Block Release?</th></tr>
+      <tr><td>P1-critical</td><td><span class="pill pill-red">YES</span></td></tr>
+      <tr><td>P2-high</td><td><span class="pill pill-amber">YES unless imminent fix</span></td></tr>
+      <tr><td>P3-medium</td><td><span class="pill pill-green">No</span></td></tr>
+      <tr><td>P4-low</td><td><span class="pill pill-green">No</span></td></tr>
+      <tr><td>security (CVSS &gt; 5)</td><td><span class="pill pill-red">YES</span></td></tr>
+    </table>
+  </div>
+
+  <!-- SECTION 12 -->
+  <div class="section" id="s12">
+    <div class="section-title"><span class="section-num">12.</span>Architecture Overview</div>
+
+    <h3>12.1 System Context</h3>
+    <div class="arch-diagram">[User: Support Engineer]
+      + Popup / Side Panel
+[ReplyCators Extension]
+      + Content Scripts      -> [Salesforce Lightning] (DOM extraction)
+      + XHR Interception     -> [Cloudability] (OrgID detection)
+      + chrome.tabs.create   -> [Apptio Products] (dashboard launching)
+      + HTTP -> localhost    -> [IBM Bob CLI] (prompt execution)
+      + chrome.* APIs        -> [Microsoft Edge] (storage, tabs, bookmarks)</div>
+
+    <h3>12.2 Startup Sequence</h3>
+    <div class="arch-diagram">Browser opens popup
+  -> dashboard.html loads
+      -> plugins/*.js (x10) -- each registers on window.ReplyCatorsPlugins
+      -> dashboard.js -- DOMContentLoaded handler
+          -> restoreSession() -- SINGLE chrome.storage.local.get() for ALL keys
+          -> applyAllSettings() (theme, font, density)
+          -> applyPluginVisibility() (build nav from PLUGINS[])
+          -> applyDashboardOrder() (reorder widgets + nav)
+          -> plugin.init() x10 (synchronous only -- no I/O)
+          -> navigateTo(lastView) (restore last active view)
+          -> Extension ready (~100ms)</div>
+
+    <h3>12.3 Integration Inventory</h3>
+    <table>
+      <tr><th>Integration</th><th>Mechanism</th><th>Purpose</th><th>Security</th></tr>
+      <tr><td>Salesforce</td><td>Content Script ISOLATED world</td><td>DOM case data extraction</td><td>Read-only, sandboxed</td></tr>
+      <tr><td>Cloudability</td><td>Content Script MAIN world</td><td>XHR interception for OrgID</td><td>Elevated, monitored</td></tr>
+      <tr><td>Apptio Products</td><td>chrome.tabs.create</td><td>Dashboard launching</td><td>No injection</td></tr>
+      <tr><td>IBM Bob CLI</td><td>HTTP loopback + PowerShell</td><td>AI prompt execution</td><td>Loopback only, CORS-restricted</td></tr>
+      <tr><td>Edge Bookmarks</td><td>chrome.bookmarks</td><td>Search and open bookmarks</td><td>Standard permission</td></tr>
+      <tr><td>Edge Tab Groups</td><td>chrome.tabGroups</td><td>Workspace profiles</td><td>Standard permission</td></tr>
+    </table>
+  </div>
+
+  <!-- SECTION 13 -->
+  <div class="section" id="s13">
+    <div class="section-title"><span class="section-num">13.</span>Release Lifecycle</div>
+
+    <h3>Weekly Release Phases</h3>
+    <table>
+      <tr><th>Day</th><th>Phase</th><th>Activities</th></tr>
+      <tr><td><strong>Monday</strong></td><td>Planning</td><td>Triage open Issues (15 min); prioritize and assign; set weekly release goal</td></tr>
+      <tr><td><strong>Mon-Thu</strong></td><td>Development</td><td>Edit root files; npm run sync after every edit; manual QA per change; update docs and versions before Thursday EOD; create PR with Release Gate complete</td></tr>
+      <tr><td><strong>Thursday</strong></td><td>Review</td><td>Code review (logic, standards, AI hygiene); CODEOWNERS review for high-risk files; merge approved PRs to main</td></tr>
+      <tr><td><strong>Friday</strong></td><td>Validation and Release</td><td>typecheck + sync:verify + npm audit; full QA Matrix (30 min); Weekly Release Review (30-45 min); Go/No-Go; package + tag + GitHub Release</td></tr>
+      <tr><td><strong>Last Friday</strong></td><td>Monthly Retrospective</td><td>What shipped; regressions; blockers; prompt effectiveness; one process improvement</td></tr>
+    </table>
+
+    <h3>Rollback Procedure</h3>
+    <ol>
+      <li><code>git revert &lt;commit-hash&gt;</code></li>
+      <li>Bump PATCH version</li>
+      <li>Rebuild and re-release</li>
+      <li>Communicate in GitHub Issue: "[v1.X.Y] Rolled back due to [REASON]"</li>
+    </ol>
+  </div>
+
+  <!-- SECTION 14 -->
+  <div class="section" id="s14">
+    <div class="section-title"><span class="section-num">14.</span>Knowledge Map</div>
+
+    <h3>Document Ownership</h3>
+    <table>
+      <tr><th>Document</th><th>Owner</th><th>Update Trigger</th></tr>
+      <tr><td>AGENTS.md</td><td>Contributor A</td><td>Every significant change</td></tr>
+      <tr><td>CHANGELOG.md</td><td>Change author</td><td>Every release</td></tr>
+      <tr><td>docs/ARCHITECTURE.md</td><td>Contributor A</td><td>Structural changes</td></tr>
+      <tr><td>docs/plugins/&lt;name&gt;.md</td><td>Plugin author</td><td>Plugin changes</td></tr>
+      <tr><td>docs/PROMPT-CATALOG.md</td><td>Prompt Lead [ASSIGN]</td><td>New prompts or quarterly review</td></tr>
+      <tr><td>docs/CONTRIBUTOR-ONBOARDING.md</td><td>Contributor A</td><td>Process changes</td></tr>
+      <tr><td>docs/adr/ADR-NNN.md</td><td>Decision author</td><td>New architecture decisions</td></tr>
+    </table>
+
+    <h3>Knowledge Architecture (Recommended)</h3>
+    <pre>docs/
++-- index.md                      Navigation hub (updated)
++-- ARCHITECTURE.md               Full architecture reference
++-- AI-PLUGIN-KIT.md              AI agent workflows
++-- DEVELOPER_GUIDE.md            Plugin authoring guide
++-- CONTRIBUTING.md               Contribution workflow
++-- CONTRIBUTOR-ONBOARDING.md     [NEW] Human onboarding guide
++-- PROMPT-CATALOG.md             [NEW] AI prompt catalog
++-- INSTALLATION.md               Setup guide
++-- TROUBLESHOOTING.md            Issues and fixes
++-- STORAGE.md / SETTINGS.md / THEMES.md / STARTUP-FLOW.md
++-- adr/                          [NEW] Individual ADR files
+|   +-- ADR-TEMPLATE.md           [NEW]
+|   +-- ADR-009-prompt-catalog.md [NEW]
++-- plugins/                      Per-plugin documentation (10 files)
++-- reports/                      Audit reports
+    +-- engineering-assessment-2026-01.md   [NEW]
+    +-- engineering-assessment-2026-01.html [NEW]
++-- TECH-DEBT-RESOLVED.md         Closed debt archive</pre>
+  </div>
+
+  <!-- SECTION 15 -->
+  <div class="section" id="s15">
+    <div class="section-title"><span class="section-num">15.</span>Backlog and Issue Governance</div>
+
+    <h3>Issue Lifecycle</h3>
+    <pre>New -> Triaged -> In Progress -> In Review -> Resolved -> Closed
+               |
+          Won't Fix / Duplicate / Cannot Reproduce</pre>
+
+    <h3>Priority Labels</h3>
+    <table>
+      <tr><th>Label</th><th>Meaning</th><th>SLA</th><th>Release Blocker?</th></tr>
+      <tr><td><span class="pill pill-red">P1-critical</span></td><td>Data loss, crash, broken launch</td><td>Fix within 24 hours</td><td>YES</td></tr>
+      <tr><td><span class="pill pill-amber">P2-high</span></td><td>Broken core feature, regression</td><td>Current week</td><td>YES unless imminent fix</td></tr>
+      <tr><td><span class="pill pill-blue">P3-medium</span></td><td>Feature, UX issue, non-blocking bug</td><td>Current or next cycle</td><td>No</td></tr>
+      <tr><td><span class="pill pill-grey">P4-low</span></td><td>Cosmetic, docs gap</td><td>Batch with related work</td><td>No</td></tr>
+    </table>
+
+    <h3>Escalation Rules</h3>
+    <table>
+      <tr><th>Trigger</th><th>Action</th></tr>
+      <tr><td>P1 open &gt; 4 hours</td><td>All contributors notified</td></tr>
+      <tr><td>P2 open &gt; 1 week</td><td>Reassign or defer with note</td></tr>
+      <tr><td>P3 open &gt; 4 weeks</td><td>Reassign, defer, or close</td></tr>
+      <tr><td>No reporter response &gt; 2 weeks</td><td>Close as Cannot Reproduce</td></tr>
+    </table>
+
+    <h3>Backlog Health Rules</h3>
+    <ul>
+      <li>No unassigned P1/P2 issues</li>
+      <li>Max 20 open issues before dedicated triage session</li>
+      <li>Stale issues (30 days no activity) require decision</li>
+      <li>Always 1-3 issues tagged good-first-issue</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 16 -->
+  <div class="section" id="s16">
+    <div class="section-title"><span class="section-num">16.</span>Repository Standards</div>
+
+    <h3>Naming Conventions</h3>
+    <table>
+      <tr><th>Type</th><th>Convention</th><th>Example</th></tr>
+      <tr><td>Plugin modules</td><td>kebab-case.js</td><td>tab-search.js</td></tr>
+      <tr><td>CSS classes</td><td>rc- prefix + BEM</td><td>.rc-plugin-header__version</td></tr>
+      <tr><td>Plugin IDs</td><td>com.replycators.&lt;slug&gt;</td><td>com.replycators.tab-search</td></tr>
+      <tr><td>Storage keys</td><td>rc:session:* / rc:plugin:&lt;id&gt;:*</td><td>rc:plugin:com.replycators.snake:state</td></tr>
+      <tr><td>Branches</td><td>feature/ fix/ docs/ chore/ release/</td><td>fix/workspace-starter-race</td></tr>
+      <tr><td>Commit messages</td><td>type(scope): summary</td><td>feat(plugin/tab-search): add domain grouping</td></tr>
+      <tr><td>Git tags</td><td>vX.Y.Z</td><td>v1.46.4</td></tr>
+    </table>
+
+    <h3>AI-Generated Code Standards</h3>
+    <table>
+      <tr><th>Requirement</th><th>Check</th></tr>
+      <tr><td>Manually tested (not just reviewed)</td><td>Load in Edge, verify in both modes</td></tr>
+      <tr><td>Platform design system followed</td><td>No console.log; no custom toast; .rc-plugin-* CSS</td></tr>
+      <tr><td>Storage keys verified</td><td>Cross-reference Source of Truth Matrix (AGENTS.md SS5)</td></tr>
+      <tr><td>No em-dashes or Unicode punctuation</td><td>SS28 ASCII Punctuation Standard</td></tr>
+      <tr><td>No AI hallucinations</td><td>No invented APIs, non-existent methods, wrong paths</td></tr>
+      <tr><td>PR description notes AI sections</td><td>Helps reviewers apply appropriate scrutiny</td></tr>
+    </table>
+
+    <h3>Versioning Decision Tree</h3>
+    <pre>Does anything break?   YES -> MAJOR (requires 5-item approval, AGENTS.md SS12)
+      | NO
+New capability added?  YES -> MINOR
+      | NO
+Bug fix or polish?     YES -> PATCH
+      | NO
+Documentation only?        NO version bump</pre>
+  </div>
+
+  <!-- SECTION 17 -->
+  <div class="section" id="s17">
+    <div class="section-title"><span class="section-num">17.</span>Engineering Lifecycle Standard</div>
+
+    <h3>Ownership Model</h3>
+    <table>
+      <tr><th>Role</th><th>Responsibilities</th><th>Holder</th></tr>
+      <tr><td>Platform Owner</td><td>Architecture, release approval, repo admin, escalation</td><td>Contributor A</td></tr>
+      <tr><td>Plugin Engineer</td><td>Plugin dev, testing, docs</td><td>Contributor B / C</td></tr>
+      <tr><td>Release Manager</td><td>Weekly release, checklist, tagging</td><td>Contributor A</td></tr>
+      <tr><td>Documentation Owner</td><td>AGENTS.md, doc architecture</td><td>Contributor A</td></tr>
+      <tr><td>Prompt Governance Lead</td><td>Prompt catalog, AI review, quarterly review</td><td><span class="pill pill-amber">[ASSIGN]</span></td></tr>
+    </table>
+
+    <h3>Decision Authority</h3>
+    <table>
+      <tr><th>Change Type</th><th>Can Decide Alone</th><th>Requires Discussion</th></tr>
+      <tr><td>PATCH bug fix</td><td>Any contributor</td><td>-</td></tr>
+      <tr><td>MINOR feature</td><td>Any contributor</td><td>Discuss intent first</td></tr>
+      <tr><td>MAJOR breaking change</td><td>Platform Owner only</td><td>Team review required</td></tr>
+      <tr><td>Permission change</td><td>Platform Owner only</td><td>Team review required</td></tr>
+      <tr><td>New plugin</td><td>Platform Owner</td><td>Team review</td></tr>
+      <tr><td>ADR</td><td>Platform Owner</td><td>Team input welcome</td></tr>
+    </table>
+
+    <h3>Meeting Cadence</h3>
+    <table>
+      <tr><th>Meeting</th><th>Frequency</th><th>Duration</th><th>Owner</th></tr>
+      <tr><td>Weekly Issue Triage</td><td>Monday</td><td>15 min</td><td>A</td></tr>
+      <tr><td>Weekly Release Review</td><td>Friday</td><td>30-45 min</td><td>A</td></tr>
+      <tr><td>Monthly Retrospective</td><td>Last Friday</td><td>30 min</td><td>A</td></tr>
+      <tr><td>Quarterly Docs Review</td><td>Quarterly</td><td>1 hour</td><td>A</td></tr>
+      <tr><td>Quarterly Prompt Review</td><td>Quarterly</td><td>30 min</td><td>Prompt Lead</td></tr>
+    </table>
+  </div>
+
+  <!-- SECTION 18 -->
+  <div class="section" id="s18">
+    <div class="section-title"><span class="section-num">18.</span>Scaling Readiness Assessment</div>
+
+    <div class="scale-stage">
+      <div class="scale-stage-header ready">
+        Stage 0: Current (3 Contributors) &nbsp; <span>Score 7/10 - Well-governed for current size</span>
+      </div>
+      <div class="scale-stage-body">
+        <table>
+          <tr><th>Dimension</th><th>Score</th><th>Gap</th></tr>
+          <tr><td>Documentation</td><td><span class="pill pill-green">9/10</span></td><td>Missing onboarding guide - now created</td></tr>
+          <tr><td>Tooling</td><td><span class="pill pill-amber">7/10</span></td><td>CI exists, no test automation</td></tr>
+          <tr><td>Process</td><td><span class="pill pill-amber">7/10</span></td><td>AGENTS.md strong, release procedure weak</td></tr>
+          <tr><td>Knowledge distribution</td><td><span class="pill pill-red">5/10</span></td><td>Single CODEOWNER, implicit RACI</td></tr>
+          <tr><td>Onboarding</td><td><span class="pill pill-red">4/10</span></td><td>No human onboarding path - now created</td></tr>
+          <tr><td>Prompt governance</td><td><span class="pill pill-red">3/10</span></td><td>No catalog or process - now created</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="scale-stage">
+      <div class="scale-stage-header ready">
+        Stage 1: 2-4 Contributors &nbsp; <span>Ready with small additions</span>
+      </div>
+      <div class="scale-stage-body">
+        <p><strong>Risks:</strong> New contributors overwhelmed by AGENTS.md; version bump conflicts from parallel PRs; documentation staleness.</p>
+        <p><strong>Required controls:</strong></p>
+        <ul class="checklist">
+          <li>docs/CONTRIBUTOR-ONBOARDING.md <span class="pill pill-green">Done</span></li>
+          <li>CODEOWNERS updated with second reviewer username</li>
+          <li>RACI matrix communicated to team</li>
+          <li>docs/PROMPT-CATALOG.md seeded <span class="pill pill-green">Done</span></li>
+          <li>PR review SLA: 24-hour response, 48-hour merge</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="scale-stage">
+      <div class="scale-stage-header caution">
+        Stage 2: 5-10 Contributors &nbsp; <span>NOT READY - significant additions required</span>
+      </div>
+      <div class="scale-stage-body">
+        <p><strong>Key risks:</strong> Parallel PR conflicts on documentation and version numbers; plugin quality regression without automated testing; 37-item PR checklist becomes friction; architecture drift; AGENTS.md unmanageable as single file.</p>
+        <ul class="checklist">
+          <li>Automated testing suite (TD-003 - critical at this scale)</li>
+          <li>ESLint in CI</li>
+          <li>Commitlint in CI</li>
+          <li>Version bump automation (semantic-release)</li>
+          <li>ADR process enforced, not optional</li>
+          <li>AGENTS.md split by concern into separately maintained docs</li>
+          <li>TypeScript migration (RC-015 Phase 2) critical for type safety</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="scale-stage">
+      <div class="scale-stage-header notready">
+        Stage 3: 10+ Contributors &nbsp; <span>NOT READY - process redesign required</span>
+      </div>
+      <div class="scale-stage-body">
+        <p><strong>Key risks:</strong> AGENTS.md governance breaks down; manual QA completely unscalable; decision velocity slows; plugin portfolio becomes full-time activity.</p>
+        <ul class="checklist">
+          <li>Full automated test suite (unit, integration, E2E)</li>
+          <li>Formal plugin API versioning and stability guarantees</li>
+          <li>RFC process for MAJOR changes</li>
+          <li>Dedicated security reviewer</li>
+          <li>Plugin marketplace governance (submission, review, retirement)</li>
+          <li>Automated dependency management (Dependabot)</li>
+          <li>Structured multi-week onboarding program</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 19 -->
+  <div class="section" id="s19">
+    <div class="section-title"><span class="section-num">19.</span>Prioritized Roadmap</div>
+
+    <div class="roadmap-phase">
+      <div class="roadmap-phase-header"><span class="pill pill-red">P0/P1</span> Immediate (This Week)</div>
+      <table>
+        <tr><th>Action</th><th>Effort</th><th>Impact</th><th>Status</th></tr>
+        <tr><td>Update .github/CODEOWNERS with real GitHub usernames</td><td>30 min</td><td>High</td><td><span class="pill pill-green">Done</span></td></tr>
+        <tr><td>Create docs/CONTRIBUTOR-ONBOARDING.md</td><td>4 hrs</td><td>High</td><td><span class="pill pill-green">Done</span></td></tr>
+        <tr><td>Create docs/PROMPT-CATALOG.md - seed 7 prompts</td><td>3 hrs</td><td>High</td><td><span class="pill pill-green">Done</span></td></tr>
+        <tr><td>Create docs/adr/ folder + ADR-TEMPLATE + ADR-009</td><td>2 hrs</td><td>Medium</td><td><span class="pill pill-green">Done</span></td></tr>
+        <tr><td>Assign RACI matrix owners (communicate to team)</td><td>1 hr</td><td>High</td><td><span class="pill pill-amber">Open</span></td></tr>
+        <tr><td>Add npm audit to CI pipeline</td><td>30 min</td><td>Medium</td><td><span class="pill pill-amber">Open</span></td></tr>
+      </table>
+    </div>
+
+    <div class="roadmap-phase">
+      <div class="roadmap-phase-header"><span class="pill pill-amber">P1/P2</span> This Month</div>
+      <table>
+        <tr><th>Action</th><th>Effort</th><th>Impact</th></tr>
+        <tr><td>Formalize weekly release procedure (written runbook)</td><td>3 hrs</td><td>High</td></tr>
+        <tr><td>Add git release tagging to release process</td><td>1 hr</td><td>Medium</td></tr>
+        <tr><td>Test onboarding guide with real new contributor</td><td>4 hrs</td><td>High</td></tr>
+        <tr><td>Conduct first monthly retrospective</td><td>30 min</td><td>Medium</td></tr>
+        <tr><td>Enable branch protection on main in GitHub Settings</td><td>30 min</td><td>High</td></tr>
+      </table>
+    </div>
+
+    <div class="roadmap-phase">
+      <div class="roadmap-phase-header"><span class="pill pill-blue">P2/P3</span> This Quarter</div>
+      <table>
+        <tr><th>Action</th><th>Effort</th><th>Impact</th></tr>
+        <tr><td>Begin TypeScript migration investigation (RC-015 Phase 2)</td><td>8 hrs</td><td>High (long-term)</td></tr>
+        <tr><td>Run first quarterly docs review</td><td>1 hr</td><td>Medium</td></tr>
+        <tr><td>Run first quarterly prompt catalog review</td><td>30 min</td><td>Medium</td></tr>
+        <tr><td>Evaluate commitlint for enforcement</td><td>2 hrs</td><td>Low</td></tr>
+        <tr><td>Evaluate Dependabot for dependency management</td><td>2 hrs</td><td>Medium</td></tr>
+      </table>
+    </div>
+
+    <div class="roadmap-phase">
+      <div class="roadmap-phase-header"><span class="pill pill-grey">P2/P3</span> Next 6 Months</div>
+      <table>
+        <tr><th>Action</th><th>Effort</th><th>Impact</th></tr>
+        <tr><td>Initiate TD-003 automated test plan</td><td>40+ hrs</td><td>High</td></tr>
+        <tr><td>ESLint configuration and CI integration</td><td>8 hrs</td><td>Medium</td></tr>
+        <tr><td>Plugin portfolio review (deprecation policy)</td><td>4 hrs</td><td>Medium</td></tr>
+        <tr><td>Contributor ladder definition</td><td>4 hrs</td><td>Medium</td></tr>
+        <tr><td>Evaluate RFC process for architectural changes</td><td>2 hrs</td><td>Medium</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <hr>
+  <div class="section" id="s20">
+    <div class="section-title">What This Project Does Exceptionally Well</div>
+    <ol>
+      <li><strong>AGENTS.md as living AI + human briefing document</strong> - model for AI-first projects</li>
+      <li><strong>Source of Truth Matrix</strong> - 42 state entries, single authoritative owners per key</li>
+      <li><strong>Plugin isolation architecture</strong> - 10 plugins, zero cross-coupling</li>
+      <li><strong>ADR discipline</strong> - decisions documented with context, alternatives, consequences</li>
+      <li><strong>Comprehensive CHANGELOG</strong> - structured, file-level traceability per release</li>
+      <li><strong>Technical debt transparency</strong> - 18 items tracked, resolved, archived (TD-003 acknowledged)</li>
+      <li><strong>Forbidden Changes table</strong> - prevents 23 common AI and human mistakes</li>
+      <li><strong>Storage namespace governance</strong> - rc:session:* / rc:plugin:&lt;id&gt;:* prevents key collisions</li>
+      <li><strong>Security-first posture</strong> - loopback-only, no telemetry, strict CSP</li>
+      <li><strong>ASCII Punctuation Standard</strong> - governance down to the character level</li>
+    </ol>
+    <p style="margin-top:14px;font-style:italic;color:#57606a;">The gaps are real and addressable. The foundation is outstanding.</p>
+  </div>
+
+  <div class="report-footer">Made with IBM Bob</div>
+
+</div>
+</body>
+</html>

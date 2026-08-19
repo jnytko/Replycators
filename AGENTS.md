@@ -1520,6 +1520,8 @@ Complete record: `docs/TECH-DEBT-RESOLVED.md`
 | `docs/ARCHITECTURE.md` | Full architecture reference, layer stack, component descriptions. | On-demand |
 | `docs/DEVELOPER_GUIDE.md` | Step-by-step plugin authoring guide. | On-demand |
 | `docs/CONTRIBUTING.md` | Contribution workflow, branching strategy, versioning, commit format. | On-demand |
+| `docs/CONTRIBUTOR-ONBOARDING.md` | Human contributor onboarding guide. First-week checklist, GitHub workflow, AI development expectations, Definition of Done. | On-demand (new contributors) |
+| `docs/PROMPT-CATALOG.md` | AI prompt governance catalog. Versioned, reviewed prompts for all common development workflows. | On-demand (AI-assisted tasks) |
 | `docs/STARTUP-FLOW.md` | Full boot sequence, plugin load order, service worker lifecycle. | On-demand |
 | `docs/STORAGE.md` | Complete storage schema: all keys, namespaces, platform settings. | On-demand |
 | `docs/SETTINGS.md` | Full settings reference: all settings, options, defaults. | On-demand |
@@ -1532,6 +1534,9 @@ Complete record: `docs/TECH-DEBT-RESOLVED.md`
 | `docs/WORKING_DIRECTORY.md` | File sync policy between root and `dist/`. | On-demand |
 | `docs/ICON-SYSTEM.md` | Authoritative icon system reference - two-tier policy, registry, renderer. | On-demand (icon tasks) |
 | `docs/ADR-008-plugin-module-architecture.md` | ADR for plugin modularization (TD-001). See also § 6 ADR-008 entry. | On-demand |
+| `docs/adr/ADR-TEMPLATE.md` | Lightweight ADR template. Copy to `docs/adr/ADR-NNN-title.md` to create a new record. | On-demand (ADR tasks) |
+| `docs/adr/ADR-009-prompt-catalog.md` | ADR-009: Decision to introduce the AI Prompt Governance Catalog. | On-demand |
+| `docs/reports/engineering-assessment-2026-01.md` | Engineering organization assessment (2026-01). Maturity score, RACI, governance artifacts, scaling readiness. | On-demand (governance tasks) |
 | `docs/TECH-DEBT-RESOLVED.md` | Archive of closed/deferred technical debt items. TD-003 is deferred. | Archive-only |
 | `docs/CHANGELOG-ARCHIVE.md` | Archive. Full verbose changelog entries for versions below v1.27.2. | Archive-only |
 | `docs/BOB-HELPER-SERVER.md` | Consolidated technical reference for `tools/bob-helper-server.js`. | On-demand (Bob Helper tasks) |

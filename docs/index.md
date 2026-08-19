@@ -26,6 +26,8 @@ This page provides a navigable index of all engineering documentation for the Re
 | [ICON-SYSTEM.md](ICON-SYSTEM.md) | Icon system reference: two-tier policy, registry, renderer |
 | [ADR-008-plugin-module-architecture.md](ADR-008-plugin-module-architecture.md) | Architecture Decision Record for plugin modularization |
 | [STORAGE-MIGRATION-ROADMAP.md](STORAGE-MIGRATION-ROADMAP.md) | Storage namespace migration plan for future MAJOR release |
+| [adr/ADR-TEMPLATE.md](adr/ADR-TEMPLATE.md) | Lightweight ADR template - copy to create a new Architecture Decision Record |
+| [adr/ADR-009-prompt-catalog.md](adr/ADR-009-prompt-catalog.md) | ADR-009: Decision to introduce the AI Prompt Governance Catalog |
 
 ---
 
@@ -36,6 +38,8 @@ This page provides a navigable index of all engineering documentation for the Re
 | [AI-PLUGIN-KIT.md](AI-PLUGIN-KIT.md) | **Primary guide for AI agents.** Create, migrate, or maintain plugins. Covers all workflows. |
 | [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) | Step-by-step plugin authoring guide for human developers |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution workflow, change guide, versioning, commit format |
+| [CONTRIBUTOR-ONBOARDING.md](CONTRIBUTOR-ONBOARDING.md) | **Human contributor onboarding guide.** First-week checklist, GitHub workflow, AI development expectations, Definition of Done |
+| [PROMPT-CATALOG.md](PROMPT-CATALOG.md) | AI prompt governance catalog - versioned, reviewed prompts for common development workflows |
 | [../PLUGIN-SDK.md](../PLUGIN-SDK.md) | Plugin SDK standards: page structure, lifecycle, storage, logging, notifications |
 
 ---
@@ -87,3 +91,4 @@ This page provides a navigable index of all engineering documentation for the Re
 | [../PLUGIN-SDK.md](../PLUGIN-SDK.md) | Plugin SDK standards |
 | [../THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) | Third-party software notices |
 | [../ICON-LICENSE.md](../ICON-LICENSE.md) | Icon license and attribution |
+| [reports/engineering-assessment-2026-01.md](reports/engineering-assessment-2026-01.md) | Engineering organization assessment: maturity score, RACI, architecture overview, governance artifacts, scaling readiness |
