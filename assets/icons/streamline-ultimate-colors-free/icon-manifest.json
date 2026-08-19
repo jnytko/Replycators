@@ -6,7 +6,7 @@
   "attribution": "Icons by Streamline (http://streamlinehq.com)",
   "download_date": "2025-07-16",
   "total_files": 169,
-  "notes": "Original 97 SVGs from webalys-hq/streamline-vectors (ultimate/colors/). 8 navigation/ SVGs repaired from empty placeholders 2025-07-16. 4 registry path errors corrected. 3 SVGs added 2025-07-16 (back, forward, person). 8 semantic replacement icons added 2025-07-17 (marketplace: shop-sign-open, settings: cog, side-panel-mode: Browser-Page-Layout, popup-mode: Expand-2, cloudability-orgid: hr-hierarchy-man, tab-search: network-search, apptio-upgrade-calculator: analytics-board-graph-line, snake: chess-knight). 57 new common utility icons added 2025-07-17. 5 semantic icon replacements 2025-07-18 (warning: Network-Warning, unavailable: Stop-Sign, external-link: Login-1, side-panel-mode: Browser-Page-Layout, popup-mode: Expand-2). utility.sidePanelMode and utility.popupMode entries added as canonical IDs for dashboard.html. Total: 168 SVGs.",
+  "notes": "Original 97 SVGs from webalys-hq/streamline-vectors (ultimate/colors/). 8 navigation/ SVGs repaired from empty placeholders 2025-07-16. 4 registry path errors corrected. 3 SVGs added 2025-07-16 (back, forward, person). 8 semantic replacement icons added 2025-07-17 (marketplace: shop-sign-open, settings: cog, side-panel-mode: Browser-Page-Layout, popup-mode: Expand-2, cloudability-orgid: hr-hierarchy-man, tab-search: network-search, apptio-upgrade-calculator: analytics-board-graph-line, snake: chess-knight). 57 new common utility icons added 2025-07-17. 5 semantic icon replacements 2025-07-18 (warning: Network-Warning, unavailable: Stop-Sign, external-link: Login-1, side-panel-mode: Browser-Page-Layout, popup-mode: Expand-2). utility.sidePanelMode and utility.popupMode entries added as canonical IDs for dashboard.html. Total: 168 SVGs. 1 new semantic ID added for plugins.apptioOneUpgradeCalculator (data-search.svg) — ApptioOne Upgrade Calculator plugin.",
   "icons": [
     {
       "semanticId": "navigation.home",
@@ -934,6 +934,15 @@
       "purpose": "Environment Dashboards Launcher plugin — custom icon (monitor + bar chart + launch arrow). Not a Streamline original; follows Streamline style conventions. CC BY 4.0 compatible.",
       "downloadDate": "2025-07-25",
       "sourcePack": "ReplyCators Custom (Streamline-style)"
+    },
+    {
+      "semanticId": "plugins.apptioOneUpgradeCalculator",
+      "localPath": "plugins/data-search.svg",
+      "streamlineName": "data-search",
+      "category": "plugins",
+      "purpose": "ApptioOne Upgrade Calculator — search and analyze upgrade request data from TargetProcess board",
+      "downloadDate": "2025-07-16",
+      "sourcePack": "Streamline Ultimate Colors Free"
     }
   ]
 }

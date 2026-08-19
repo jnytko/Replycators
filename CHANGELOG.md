@@ -9,6 +9,33 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.47.0] - 2026-08-20
+### ApptioOne Upgrade Calculator - New Plugin Integration
+**Type:** Feature
+**Summary:** Introduced the ApptioOne Upgrade Calculator (`v1.0.0`), a new built-in plugin that analyzes Apptio Upgrade Requests from the TargetProcess board (`apptioupgrades.tpondemand.com`). It auto-detects active customer environment hostnames, connects to the TargetProcess board in the background, extracts structured upgrade request fields, and provides timeline analysis of past, current, and upcoming releases.
+**Files changed:**
+- `plugins/apptioone-upgrade-calculator.js`, `plugins/apptioone-upgrade-calculator/` - new plugin runtime and content scripts
+- `dist/plugins/apptioone-upgrade-calculator.js`, `dist/plugins/apptioone-upgrade-calculator/` - distribution mirror
+- `dashboard.html`, `dashboard.js`, `manifest.json` - registered plugin view, widget, lifecycle hooks, and content script permissions
+- `plugins/shared/icon-helper.js`, `assets/icons/streamline-ultimate-colors-free/icon-manifest.json` - icon registration
+- `plugins/documentation.js`, `docs/plugins/apptioone-upgrade-calculator.md` - comprehensive user and engineering documentation
+- `AGENTS.md`, `README.md`, `package.json`, `docs/PACKAGING.md` - governance and version bumps to v1.47.0
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.4
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.2
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.2
+- Environment Dashboards Launcher: 1.4.0
+- ApptioOne Upgrade Calculator: 1.0.0
+
+---
+
 ## [1.46.9] - 2026-08-20
 ### Salesforce Case Extractor - Fix init data loss and Clear ghost-data (Issue #23)
 **Type:** Bug Fix

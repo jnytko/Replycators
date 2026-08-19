@@ -62,8 +62,9 @@
         { id: 'workspace-starter',  label: 'Workspace Starter',                 semanticId: 'plugins.workspaceStarter',              keywords: 'workspace profile launch tabs url group' },
         { id: 'tab-search',         label: 'Tab Search',                        semanticId: 'plugins.tabSearch',                     keywords: 'tabs search browser window duplicate' },
         { id: 'apptio-docs-finder', label: 'Apptio Documentation Finder',       semanticId: 'plugins.apptioDocsFinder',              keywords: 'ibm docs search apptio cloudability targetprocess' },
-        { id: 'apptio-calculator',  label: 'Apptio Planning Upgrade Calculator',semanticId: 'plugins.apptioUpgradeCalculator',       keywords: 'upgrade date schedule apptio planning' },
-        { id: 'bookmark-finder',    label: 'Edge Bookmark Finder',              semanticId: 'plugins.edgeBookmarkFinder',            keywords: 'bookmark edge search folder duplicate analytics' },
+        { id: 'apptio-calculator',             label: 'Apptio Planning Upgrade Calculator', semanticId: 'plugins.apptioUpgradeCalculator',    keywords: 'upgrade date schedule apptio planning' },
+        { id: 'apptioone-upgrade-calculator',  label: 'ApptioOne Upgrade Calculator',       semanticId: 'plugins.apptioOneUpgradeCalculator', keywords: 'apptioone upgrade targetprocess tp board request analyzer timeline account instance' },
+        { id: 'bookmark-finder',               label: 'Edge Bookmark Finder',               semanticId: 'plugins.edgeBookmarkFinder',         keywords: 'bookmark edge search folder duplicate analytics' },
         { id: 'snake',              label: 'Snake',                             semanticId: 'plugins.snake',                         keywords: 'game arcade retro score speed' },
       ],
     },
@@ -1051,6 +1052,68 @@
       ])}
 
       ${p('The plugin checks a cached schedule first (24-hour TTL). If the cache is missing or expired, it fetches the IBM Community page. If that fails, it falls back to a bundled fallback schedule included with the extension. Future releases appear automatically with no hardcoded version list.')}
+    `,
+
+    'apptioone-upgrade-calculator': () => `
+      ${h2('ApptioOne Upgrade Calculator')}
+      ${p('Analyzes Apptio Upgrade Requests from the TargetProcess board at <code>apptioupgrades.tpondemand.com</code>. Auto-detects the active customer environment, opens the board in the background, and displays structured upgrade request data with upgrade timeline analysis.')}
+
+      ${infoBox('states.info', 'Authentication Required', 'The plugin reads from the TargetProcess board using your existing browser session. You must be logged in to apptioupgrades.tpondemand.com for extraction to work.')}
+
+      ${h3('Auto-Mode')}
+      ${p('When you open the plugin with a CT/TBM Studio customer tab active (*.apptio.com or *.apps.papt.to), the plugin:')}
+      ${ul([
+        'Detects the environment hostname from the active tab URL.',
+        'Pre-fills the search box with the hostname (which matches the Instance URL column in TP).',
+        'Fetches live build and Studio version from the customer tab if the Calculation Queue widget is visible.',
+        'Click <strong>Search</strong> to open the TP board and find matching upgrade requests.',
+      ])}
+
+      ${h3('Manual Search')}
+      ${ul([
+        'Type an account name or instance URL fragment in the search box.',
+        'Press <strong>Enter</strong> or click <strong>Search</strong>.',
+        'If the TP board is not yet open, the plugin opens it in a background tab — this may take ~30 seconds on first load.',
+        'Select a row from the results list to load its full upgrade request data.',
+      ])}
+
+      ${h3('Extracted Fields')}
+      ${table(
+        ['Field', 'Source'],
+        [
+          ['ID',               'Entity ID from the TP board row'],
+          ['Account',          'Account cell from the row'],
+          ['Instance URL',     'Instance URL custom field'],
+          ['CSM',              'Customer Success Manager custom field'],
+          ['Live Prod Build',  'Fetched live from the customer environment tab (Calculation Queue widget)'],
+          ['Studio Version',   'Fetched live from the customer environment tab (About dialog)'],
+          ['Build in TP',      'Current Build custom field'],
+          ['Target Build',     'Upgrade Build To custom field'],
+          ['Upgrade Date',     'Upgrade Date custom field'],
+          ['Upgrade Time',     'Upgrade Time custom field'],
+          ['Upgrade Type',     'Upgrade Type custom field'],
+          ['Time Zone',        'Time Zone custom field'],
+          ['Salesforce ID',    'SF ID custom field'],
+          ['Status in SF',     'Status in SF custom field'],
+          ['Status',           'Status custom field'],
+        ]
+      )}
+
+      ${h3('Upgrade Timeline')}
+      ${p('The timeline is calculated from all upgrade date values visible on the board for the same account. It shows the previous, current, and next upgrade dates relative to today, plus days between upgrades and estimated upgrade frequency.')}
+
+      ${h3('Actions')}
+      ${table(
+        ['Button', 'Action'],
+        [
+          ['↺ Refresh',  'Re-run the last search or re-extract from the board'],
+          ['Search',     'Search the TP board for matching upgrade requests'],
+          ['⧉ Copy All', 'Copy all extracted field values to the clipboard'],
+          ['Debug',      'Copy board cell diagnostic data to the clipboard for troubleshooting'],
+        ]
+      )}
+
+      ${infoBox('states.warning', 'Dynamic Rendering', 'TargetProcess is a React SPA. If fields show "Not Found", the page may still be rendering. Use ↺ Refresh after the board finishes loading.')}
     `,
 
     'bookmark-finder': () => `

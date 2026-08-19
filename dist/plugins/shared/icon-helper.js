@@ -237,17 +237,18 @@
 
     // ── Plugins - Built-in ────────────────────────────────────────────────────
     plugins: {
-      salesforceCaseExtractor: _BASE + 'plugins/salesforce-case-extractor.svg', // Cloud-Data-Transfer
-      cloudabilityOrgId:       _BASE + 'plugins/cloudability-orgid.svg',        // Human-Resources-Hierarchy-Man (org chart = org ID)
-      edgeBookmarkFinder:      _BASE + 'plugins/edge-bookmark-finder.svg',      // Bookmarks-Document
-      apptioUpgradeCalculator: _BASE + 'plugins/apptio-upgrade-calculator.svg', // Analytics-Board-Graph-Line (upgrade trend)
-      apptioDocsFinder:        _BASE + 'plugins/apptio-docs-finder.svg',        // Book-Search
-      workspaceStarter:        _BASE + 'plugins/workspace-starter.svg',         // Launch-Go (rocket)
-      tabSearch:               _BASE + 'plugins/tab-search.svg',                // Network-Search (browser + magnifier)
-      snake:                   _BASE + 'plugins/snake.svg',                     // Chess-Knight (classic game piece)
-      examplePlugin:           _BASE + 'plugins/example-plugin.svg',            // App-Window-Code (code template window - distinct from Plugin Manager's Module-Puzzle)
-      backupRestore:           _BASE + 'plugins/backup-restore.svg',            // Server-Refresh-1
-      envDashboards:           _BASE + 'plugins/env-dashboards.svg',            // Monitor + bar chart + launch arrow (custom, Streamline-style)
+      salesforceCaseExtractor:      _BASE + 'plugins/salesforce-case-extractor.svg', // Cloud-Data-Transfer
+      cloudabilityOrgId:            _BASE + 'plugins/cloudability-orgid.svg',        // Human-Resources-Hierarchy-Man (org chart = org ID)
+      edgeBookmarkFinder:           _BASE + 'plugins/edge-bookmark-finder.svg',      // Bookmarks-Document
+      apptioUpgradeCalculator:      _BASE + 'plugins/apptio-upgrade-calculator.svg', // Analytics-Board-Graph-Line (upgrade trend)
+      apptioOneUpgradeCalculator:   _BASE + 'plugins/data-search.svg',               // Data-Search (analyze upgrade request data)
+      apptioDocsFinder:             _BASE + 'plugins/apptio-docs-finder.svg',        // Book-Search
+      workspaceStarter:             _BASE + 'plugins/workspace-starter.svg',         // Launch-Go (rocket)
+      tabSearch:                    _BASE + 'plugins/tab-search.svg',                // Network-Search (browser + magnifier)
+      snake:                        _BASE + 'plugins/snake.svg',                     // Chess-Knight (classic game piece)
+      examplePlugin:                _BASE + 'plugins/example-plugin.svg',            // App-Window-Code (code template window - distinct from Plugin Manager's Module-Puzzle)
+      backupRestore:                _BASE + 'plugins/backup-restore.svg',            // Server-Refresh-1
+      envDashboards:                _BASE + 'plugins/env-dashboards.svg',            // Monitor + bar chart + launch arrow (custom, Streamline-style)
     },
 
     // ── Marketplace Plugins ───────────────────────────────────────────────────

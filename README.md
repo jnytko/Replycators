@@ -57,7 +57,7 @@ For the full setup guide including the IBM Bob Execute feature, see [docs/INSTAL
 
 | Plugin | Version | Category | Description |
 |--------|---------|----------|-------------|
-| Salesforce Case Extractor | 4.12.2 | CRM | Extracts structured case data from Salesforce Lightning pages |
+| Salesforce Case Extractor | 4.12.4 | CRM | Extracts structured case data from Salesforce Lightning pages |
 | Cloudability OrgID | 4.0.3 | Cloud | Automatically resolves Cloudability Organisation ID with zero user interaction |
 | Edge Bookmark Finder | 1.0.2 | Productivity | Searches Microsoft Edge bookmarks with real-time multi-word filtering |
 | Apptio Planning Upgrade Calculator | 1.0.3 | Enterprise | Calculates Apptio Planning upgrade dates with dynamic release discovery |
