@@ -1,6 +1,6 @@
-﻿/**
+/**
  * ReplyCators - Backup & Restore Plugin
- * v1.0.0
+ * v1.0.1
  *
  * Platform-wide, versioned, extensible backup and restore system.
  *
@@ -134,7 +134,10 @@
       schemaVersion:   1,
       sensitiveFields: [
         'rc:session:sf-settings.bobWorkingDir',
-        'rc:session:sf-settings.bobApiKey',
+        // bobApiKey is excluded unconditionally at export and import time regardless of sanitize
+        // mode - see exportBackup() and applyImport() below. Issue #18.
+        // Not listed here as a sanitize target because the export/import strips it before
+        // sanitize() is called; the sanitize() path also clears it as defense-in-depth.
         'rc:plugin:com.replycators.salesforce-extractor:context-file',
         'rc:plugin:com.replycators.salesforce-extractor:additional-instructions',
       ],
@@ -547,6 +550,17 @@
         finalData = entry.sanitize(finalData);
       }
 
+      // Issue #18: strip bobApiKey unconditionally from every export regardless of sanitize
+      // mode. The key is a device-specific security credential that must never leave the
+      // local machine. sanitize() also clears it as defense-in-depth, but this guard fires
+      // even when the user has not enabled sanitization.
+      if (entry.pluginId === 'com.replycators.salesforce-extractor') {
+        const sfKey = 'rc:session:sf-settings';
+        if (finalData[sfKey] && typeof finalData[sfKey] === 'object') {
+          delete finalData[sfKey].bobApiKey;
+        }
+      }
+
       sections[entry.pluginId] = finalData;
       schemaVersions[entry.pluginId] = entry.schemaVersion;
       if (entry.pluginId !== 'platform') selectedPluginIds.push(entry.pluginId);
@@ -813,6 +827,15 @@
         }
         data = filteredData;
 
+        // Issue #18: strip bobApiKey unconditionally on import to prevent legacy backups
+        // (created before v1.46.8) from restoring the credential to storage.
+        if (entry.pluginId === 'com.replycators.salesforce-extractor') {
+          const sfKey = 'rc:session:sf-settings';
+          if (data[sfKey] && typeof data[sfKey] === 'object') {
+            delete data[sfKey].bobApiKey;
+          }
+        }
+
         // Migrate if needed
         data = entry.migrate(data, schemaInFile);
 
@@ -1017,7 +1040,7 @@
           <div class="rc-settings-row" style="margin-bottom:14px;">
             <div class="rc-settings-row__info">
               <span class="rc-settings-row__label">Sanitize before export</span>
-              <span class="rc-settings-row__desc" style="font-size:11px;">Remove customer names, case data, working directory paths, and other sensitive fields. Reduces but does not guarantee removal of all sensitive information from custom data.</span>
+              <span class="rc-settings-row__desc" style="font-size:11px;">Remove customer names, case data, working directory paths, API keys, and other sensitive fields. Reduces but does not guarantee removal of all sensitive information from custom data.</span>
             </div>
             <div class="rc-settings-row__control">
               <label class="rc-toggle" title="Redact sensitive fields before exporting">
@@ -1126,6 +1149,7 @@
             <tr><td style="padding:4px 8px;">Bookmark scan cache</td><td style="padding:4px 8px;color:var(--rc-danger,#ef4444);">Never exported</td><td style="padding:4px 8px;color:var(--rc-text-muted);">Regenerable; browsing-derived</td></tr>
             <tr><td style="padding:4px 8px;">Activity log &amp; notification history</td><td style="padding:4px 8px;color:var(--rc-danger,#ef4444);">Never exported</td><td style="padding:4px 8px;color:var(--rc-text-muted);">Transient session data</td></tr>
             <tr><td style="padding:4px 8px;">Download history records</td><td style="padding:4px 8px;color:var(--rc-danger,#ef4444);">Never exported</td><td style="padding:4px 8px;color:var(--rc-text-muted);">Device-specific paths</td></tr>
+            <tr><td style="padding:4px 8px;">BobShell 2.0 API key</td><td style="padding:4px 8px;color:var(--rc-danger,#ef4444);">Never exported</td><td style="padding:4px 8px;color:var(--rc-text-muted);">Security credential - must be re-entered after restore on any machine</td></tr>
           </tbody>
         </table>
       </div>

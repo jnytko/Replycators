@@ -686,6 +686,7 @@
 
       ${h3('Important Exclusions')}
       ${ul([
+        'BobShell 2.0 API key - never exported; security credential that must be re-entered after restore on any machine',
         'Salesforce last extracted case - never exported',
         'Cloudability OrgID cache - never exported',
         'Bookmark scan cache - never exported',

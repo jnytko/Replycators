@@ -9,6 +9,34 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.46.8] - 2026-08-20
+### Security / Backup & Restore - Strip bobApiKey unconditionally from every export and import (Issues #18, #19)
+**Type:** Security / Bug Fix
+**Summary:** The BobShell 2.0 API key (`bobApiKey`) was exported in plaintext in any unsanitized backup because `rc:session:sf-settings` is in the Salesforce plugin's `exportable` array and the export pipeline never reads `neverExport`. This release strips the field unconditionally at two enforcement points: inside `exportBackup()` after sanitize, and inside `applyImport()` before writes, so that neither new backups nor legacy backup restores can move the credential through the backup pipeline. The "What is included and excluded" UI table now includes a row for the BobShell 2.0 API key. The sanitize toggle description now mentions "API keys". The dead `sensitiveFields` entry for `bobApiKey` is annotated with a comment explaining the enforcement points. Closes #18. Resolves #19.
+**Files changed:**
+- `plugins/backup-restore.js` - unconditional `bobApiKey` strip on export (after sanitize block) and on import (after filteredData construction); UI table row added; sanitize description updated; sensitiveFields annotated; plugin version v1.0.1
+- `dist/plugins/backup-restore.js` - mirror
+- `manifest.json`, `package.json`, `dashboard.html`, `dashboard.js` - v1.46.8
+- `dist/manifest.json`, `dist/package.json`, `dist/dashboard.html`, `dist/dashboard.js` - v1.46.8
+- `AGENTS.md` - v1.46.8
+- `docs/PACKAGING.md` - v1.46.8 artefact name
+- `plugins/documentation.js` - Backup & Restore help topic: Important Exclusions list updated
+**Breaking changes:** Legacy backups created before v1.46.8 that contain `bobApiKey` will no longer restore that field. The key must be re-entered in Settings after any restore (this was always required from v1.46.5; the advisory toast from Issue #17 already communicates this).
+**Security note:** Users who shared or archived backup files created before this release should consider rotating their BobShell API key.
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.3
+- Cloudability OrgID: 4.0.4
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.2
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.2
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
 ## [1.46.7] - 2026-08-20
 ### Platform - Quick Actions audit: Cloudability OrgID added; developer documentation updated
 **Type:** Enhancement + Documentation
