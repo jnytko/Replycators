@@ -1,6 +1,6 @@
 ﻿/**
  * ReplyCators — Dashboard Controller
- * v1.46.8
+ * v1.46.9
  *
  * Application shell and orchestrator for the ReplyCators plugin-based Edge extension.
  * Owns: startup coordination, session restoration, shared services (window.ReplyCatorsApp),
@@ -1401,7 +1401,7 @@ const PLUGINS = [
   {
     id: 'com.replycators.salesforce-extractor',
     name: 'Salesforce Case Extractor',
-    version: '4.12.3',
+    version: '4.12.4',
     description: 'Extracts Salesforce case data - case number, subject, account, contact, description, agent description, severity level, primary product, next action datetime, and a unified chronological feed (customer, internal, JIRA/ETL, and diagnostic posts) - into a structured plain-text summary. Uses clone-based DOM cleanup (v0.4.5 engine), multi-strategy record container resolution, parent-case post filtering, and a diagnostic system.',
     author: 'ReplyCators Platform',
     category: 'apptione',

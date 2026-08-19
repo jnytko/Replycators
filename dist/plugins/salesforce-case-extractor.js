@@ -278,6 +278,9 @@
   }
 
   // ─── clearExtractedState ──────────────────────────────────────────────────
+  // Full destructive purge: clears UI, all in-memory buffers, and storage.
+  // Use for: plugin-disabled path, user-initiated Clear button action.
+  // Do NOT use at init - use _resetUiOnly() there instead (see below).
   function clearExtractedState() {
     const statusEl    = document.getElementById('sf-status');
     const previewEl   = document.getElementById('sf-preview');
@@ -290,11 +293,34 @@
     if (btnCopy)     btnCopy.disabled = true;
     if (btnDownload) btnDownload.disabled = true;
     if (inputEl)     inputEl.value = '';
-    _lastRawText  = '';
-    _lastBaseText = '';
+    _lastRawText         = '';
+    _lastBaseText        = '';
     _lastExtractionPosts = [];
+    _execAttachments     = [];
     _sfSyncCopyPromptBtn();
     app().persistSfResult(null);
+  }
+
+  // ─── _resetUiOnly ─────────────────────────────────────────────────────────
+  // Non-destructive UI reset for use at init time ONLY.
+  // Clears visual elements so the view starts blank before restoration runs.
+  // Does NOT clear in-memory buffers (_lastRawText, _lastBaseText, etc.).
+  // Does NOT write to storage - the caller reads restoredResult immediately after.
+  // Fix for Issue #23 (Bug 1): replaces the previous clearExtractedState() call
+  // at init that was destroying rc:session:sf-last-result before restore ran.
+  function _resetUiOnly() {
+    const statusEl    = document.getElementById('sf-status');
+    const previewEl   = document.getElementById('sf-preview');
+    const btnCopy     = document.getElementById('sf-btn-copy');
+    const btnDownload = document.getElementById('sf-btn-download');
+    const inputEl     = document.getElementById('sf-case-number');
+    if (statusEl)    statusEl.style.display = 'none';
+    if (previewEl)   previewEl.value = '';
+    if (btnCopy)     btnCopy.disabled = true;
+    if (btnDownload) btnDownload.disabled = true;
+    if (inputEl)     inputEl.value = '';
+    _sfSyncCopyPromptBtn();
+    // Intentionally no persistSfResult(null) - storage is restored immediately after
   }
 
   // ─── sfRefreshDetectionBanner ─────────────────────────────────────────────
@@ -1685,7 +1711,7 @@
       }
     }
 
-    clearExtractedState();
+    _resetUiOnly();
 
     // Restore previous extraction result
     if (restoredResult?.rawText) {
@@ -2009,11 +2035,24 @@
       });
     });
 
+    // Fix for Issue #23 (Bug 2): purge all module-level buffers so Privacy Mode
+    // and Sort have no stale data to re-render after the user clears the preview.
     btnClear?.addEventListener('click', () => {
+      // Zero all module-level buffers first so Privacy Mode / Sort produce no output
+      _lastRawText         = '';
+      _lastBaseText        = '';
+      _lastExtractionPosts = [];
+      _execAttachments     = [];
+      // Clear UI elements
       previewEl.value = '';
-      if (statusEl) statusEl.style.display = 'none';
+      if (statusEl)    statusEl.style.display = 'none';
+      if (inputEl)     inputEl.value = '';
+      if (btnCopy)     btnCopy.disabled    = true;
+      if (btnDownload) btnDownload.disabled = true;
+      _sfSyncCopyPromptBtn();
+      // Persist the cleared state (removes rc:session:sf-last-result from storage)
       app().persistSfResult(null);
-      app().addLog('info', plugin.id, 'Preview cleared');
+      app().addLog('info', plugin.id, 'Extraction cleared - all buffers and storage purged');
     });
 
     // Inner tab switching - uses standard .rc-plugin-tab elements (v1.43.0)

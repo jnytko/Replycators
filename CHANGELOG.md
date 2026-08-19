@@ -9,6 +9,33 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.46.9] - 2026-08-20
+### Salesforce Case Extractor - Fix init data loss and Clear ghost-data (Issue #23)
+**Type:** Bug Fix
+**Summary:** Two independent lifecycle bugs in the Salesforce Case Extractor caused data loss and ghost-data reappearance for all users. Bug 1: `clearExtractedState()` was called unconditionally at init, which removed `rc:session:sf-last-result` from storage before the restore check ran - saved extractions survived exactly one popup reopen and were silently lost on every subsequent open. Bug 2: the Clear button handler cleared the textarea and storage but left `_lastRawText`, `_lastBaseText`, `_lastExtractionPosts`, and `_execAttachments` populated, so toggling Privacy Mode or Sort after clearing re-populated the preview with the just-cleared case data. Fix 1 introduces `_resetUiOnly()`, a non-destructive init-time reset that blanks UI elements without touching storage or buffers; init now calls this instead of `clearExtractedState()`. Fix 2 replaces the Clear button handler with a comprehensive purge that zeros all four module-level buffers, clears all UI elements, disables Copy and Download, and calls `_sfSyncCopyPromptBtn()` before persisting the cleared state.
+**Files changed:**
+- `plugins/salesforce-case-extractor.js` - add `_resetUiOnly()` function; replace `clearExtractedState()` call at init with `_resetUiOnly()`; replace Clear button handler with full buffer + UI purge; add `_execAttachments = []` to `clearExtractedState()` for consistency; plugin version v4.12.3 - v4.12.4
+- `dist/plugins/salesforce-case-extractor.js` - mirror
+- `dashboard.js` - Salesforce Case Extractor version 4.12.3 - 4.12.4; platform v1.46.8 - v1.46.9
+- `manifest.json`, `package.json`, `dashboard.html` - v1.46.9
+- `dist/manifest.json`, `dist/package.json`, `dist/dashboard.html`, `dist/dashboard.js` - v1.46.9
+- `AGENTS.md` - v1.46.9; Salesforce Case Extractor 4.12.4
+- `docs/PACKAGING.md` - v1.46.9 artefact name
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.4
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.2
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.2
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
 ## [1.46.8] - 2026-08-20
 ### Security / Backup & Restore - Strip bobApiKey unconditionally from every export and import (Issues #18, #19)
 **Type:** Security / Bug Fix
