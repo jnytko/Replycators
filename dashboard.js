@@ -1,6 +1,6 @@
 /**
  * ReplyCators — Dashboard Controller
- * v1.47.1
+ * v1.47.2
  *
  * Application shell and orchestrator for the ReplyCators plugin-based Edge extension.
  * Owns: startup coordination, session restoration, shared services (window.ReplyCatorsApp),
@@ -1541,7 +1541,7 @@ const PLUGINS = [
   {
     id: 'com.replycators.apptioone-upgrade-calculator',
     name: 'ApptioOne Upgrade Calculator',
-    version: '1.0.0',
+    version: '1.0.1',
     description: 'Analyzes Apptio Upgrade Requests from the TargetProcess board. Auto-detects the active customer environment, opens the board in background, and displays structured upgrade request data with timeline analysis.',
     author: 'ReplyCators Platform',
     category: 'apptione',

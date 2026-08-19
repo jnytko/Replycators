@@ -9,6 +9,37 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.47.2] - 2026-08-20
+### ApptioOne Upgrade Calculator - Query-scoped extraction and native select picker
+**Type:** Bug Fix / Enhancement
+**Summary:** Replaced bulk board extraction with a query-scoped `searchAndExtract` flow. The cache is now built per search query - only matching rows are extracted, keeping payloads small and eliminating stale results across different searches. The `_injectAndVerify` loop (which called `chrome.scripting.executeScript` on each retry) was removed in favour of a ping-based `_waitForContentScript` poller that relies on the static manifest injection. This removes the `scripting` permission requirement for content-script injection. The search results dropdown was replaced with a native `<select>` element which handles open/close focus natively; the `document click` listener no longer needs to close an overlay. Single-result searches auto-load the detail view immediately. Additionally fixed a CSS class fragment collision where `status` shared a base64 prefix with `statusInSF`, causing the wrong cell to be read for the status field; the `status` key in `CLASS_FRAGS` is now an empty string to force column-map-only resolution.
+**Files changed:**
+- `plugins/apptioone-upgrade-calculator.js` - query-scoped `_buildCache(query)`; `_waitForContentScript()` replaces `_injectAndVerify()`; `_waitForRowsPromise()` replaces inline `aouc:waitForRows` call; native `<select>` results picker; single-result auto-load; `_cacheQuery` guard prevents redundant rebuilds; plugin version 1.0.0 - 1.0.1
+- `plugins/apptioone-upgrade-calculator/content/tp-content.js` - `searchAndExtract(query)` function for query-scoped extraction with timeline enrichment; `aouc:ping`, `aouc:rowCount`, `aouc:searchAndExtract` message handlers; `CLASS_FRAGS.status` set to empty string to fix statusInSF collision; `extractAllRows` hardened with per-row try/catch; `readField` guards against empty CLASS_FRAGS entries
+- `dist/plugins/apptioone-upgrade-calculator.js`, `dist/plugins/apptioone-upgrade-calculator/content/tp-content.js` - mirrors
+- `dashboard.js` - ApptioOne Upgrade Calculator version 1.0.0 - 1.0.1; platform v1.47.1 - v1.47.2
+- `dashboard.html` - v1.47.2; ApptioOne header version v1.0.0 - v1.0.1
+- `manifest.json`, `package.json` - v1.47.2
+- `dist/manifest.json`, `dist/package.json`, `dist/dashboard.html`, `dist/dashboard.js` - v1.47.2
+- `AGENTS.md` - v1.47.2; ApptioOne Upgrade Calculator 1.0.1
+- `README.md` - ApptioOne Upgrade Calculator row added; version 1.0.1
+- `docs/PACKAGING.md` - v1.47.2 artefact name
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.4
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.2
+- Environment Dashboards Launcher: 1.4.0
+- ApptioOne Upgrade Calculator: 1.0.1
+
+---
+
 ## [1.47.1] - 2026-08-20
 ### Workspace Starter - Fix operator-precedence bug corrupting launchMode on every load (Issue #24)
 **Type:** Bug Fix

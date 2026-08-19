@@ -43,7 +43,9 @@ const CLASS_FRAGS = {
   timeZone:     'dGltZSB6b25l',
   sfId:         'c2YgaWQ',
   statusInSF:   'c3RhdHVzIGluIHNm',
-  status:       'c3RhdHVz',
+  // 'status' shares a prefix with 'statusInSF' in base64 class names so we
+  // use the column-map path only; leave CLASS_FRAGS empty to avoid false matches.
+  status:       '',
 };
 
 let _colIndexCache = null;
@@ -97,7 +99,7 @@ function readField(row, fieldKey) {
     if (t && t !== '—' && t !== '-' && t !== 'click to edit') return t;
   }
   const frag = CLASS_FRAGS[fieldKey];
-  if (frag) {
+  if (frag && frag.length > 0) {
     const el = row.querySelector(`[class*="${frag}"]`);
     if (el) {
       const t = cellInnerText(el);
@@ -169,6 +171,58 @@ function searchRows(query) {
     if (results.length >= 20) break;
   }
   return results;
+}
+
+// Search for matching rows AND return their full parsed records with timelines.
+// Only processes rows that match the query - much faster than extractAllRows.
+function searchAndExtract(query) {
+  if (!query || query.trim().length < 2) return { records: [], rowCount: getAllRows().length };
+  const q = query.trim().toLowerCase();
+  const qNorm = q.replace(/[.:_-]/g, ' ').replace(/\s+/g, ' ').trim();
+  _colIndexCache = null;
+  const rows = getAllRows();
+  const matchedRows = [];
+  for (const row of rows) {
+    const raw = rowRawText(row);
+    const rawNorm = raw.replace(/[.:_-]/g, ' ').replace(/\s+/g, ' ');
+    if (raw.includes(q) || rawNorm.includes(qNorm)) matchedRows.push(row);
+    if (matchedRows.length >= 20) break;
+  }
+  if (matchedRows.length === 0) return { records: [], rowCount: rows.length };
+
+  // Collect all upgrade dates from ALL board rows for the matched accounts
+  // so timeline calculations are accurate
+  const matchedRecords = matchedRows.map(function(row) { return parseRow(row); });
+  const matchedAccounts = new Set(matchedRecords.map(function(r) { return (r.account || '').toLowerCase(); }).filter(Boolean));
+
+  const allDates = [];
+  const accountDateMap = {};
+  for (const row of rows) {
+    var r = parseRow(row);
+    if (!r.upgradeDate || r.upgradeDate === 'Not Found') continue;
+    allDates.push(r.upgradeDate);
+    var aKey = (r.account || '').toLowerCase();
+    if (aKey && matchedAccounts.has(aKey)) {
+      if (!accountDateMap[aKey]) accountDateMap[aKey] = [];
+      accountDateMap[aKey].push(r.upgradeDate);
+    }
+  }
+
+  matchedRecords.forEach(function(rec) {
+    var aKey = (rec.account || '').toLowerCase();
+    var dateSources = (accountDateMap[aKey] && accountDateMap[aKey].length > 0)
+      ? accountDateMap[aKey] : allDates;
+    try { rec._timeline = buildTimelineFromDates(null, dateSources); }
+    catch (e) { rec._timeline = {}; }
+    if (!rec.instanceUrl) {
+      // try to recover instanceUrl from raw text if parseRow missed it
+      var raw = rowRawText(matchedRows[matchedRecords.indexOf(rec)] || matchedRows[0]);
+      var hm = raw.match(/\b([a-z0-9][\w.-]*\.apptio\.com)\b/i);
+      if (hm) rec.instanceUrl = hm[1];
+    }
+  });
+
+  return { records: matchedRecords, rowCount: rows.length };
 }
 
 function parseDate(str) {
@@ -254,34 +308,84 @@ function extractAll() {
 }
 
 function extractAllRows() {
+  // Reset col index so we get a fresh read from the current DOM state
   _colIndexCache = null;
   const rows = getAllRows();
   if (rows.length === 0) return { records: [], rowCount: 0 };
+
+  // Pass 1: parse every row into a flat record object
   const allDates = [];
-  const records = rows.map(function(row) {
-    const fields = parseRow(row);
-    if (fields.upgradeDate && fields.upgradeDate !== 'Not Found') allDates.push(fields.upgradeDate);
-    return fields;
-  });
-  // Enrich each record with a per-account timeline using all dates visible on the board
-  records.forEach(function(rec) {
-    const accountDates = records
-      .filter(function(r) { return r.account && rec.account && r.account.toLowerCase() === rec.account.toLowerCase() && r.upgradeDate && r.upgradeDate !== 'Not Found'; })
-      .map(function(r) { return r.upgradeDate; });
-    rec._timeline = buildTimelineFromDates(null, accountDates.length > 0 ? accountDates : allDates);
-  });
+  const records = [];
+  for (var i = 0; i < rows.length; i++) {
+    try {
+      var fields = parseRow(rows[i]);
+      if (fields.upgradeDate && fields.upgradeDate !== 'Not Found') {
+        allDates.push(fields.upgradeDate);
+      }
+      records.push(fields);
+    } catch (e) {
+      // Skip rows that fail to parse rather than aborting the whole extraction
+    }
+  }
+
+  // Pass 2: compute per-account timelines
+  // Build a lookup: accountKey -> [upgradeDate strings]
+  var accountDateMap = {};
+  for (var j = 0; j < records.length; j++) {
+    var rec = records[j];
+    if (!rec.account || !rec.upgradeDate || rec.upgradeDate === 'Not Found') continue;
+    var key = rec.account.toLowerCase();
+    if (!accountDateMap[key]) accountDateMap[key] = [];
+    accountDateMap[key].push(rec.upgradeDate);
+  }
+
+  for (var k = 0; k < records.length; k++) {
+    try {
+      var r = records[k];
+      var accountKey = r.account ? r.account.toLowerCase() : '';
+      var dateSources = (accountDateMap[accountKey] && accountDateMap[accountKey].length > 0)
+        ? accountDateMap[accountKey]
+        : allDates;
+      r._timeline = buildTimelineFromDates(null, dateSources);
+    } catch (e) {
+      records[k]._timeline = {};
+    }
+  }
+
   return { records: records, rowCount: rows.length };
 }
 
 if (!window.__aoUcTpListenerRegistered) {
   window.__aoUcTpListenerRegistered = true;
   chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+    if (request.action === 'aouc:ping') {
+      sendResponse({ ok: true });
+      return false;
+    }
+    if (request.action === 'aouc:rowCount') {
+      try { sendResponse({ rowCount: getAllRows().length }); } catch (e) { sendResponse({ rowCount: 0 }); }
+      return false;
+    }
     if (request.action === 'aouc:extract') {
       try { sendResponse({ success: true, data: extractAll() }); } catch (err) { sendResponse({ success: false, error: err.message }); }
       return true;
     }
     if (request.action === 'aouc:extractAllRows') {
-      try { sendResponse({ success: true, data: extractAllRows() }); } catch (err) { sendResponse({ success: false, error: err.message }); }
+      try {
+        const data = extractAllRows();
+        sendResponse({ success: true, data: data, rowsFound: data.rowCount });
+      } catch (err) {
+        sendResponse({ success: false, error: err.message, stack: (err.stack || '').slice(0, 300) });
+      }
+      return true;
+    }
+    if (request.action === 'aouc:searchAndExtract') {
+      try {
+        const data = searchAndExtract(request.query || '');
+        sendResponse({ success: true, data: data });
+      } catch (err) {
+        sendResponse({ success: false, error: err.message });
+      }
       return true;
     }
     if (request.action === 'aouc:search') {

@@ -494,7 +494,7 @@ All plugin logic is extracted from `dashboard.js` into self-contained modules un
 | Example Plugin | `plugin-example` | `com.replycators.example-plugin` | 1.0.2 | Template |
 | Apptio Documentation Finder | `plugin-apptio-docs-finder` | `com.replycators.apptio-docs-finder` | 1.0.2 | Productivity |
 | Environment Dashboards Launcher | `plugin-env-dashboards` | `com.replycators.env-dashboards` | 1.4.0 | Support |
-| ApptioOne Upgrade Calculator | `plugin-apptioone-upgrade-calc` | `com.replycators.apptioone-upgrade-calculator` | 1.0.0 | ApptioOne |
+| ApptioOne Upgrade Calculator | `plugin-apptioone-upgrade-calc` | `com.replycators.apptioone-upgrade-calculator` | 1.0.1 | ApptioOne |
 
 ### Plugin Source Locations
 

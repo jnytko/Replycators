@@ -3,7 +3,7 @@
  * plugins/apptioone-upgrade-calculator.js
  *
  * Plugin ID:  com.replycators.apptioone-upgrade-calculator
- * Version:    1.0.0
+ * Version:    1.0.1
  * Author:     ReplyCators Platform
  *
  * Analyzes Apptio Upgrade Requests from the TargetProcess board at
@@ -33,26 +33,27 @@
 
   // ── Plugin state ──────────────────────────────────────────────────────────────
 
+  const STORAGE_KEY = 'rc:plugin:com.replycators.apptioone-upgrade-calculator:last-calc';
+
   // Cache: map of entityId (string) -> { fields, timeline }
-  // Populated by _buildCache(). Empty until first successful extraction.
+  // Populated by _buildCache(query). Scoped to the last search query.
+  // Persisted to chrome.storage.local so it survives extension close/reopen.
   let _cache             = {};
   let _cacheReady        = false;
-  // In-progress cache build promise. Re-used by concurrent callers so only
-  // one board tab is ever opened at a time.
+  let _cacheQuery        = '';   // query that produced the current cache
+  let _cachedCustomer    = '';   // display label for the cached customer (account name)
+  // In-progress cache build promise - shared by concurrent callers.
   let _cacheBuildPromise = null;
 
-  // Live-builds data read from the customer's env tab
-  let _lastEnv           = null;
+  // Live-builds data read from the active customer env tab
+  let _lastEnv           = null;   // hostname of the active env tab
   let _lastLiveBuilds    = null;
   let _envTabId          = null;
 
-  // Last search results array (search-list items from cache)
+  // Last search results array
   let _lastSearchResults = [];
 
-  // Cancellation token - incremented on every new top-level operation so
-  // stale UI callbacks are silently discarded.  NOTE: this must NOT be
-  // checked inside _buildCache itself because the build must always run
-  // to completion regardless of UI navigation events.
+  // Cancellation token for UI callbacks (NOT used inside _buildCache).
   let _requestId = 0;
 
   // Track document-level click listener (added/removed with the view)
@@ -70,25 +71,54 @@
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────────
 
+  // ── Storage persistence ───────────────────────────────────────────────────────
+
+  function _saveToStorage() {
+    if (!_cacheReady || Object.keys(_cache).length === 0) return;
+    const payload = {
+      cache:           _cache,
+      cacheQuery:      _cacheQuery,
+      cachedCustomer:  _cachedCustomer,
+      savedAt:         Date.now(),
+    };
+    chrome.storage.local.set({ [STORAGE_KEY]: payload }, function() {
+      if (chrome.runtime.lastError) {
+        app().addLog('warn', PLUGIN_ID, 'Could not persist cache: ' + chrome.runtime.lastError.message);
+      }
+    });
+  }
+
+  function _restoreFromStorage(callback) {
+    chrome.storage.local.get([STORAGE_KEY], function(data) {
+      const saved = data[STORAGE_KEY];
+      if (saved && saved.cache && Object.keys(saved.cache).length > 0) {
+        _cache          = saved.cache;
+        _cacheQuery     = saved.cacheQuery  || '';
+        _cachedCustomer = saved.cachedCustomer || _cacheQuery;
+        _cacheReady     = true;
+        app().addLog('info', PLUGIN_ID, 'Cache restored: ' + Object.keys(_cache).length + ' records for "' + _cacheQuery + '"');
+      }
+      if (callback) callback();
+    });
+  }
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────────────
+
   function init() {
     // Widget button (exists in static HTML at init time)
     document.getElementById(DOM_PFX + '-widget-open-btn')?.addEventListener('click', function() {
       app().navigateTo(VIEW_ID);
     });
+    // Restore persisted cache so it is available before the view is opened
+    _restoreFromStorage(null);
   }
 
   function onNavigate() {
     app().addLog('info', PLUGIN_ID, 'ApptioOne Upgrade Calculator opened');
     _render();
     _docClickListener = function(e) {
-      const searchSection = document.getElementById(DOM_PFX + '-search-section');
-      const content       = document.getElementById(DOM_PFX + '-content');
-      if (searchSection && content &&
-          !searchSection.contains(e.target) &&
-          !content.contains(e.target)) {
-        const sr = document.getElementById(DOM_PFX + '-search-results');
-        if (sr) sr.classList.add('hidden');
-      }
+      // The native <select> manages its own open/close; nothing to do here.
+      // Keep the listener registered so onLeave can cleanly remove it.
     };
     document.addEventListener('click', _docClickListener);
   }
@@ -134,29 +164,26 @@
 
   function _onNavigate() {
     _setStatus('info', 'Reading active tab...');
+    _showSearchSection();
+    _updateCachedCustomerRow();
+
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
       if (chrome.runtime.lastError) {
         app().addLog('warn', PLUGIN_ID, 'tabs.query error: ' + chrome.runtime.lastError.message);
-        _setStatus('info', 'Open a CT/TBM Studio tab, or search below.');
-        _showSearchSection();
+        _setStatus(_cacheReady ? 'ok' : 'info', _cacheReady ? 'Cache ready - or enter a new search.' : 'Open a CT/TBM Studio tab, or search below.');
+        _updateActiveTabRow(null);
         return;
       }
       const tab    = (tabs || [])[0];
       const tabUrl = tab ? (tab.url || '') : '';
-
       const envInfo = _extractEnvInfo(tabUrl);
+
       if (envInfo) {
         _envTabId       = tab.id;
         _lastLiveBuilds = null;
         _lastEnv        = envInfo.hostname;
-
-        const si = document.getElementById(DOM_PFX + '-search-input');
-        if (si) si.value = envInfo.hostname;
-        _showSearchSection();
-
-        const envBadge = document.getElementById(DOM_PFX + '-env-badge');
-        if (envBadge) envBadge.textContent = envInfo.displayName;
-
+        _updateActiveTabRow(envInfo);
+        _setStatus('ok', 'Active: ' + envInfo.displayName + ' - press Search or use cached data above.');
         _fetchLiveBuilds(tab.id).then(function(builds) {
           if (builds) {
             _lastLiveBuilds = builds;
@@ -164,25 +191,41 @@
             if (builds.prodBuild)     parts.push('Build ' + builds.prodBuild);
             if (builds.serverVersion) parts.push('Ver: ' + builds.serverVersion);
             const detail = parts.length > 0 ? ' (' + parts.join(' · ') + ')' : '';
-            _setStatus('ok', 'Environment: ' + envInfo.displayName + detail + ' - click Search or press Enter to begin.');
-          } else {
-            _setStatus('ok', 'Environment: ' + envInfo.displayName + ' - click Search or press Enter to begin.');
+            _setStatus('ok', 'Active: ' + envInfo.displayName + detail);
           }
         });
-        return;
+      } else {
+        _updateActiveTabRow(null);
+        _setStatus(_cacheReady ? 'ok' : 'info', _cacheReady ? 'Cache ready - or enter a new search.' : 'Open a CT/TBM Studio tab, or search below.');
       }
-
-      if (_cacheReady) {
-        _setStatus('ok', 'Cache ready - search below.');
-        _showSearchSection();
-        return;
-      }
-
-      _setStatus('info', 'Open a CT/TBM Studio tab, or search below.');
-      _showSearchSection();
-      const si = document.getElementById(DOM_PFX + '-search-input');
-      if (si) si.focus();
     });
+  }
+
+  function _updateCachedCustomerRow() {
+    const row   = document.getElementById(DOM_PFX + '-cached-row');
+    const label = document.getElementById(DOM_PFX + '-cached-label');
+    const btn   = document.getElementById(DOM_PFX + '-btn-load-cached');
+    if (!row) return;
+    if (_cacheReady && _cachedCustomer) {
+      if (label) label.textContent = _cachedCustomer;
+      row.classList.remove('hidden');
+      if (btn) btn.disabled = false;
+    } else {
+      row.classList.add('hidden');
+    }
+  }
+
+  function _updateActiveTabRow(envInfo) {
+    const row   = document.getElementById(DOM_PFX + '-tab-row');
+    const input = document.getElementById(DOM_PFX + '-search-input');
+    if (!row) return;
+    if (envInfo) {
+      if (input) input.value = envInfo.hostname;
+      row.classList.remove('hidden');
+    } else {
+      if (input) input.value = '';
+      row.classList.remove('hidden'); // always show search row
+    }
   }
 
   // ── Env helpers ───────────────────────────────────────────────────────────────
@@ -232,29 +275,25 @@
 
   // ── Cache-first board management ──────────────────────────────────────────────
   //
-  // _buildCache():
+  // _buildCache(query):
   //   1. Opens a temporary background tab to the board URL.
-  //   2. Waits for the board to fully render.
-  //   3. Injects tp-content.js and calls aouc:extractAllRows to get every row.
-  //   4. Stores results in _cache (keyed by entity ID).
-  //   5. Closes the temporary tab immediately.
-  //   6. Sets _cacheReady = true.
+  //   2. Waits for the content script to respond (static manifest injection).
+  //   3. Waits for board rows to appear.
+  //   4. Sends aouc:searchAndExtract with the query — extracts only matching rows.
+  //   5. Stores results in _cache keyed by entity ID.
+  //   6. Closes the temporary tab immediately.
   //
-  // The board tab is never kept open after cache construction.
+  // Only rows matching the search query are extracted, keeping the payload small.
+  // Concurrent calls with the same pending promise share the in-flight result.
 
-  // _buildCache() opens a temporary background tab, bulk-extracts every row,
-  // writes results to _cache, then closes the tab.  The build always runs to
-  // completion - it is never cancelled by _requestId changes so that UI
-  // navigation during the ~30s load does not discard the work.
-  // Concurrent callers share the same in-progress promise (_cacheBuildPromise).
-  function _buildCache() {
+  function _buildCache(query) {
     if (_cacheBuildPromise) return _cacheBuildPromise;
 
     _cache      = {};
     _cacheReady = false;
 
     _setStatus('info', 'Opening Upgrade Requests board...');
-    app().addLog('info', PLUGIN_ID, 'Cache build started');
+    app().addLog('info', PLUGIN_ID, 'Cache build started for query: ' + query);
 
     let tempTabId = null;
 
@@ -265,49 +304,32 @@
         return _waitForTabLoad(tempTabId, 60000);
       })
       .then(function() {
-        _setStatus('info', 'Board loaded - injecting extractor...');
-        // Wait for the SPA to boot before injecting.  The static content_script
-        // declaration also injects at document_idle, but a programmatically-opened
-        // tab may need extra time before the board DOM is queryable.
-        return new Promise(function(r) { setTimeout(r, 4000); });
+        _setStatus('info', 'Waiting for board to become ready...');
+        return _waitForContentScript(tempTabId, 60000);
       })
-      .then(function() {
-        return _injectAndVerify(tempTabId, 6, 2000);
-      })
-      .then(function(ok) {
-        if (!ok) {
-          _toast('warning', 'Upgrade Calculator', 'Board loaded but script could not connect. Try again.');
+      .then(function(ready) {
+        if (!ready) {
+          _toast('warning', 'Upgrade Calculator', 'Board did not respond. Try again.');
           return false;
         }
         _setStatus('info', 'Waiting for board rows to render...');
-        return new Promise(function(resolve) {
-          chrome.tabs.sendMessage(
-            tempTabId,
-            { action: 'aouc:waitForRows', minRows: 3, timeoutMs: 45000 },
-            function(resp) {
-              if (chrome.runtime.lastError) {
-                app().addLog('warn', PLUGIN_ID, 'waitForRows error: ' + chrome.runtime.lastError.message);
-              }
-              resolve(resp || { success: false, rowCount: 0 });
-            }
-          );
-        });
+        return _waitForRowsPromise(tempTabId, 3, 60000);
       })
-      .then(function(rowsResp) {
-        if (rowsResp === false) return false; // script-connect failed
-        const rowCount = (rowsResp && rowsResp.rowCount) || 0;
-        if (rowCount === 0) {
+      .then(function(rowCount) {
+        if (rowCount === false) return false;
+        if (!rowCount) {
           _toast('warning', 'Upgrade Calculator', 'Board rows did not appear. Try again.');
           return false;
         }
-        _setStatus('info', 'Extracting ' + rowCount + ' upgrade records...');
+        _setStatus('info', 'Searching for "' + query + '"...');
+        app().addLog('info', PLUGIN_ID, 'Board ready (' + rowCount + ' rows) - running searchAndExtract');
         return new Promise(function(resolve) {
           chrome.tabs.sendMessage(
             tempTabId,
-            { action: 'aouc:extractAllRows' },
+            { action: 'aouc:searchAndExtract', query: query },
             function(resp) {
               if (chrome.runtime.lastError) {
-                app().addLog('warn', PLUGIN_ID, 'extractAllRows error: ' + chrome.runtime.lastError.message);
+                app().addLog('warn', PLUGIN_ID, 'searchAndExtract error: ' + chrome.runtime.lastError.message);
                 resolve(null);
               } else {
                 resolve(resp);
@@ -316,32 +338,41 @@
           );
         });
       })
-      .then(function(extractResp) {
-        if (!extractResp || !extractResp.success || !extractResp.data) {
-          _toast('warning', 'Upgrade Calculator', 'Extraction returned no data. Try again.');
+      .then(function(resp) {
+        app().addLog('info', PLUGIN_ID,
+          'searchAndExtract response: success=' + (resp && resp.success) +
+          ' records=' + (resp && resp.data && resp.data.records ? resp.data.records.length : 'n/a') +
+          (resp && resp.error ? ' error=' + resp.error : '')
+        );
+        if (!resp || !resp.success || !resp.data) {
+          const errMsg = (resp && resp.error) ? resp.error : 'no response';
+          _toast('warning', 'Upgrade Calculator', 'Search failed: ' + errMsg + '. Try again.');
           return false;
         }
-        const records = extractResp.data.records || [];
+        const records = resp.data.records || [];
         if (records.length === 0) {
-          _toast('warning', 'Upgrade Calculator', 'Board rows loaded but no records extracted. Try again.');
-          return false;
+          // No error - simply no results for this query
+          _cacheReady = true;
+          app().addLog('info', PLUGIN_ID, 'No records matched query "' + query + '"');
+          return true;
         }
         records.forEach(function(rec) {
           if (rec.id) _cache[String(rec.id)] = { fields: rec, timeline: rec._timeline || {} };
         });
-        _cacheReady = true;
-        const count = Object.keys(_cache).length;
-        app().addLog('info', PLUGIN_ID, 'Cache built: ' + count + ' records from ' + extractResp.data.rowCount + ' board rows');
+        _cacheReady     = true;
+        // Pick the most representative account name for display
+        _cachedCustomer = records[0].account || query;
+        app().addLog('info', PLUGIN_ID, 'Cache built: ' + Object.keys(_cache).length + ' records for "' + query + '"');
+        _saveToStorage();
         return true;
       })
       .catch(function(err) {
         const msg = err && err.message ? err.message : String(err);
         app().addLog('error', PLUGIN_ID, 'Cache build failed: ' + msg);
-        _toast('error', 'Upgrade Calculator', 'Could not load upgrade data: ' + msg);
+        _toast('error', 'Upgrade Calculator', 'Could not load data: ' + msg);
         return false;
       })
       .then(function(result) {
-        // Always close the temporary tab and clear the in-progress handle.
         _cacheBuildPromise = null;
         if (tempTabId !== null) {
           chrome.tabs.remove(tempTabId, function() {
@@ -377,20 +408,39 @@
     });
   }
 
-  function _injectAndVerify(tabId, retries, delayMs) {
+  // Poll until the content script responds to a ping, or timeoutMs elapses.
+  // No executeScript — the static manifest declaration handles injection.
+  function _waitForContentScript(tabId, timeoutMs) {
     return new Promise(function(resolve) {
-      (function attempt(i) {
-        chrome.scripting.executeScript(
-          { target: { tabId: tabId }, files: ['plugins/apptioone-upgrade-calculator/content/tp-content.js'] },
-          function() {
-            chrome.tabs.sendMessage(tabId, { action: 'aouc:search', query: '' }, function(resp) {
-              if (resp) { resolve(true); return; }
-              if (i < retries - 1) setTimeout(function() { attempt(i + 1); }, delayMs);
-              else resolve(false);
-            });
+      const deadline = Date.now() + (timeoutMs || 30000);
+      (function probe() {
+        chrome.tabs.sendMessage(tabId, { action: 'aouc:ping' }, function(resp) {
+          if (!chrome.runtime.lastError && resp && resp.ok) { resolve(true); return; }
+          if (Date.now() >= deadline) { resolve(false); return; }
+          setTimeout(probe, 1500);
+        });
+      }());
+    });
+  }
+
+  // Poll getAllRows in the content script until minRows appear, or timeoutMs elapses.
+  // Returns the row count (number) on success, or false on timeout/error.
+  function _waitForRowsPromise(tabId, minRows, timeoutMs) {
+    return new Promise(function(resolve) {
+      const deadline = Date.now() + (timeoutMs || 30000);
+      (function poll() {
+        chrome.tabs.sendMessage(tabId, { action: 'aouc:rowCount' }, function(resp) {
+          if (chrome.runtime.lastError) {
+            if (Date.now() >= deadline) { resolve(false); return; }
+            setTimeout(poll, 1500);
+            return;
           }
-        );
-      }(0));
+          const n = (resp && resp.rowCount) || 0;
+          if (n >= minRows) { resolve(n); return; }
+          if (Date.now() >= deadline) { resolve(n > 0 ? n : false); return; }
+          setTimeout(poll, 1500);
+        });
+      }());
     });
   }
 
@@ -429,8 +479,8 @@
 
     const reqId = ++_requestId;
 
-    if (_cacheReady) {
-      // Cache already populated - search instantly
+    // Cache hit: same query already resolved
+    if (_cacheReady && _cacheQuery === query) {
       const results = _cacheSearch(query);
       _lastSearchResults = results;
       _setStatus('ok', results.length + ' result(s) for "' + query + '"');
@@ -445,12 +495,17 @@
       return;
     }
 
-    // Cache not ready - build it first
+    // Different query or cache empty - rebuild for this query
+    _cacheBuildPromise = null;
+    _cache      = {};
+    _cacheReady = false;
+    _cacheQuery = query;
+
     sr.innerHTML = '<div class="aouc-search-hint">Opening board... this may take ~30s the first time</div>';
     sr.classList.remove('hidden');
     _setStatus('info', 'Loading board data...');
 
-    _buildCache()
+    _buildCache(query)
       .then(function(ok) {
         if (reqId !== _requestId) return;
         if (btnSearch) { btnSearch.disabled = false; btnSearch.textContent = 'Search'; }
@@ -483,33 +538,48 @@
     _lastSearchResults = results || [];
     const sr = document.getElementById(DOM_PFX + '-search-results');
     if (!sr) return;
+
+    if (results.length === 1) {
+      // Single result: load directly, no picker needed
+      sr.classList.add('hidden');
+      _loadById(results[0].id);
+      return;
+    }
+
+    // Populate the native <select> — the browser handles dropdown/dismiss behaviour
     sr.innerHTML = '';
-    sr.classList.remove('hidden');
+    // Placeholder prompt option
+    const prompt = document.createElement('option');
+    prompt.value = '';
+    prompt.textContent = results.length + ' results — pick one...';
+    prompt.disabled = true;
+    prompt.selected = true;
+    sr.appendChild(prompt);
+
     results.forEach(function(r) {
-      const item = document.createElement('div');
-      item.className = 'rc-plugin-list-item aouc-result-item';
-      item.setAttribute('role', 'button');
-      item.setAttribute('tabindex', '0');
-      item.dataset.id = r.id;
-      const sv    = (r.status || '').toLowerCase();
-      const badge = r.status ? '<span class="rc-badge aouc-result-status" data-status="' + sv + '">' + _esc(r.status) + '</span>' : '';
-      const meta  = [
-        r.instanceUrl ? r.instanceUrl : null,
-        r.upgradeDate ? r.upgradeDate : null,
-        r.id          ? '#' + r.id   : null,
-      ].filter(Boolean).join('  ·  ');
-      item.innerHTML =
-        '<div class="aouc-result-name">' + _esc(r.account || 'Unknown') + badge + '</div>' +
-        (meta ? '<div class="aouc-result-meta rc-muted">' + _esc(meta) + '</div>' : '');
-      function activate() {
-        sr.querySelectorAll('.aouc-result-item').forEach(function(el) { el.classList.remove('aouc-result-item--selected'); });
-        item.classList.add('aouc-result-item--selected');
-        _loadById(r.id);
-      }
-      item.addEventListener('click', activate);
-      item.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); } });
-      sr.appendChild(item);
+      const opt = document.createElement('option');
+      opt.value = r.id;
+      const date = r.upgradeDate || '';
+      const id   = r.id ? '#' + r.id : '';
+      opt.textContent = (r.account || 'Unknown') + (date ? '  \u00B7  ' + date : '') + (id ? '  ' + id : '');
+      sr.appendChild(opt);
     });
+
+    sr.classList.remove('hidden');
+
+    // One-time change handler: load on pick, then hide and reset the select
+    function onPick() {
+      const entityId = sr.value;
+      if (!entityId) return;
+      sr.removeEventListener('change', onPick);
+      const chosen = results.find(function(r) { return String(r.id) === String(entityId); });
+      const si = document.getElementById(DOM_PFX + '-search-input');
+      if (si && chosen) si.value = chosen.account || chosen.instanceUrl || si.value;
+      sr.classList.add('hidden');
+      sr.innerHTML = '';
+      _loadById(entityId);
+    }
+    sr.addEventListener('change', onPick);
   }
 
   // ── Load detail from cache ────────────────────────────────────────────────────
@@ -543,7 +613,6 @@
     if (cpFeedback) cpFeedback.classList.add('hidden');
 
     // Force a fresh build: clear the in-progress handle AND the cache.
-    // _buildCache will create a new handle immediately.
     _cacheBuildPromise = null;
     _cache             = {};
     _cacheReady        = false;
@@ -555,7 +624,7 @@
       return si ? si.value.trim() : '';
     }());
 
-    _buildCache()
+    _buildCache(query)
       .then(function(ok) {
         if (reqId !== _requestId) return;
         if (!ok) {
@@ -571,10 +640,10 @@
             _setStatus('ok', results.length + ' result(s) for "' + query + '"');
             _showResultsList(results);
           } else {
-            _setStatus('ok', 'Cache refreshed - no results for "' + query + '"');
+            _setStatus('ok', 'No results for "' + query + '" after refresh.');
           }
         } else {
-          _setStatus('ok', 'Cache refreshed - ' + Object.keys(_cache).length + ' records loaded.');
+          _setStatus('ok', 'Ready - enter a search query below.');
         }
       })
       .catch(function(err) {
@@ -787,7 +856,7 @@
       </div>
 
       <!-- Search section -->
-      <div id="${DOM_PFX}-search-section" class="rc-plugin-section hidden" style="padding:8px 16px 0;">
+      <div id="${DOM_PFX}-search-section" class="rc-plugin-section hidden" style="padding:8px 16px 6px;">
         <div style="display:flex;gap:6px;align-items:center;">
           <input id="${DOM_PFX}-search-input" class="rc-input" type="text"
                  placeholder="Search account or instance URL..." autocomplete="off"
@@ -795,7 +864,10 @@
           <button id="${DOM_PFX}-btn-search" class="rc-btn rc-btn--primary rc-btn--sm"
                   title="Search the Upgrade Requests board">Search</button>
         </div>
-        <div id="${DOM_PFX}-search-results" class="aouc-search-results rc-plugin-list hidden" style="margin-top:6px;"></div>
+        <!-- Native select: shows one row normally, expands on click, collapses after pick -->
+        <select id="${DOM_PFX}-search-results" class="rc-input hidden" size="1"
+                aria-label="Select an upgrade request"
+                style="width:100%;margin-top:4px;cursor:pointer;"></select>
       </div>
 
       <!-- Main content panel -->
