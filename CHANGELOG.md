@@ -9,6 +9,36 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.47.1] - 2026-08-20
+### Workspace Starter - Fix operator-precedence bug corrupting launchMode on every load (Issue #24)
+**Type:** Bug Fix
+**Summary:** A JavaScript operator-precedence bug in `wsMigrateProfiles()` silently converted any profile with `launchMode: 'tabs'` (Plain Tabs) to `'tab-group'` on every popup open. Because `wsMigrateProfiles()` is called on every load via `wsLoadData()`, the corruption was reapplied each session. The expression `p.launchMode || p.tabGroup ? 'tab-group' : 'tabs'` was parsed as `(p.launchMode || p.tabGroup) ? 'tab-group' : 'tabs'`; since the string `'tabs'` is truthy, the ternary always produced `'tab-group'`. The fix replaces the expression with an explicit enum validity check that preserves any already-valid `launchMode` value unchanged and correctly migrates legacy `tabGroup: boolean` profiles. Note: profiles that were already corrupted (stored as `'tab-group'` when the user intended `'tabs'`) cannot be automatically repaired - affected users should manually set those profiles back to Plain Tabs.
+**Files changed:**
+- `plugins/workspace-starter.js` - `wsMigrateProfiles()` line 108: replace precedence-buggy expression with explicit enum check; plugin version 2.0.2 - 2.0.3
+- `dist/plugins/workspace-starter.js` - mirror
+- `dashboard.js` - Workspace Starter version 2.0.2 - 2.0.3; platform v1.47.0 - v1.47.1
+- `dashboard.html` - v1.47.1; Workspace Starter header version span 2.0.2 - 2.0.3
+- `manifest.json`, `package.json` - v1.47.1
+- `dist/manifest.json`, `dist/package.json`, `dist/dashboard.html`, `dist/dashboard.js`, `dist/plugins/workspace-starter.js` - v1.47.1
+- `AGENTS.md` - v1.47.1; Workspace Starter 2.0.3
+- `README.md` - Workspace Starter 2.0.3
+- `docs/PACKAGING.md` - v1.47.1 artefact name
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.4
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.2
+- Environment Dashboards Launcher: 1.4.0
+- ApptioOne Upgrade Calculator: 1.0.0
+
+---
+
 ## [1.47.0] - 2026-08-20
 ### ApptioOne Upgrade Calculator - New Plugin Integration
 **Type:** Feature

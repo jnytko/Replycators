@@ -61,7 +61,7 @@ For the full setup guide including the IBM Bob Execute feature, see [docs/INSTAL
 | Cloudability OrgID | 4.0.3 | Cloud | Automatically resolves Cloudability Organisation ID with zero user interaction |
 | Edge Bookmark Finder | 1.0.2 | Productivity | Searches Microsoft Edge bookmarks with real-time multi-word filtering |
 | Apptio Planning Upgrade Calculator | 1.0.3 | Enterprise | Calculates Apptio Planning upgrade dates with dynamic release discovery |
-| Workspace Starter | 2.0.2 | Productivity | Launches named workspace profiles with optional tab grouping |
+| Workspace Starter | 2.0.3 | Productivity | Launches named workspace profiles with optional tab grouping |
 | Tab Search | 1.0.1 | Productivity | Instant live search across all open browser tabs |
 | Snake | 1.0.1 | Games | Classic retro Snake game with high score persistence |
 | Apptio Documentation Finder | 1.0.2 | Productivity | IBM Docs search for Apptio products with favorites and quick links |

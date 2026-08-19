@@ -1,6 +1,6 @@
-﻿/**
+/**
  * ReplyCators — Dashboard Controller
- * v1.47.0
+ * v1.47.1
  *
  * Application shell and orchestrator for the ReplyCators plugin-based Edge extension.
  * Owns: startup coordination, session restoration, shared services (window.ReplyCatorsApp),
@@ -1485,7 +1485,7 @@ const PLUGINS = [
   {
     id: 'com.replycators.workspace-starter',
     name: 'Workspace Starter',
-    version: '2.0.2',
+    version: '2.0.3',
     description: 'Launch your entire daily workspace with a single click. Create named workspace profiles containing multiple URLs - open all tabs at once, automatically grouped. Capture your current browser window as a new profile instantly.',
     author: 'ReplyCators Platform',
     category: 'general',

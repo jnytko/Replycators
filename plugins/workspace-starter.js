@@ -105,7 +105,9 @@
       id:         p.id        || wsGenId(),
       name:       p.name      || 'Unnamed Profile',
       urls:       Array.isArray(p.urls) ? p.urls.filter(u => typeof u === 'string' && u.trim()) : [],
-      launchMode: p.launchMode || p.tabGroup ? 'tab-group' : 'tabs',
+      launchMode: (p.launchMode === 'tab-group' || p.launchMode === 'tabs')
+        ? p.launchMode
+        : (p.tabGroup === true ? 'tab-group' : 'tabs'),
       category:   p.category  || '',
       favorite:   !!p.favorite,
       createdAt:  p.createdAt || Date.now(),
