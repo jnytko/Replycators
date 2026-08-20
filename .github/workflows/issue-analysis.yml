@@ -1,0 +1,79 @@
+name: Governance - Issue Analysis
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: GitHub issue number to analyze
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      issue_number:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve issue number
+        id: params
+        run: |
+          ISSUE_NUMBER="${{ inputs.issue_number || github.event.inputs.issue_number }}"
+          if [ -z "$ISSUE_NUMBER" ]; then
+            echo "issue_number input is required" >&2
+            exit 1
+          fi
+          echo "issue_number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Extract prompt from prompt catalog
+        id: prompt
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import os
+
+          catalog = Path('docs/PROMPT-CATALOG.md').read_text(encoding='utf-8')
+          start = '### Platform Changes - Work on GitHub Issue'
+          idx = catalog.find(start)
+          if idx < 0:
+            raise SystemExit('Prompt not found in docs/PROMPT-CATALOG.md')
+          tail = catalog[idx + len(start):]
+          end = tail.find('\n### ')
+          body = tail[:end] if end >= 0 else tail
+          body = body.strip()
+
+          out_path = Path('.governance/prompts/issue-analysis.md')
+          out_path.parent.mkdir(parents=True, exist_ok=True)
+          out_path.write_text(body + '\n', encoding='utf-8')
+
+          with Path(os.environ['GITHUB_OUTPUT']).open('a', encoding='utf-8') as fh:
+            fh.write(f"prompt_path={out_path.as_posix()}\n")
+          PY
+
+      - name: Invoke Copilot Agent for issue analysis
+        uses: github-copilot/agent@v1
+        with:
+          problem-statement: |
+            Use the exact prompt text in `${{ steps.prompt.outputs.prompt_path }}` from `docs/PROMPT-CATALOG.md`.
+            Analyze issue #${{ steps.params.outputs.issue_number }} in this repository.
+            Return findings as strict JSON array written to `.governance/findings/issue-${{ steps.params.outputs.issue_number }}.json`.
+            Required fields per finding: finding_id, severity, source, component, summary, evidence, root_cause, acceptance_criteria, recommended_action.
+
+      - name: Upload issue analysis artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: governance-issue-analysis-${{ steps.params.outputs.issue_number }}
+          path: |
+            .governance/prompts/issue-analysis.md
+            .governance/findings/issue-${{ steps.params.outputs.issue_number }}.json
+          if-no-files-found: warn

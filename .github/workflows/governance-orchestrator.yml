@@ -1,0 +1,48 @@
+name: Governance Orchestrator
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Optional issue number for issue analysis and summary comment
+        required: false
+        type: string
+      run_issue_analysis:
+        description: Run issue analysis stage
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  issue-analysis:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_issue_analysis == 'true' && github.event.inputs.issue_number != '' }}
+    uses: ./.github/workflows/issue-analysis.yml
+    with:
+      issue_number: ${{ github.event.inputs.issue_number }}
+
+  repository-audit:
+    uses: ./.github/workflows/repository-audit.yml
+
+  documentation-audit:
+    needs: [repository-audit]
+    uses: ./.github/workflows/documentation-audit.yml
+
+  defect-remediation:
+    needs: [repository-audit, documentation-audit]
+    uses: ./.github/workflows/defect-remediation.yml
+    with:
+      issue_number: ${{ github.event.inputs.issue_number }}
+
+  release-readiness:
+    needs: [repository-audit, documentation-audit, defect-remediation]
+    uses: ./.github/workflows/release-readiness.yml
+    with:
+      issue_number: ${{ github.event.inputs.issue_number }}

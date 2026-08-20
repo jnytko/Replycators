@@ -1,0 +1,98 @@
+name: Governance - Defect Remediation
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Optional finding issue number to remediate
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      issue_number:
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  remediate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve optional issue number
+        id: params
+        run: |
+          ISSUE_NUMBER="${{ inputs.issue_number || github.event.inputs.issue_number }}"
+          echo "issue_number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Extract remediation and regression prompts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          catalog = Path('docs/PROMPT-CATALOG.md').read_text(encoding='utf-8')
+
+          def extract(title: str, target: str):
+            heading = f"### {title}"
+            idx = catalog.find(heading)
+            if idx < 0:
+              raise SystemExit(f'Prompt not found: {title}')
+            tail = catalog[idx + len(heading):]
+            end = tail.find('\n### ')
+            body = tail[:end] if end >= 0 else tail
+            out = Path(target)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(body.strip() + '\n', encoding='utf-8')
+
+          extract('Debugging - Defect Remediation', '.governance/prompts/defect-remediation.md')
+          extract('Debugging - Regression Verification', '.governance/prompts/regression-verification.md')
+          PY
+
+      - name: Invoke Copilot Agent for defect remediation
+        uses: github-copilot/agent@v1
+        with:
+          problem-statement: |
+            Use `.governance/prompts/defect-remediation.md` from `docs/PROMPT-CATALOG.md` as the exact prompt text.
+            Remediate open governance findings.
+            If issue number is provided, prioritize issue #${{ steps.params.outputs.issue_number }}.
+            Save remediation summary to `.governance/findings/remediation-summary.md`.
+
+      - name: Invoke Copilot Agent for regression verification
+        uses: github-copilot/agent@v1
+        with:
+          problem-statement: |
+            Use `.governance/prompts/regression-verification.md` from `docs/PROMPT-CATALOG.md` as the exact prompt text.
+            Validate remediated findings and produce `.governance/findings/regression-verification.json`.
+
+      - name: Add issue summary comment
+        if: steps.params.outputs.issue_number != ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const issue_number = Number('${{ steps.params.outputs.issue_number }}');
+            const summaryPath = '.governance/findings/remediation-summary.md';
+            const summary = fs.existsSync(summaryPath)
+              ? fs.readFileSync(summaryPath, 'utf8')
+              : 'Remediation workflow completed. See artifacts for details.';
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+              body: `## Governance remediation update\n\n${summary}`
+            });
+
+      - name: Upload remediation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: governance-defect-remediation
+          path: .governance/findings/
+          if-no-files-found: warn

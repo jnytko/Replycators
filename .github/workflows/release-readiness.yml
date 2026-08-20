@@ -1,0 +1,115 @@
+name: Governance - Release Readiness
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Optional issue number to receive summary comment
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      issue_number:
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Aggregate governance readiness
+        id: aggregate
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const severities = ['severity:critical', 'severity:high', 'severity:medium', 'severity:low'];
+            const openCounts = {};
+            const listAllIssuesForLabel = async (label) => {
+              const all = [];
+              let page = 1;
+              while (true) {
+                const res = await github.rest.issues.listForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'open',
+                  labels: label,
+                  per_page: 100,
+                  page
+                });
+                const rows = res.data.filter((i) => !i.pull_request);
+                all.push(...rows);
+                if (res.data.length < 100) {
+                  break;
+                }
+                page += 1;
+              }
+              return all;
+            };
+
+            for (const label of severities) {
+              const rows = await listAllIssuesForLabel(label);
+              openCounts[label] = rows.length;
+            }
+
+            const blockers = await listAllIssuesForLabel('governance:escalation');
+            const blockerCount = blockers.length;
+            const releaseReady = openCounts['severity:critical'] === 0 && blockerCount === 0;
+
+            const lines = [
+              '# Governance Release Readiness',
+              '',
+              `- severity:critical open: ${openCounts['severity:critical']}`,
+              `- severity:high open: ${openCounts['severity:high']}`,
+              `- severity:medium open: ${openCounts['severity:medium']}`,
+              `- severity:low open: ${openCounts['severity:low']}`,
+              `- governance:escalation open: ${blockerCount}`,
+              `- release ready: ${releaseReady ? 'yes' : 'no'}`,
+              ''
+            ];
+
+            const fs = require('fs');
+            fs.mkdirSync('.governance/findings', { recursive: true });
+            fs.writeFileSync('.governance/findings/release-readiness.md', lines.join('\n'));
+
+            core.setOutput('release_ready', String(releaseReady));
+            core.setOutput('summary', lines.join('\n'));
+
+      - name: Comment summary on issue
+        if: ${{ (inputs.issue_number || github.event.inputs.issue_number) != '' }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const issueNumber = Number('${{ inputs.issue_number || github.event.inputs.issue_number }}');
+            const summaryPath = '.governance/findings/release-readiness.md';
+            const summary = fs.existsSync(summaryPath)
+              ? fs.readFileSync(summaryPath, 'utf8')
+              : 'Governance release readiness summary is available in workflow artifacts.';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: summary
+            });
+
+      - name: Upload release readiness artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: governance-release-readiness
+          path: .governance/findings/release-readiness.md
+          if-no-files-found: warn
+
+      - name: Fail when blockers exist
+        if: steps.aggregate.outputs.release_ready != 'true'
+        run: |
+          echo "Release readiness check failed: open critical or escalated findings exist."
+          exit 1
