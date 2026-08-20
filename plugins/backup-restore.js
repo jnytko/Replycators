@@ -1,6 +1,6 @@
 /**
  * ReplyCators - Backup & Restore Plugin
- * v1.0.2
+ * v1.0.3
  *
  * Platform-wide, versioned, extensible backup and restore system.
  *
@@ -852,7 +852,7 @@
       }
 
       if (Object.keys(writes).length === 0) {
-        throw new Error('Nothing to restore - the backup contains no applicable data for this installation.');
+        throw new Error('Nothing to restore - the backup contains no keys recognized by this installation.');
       }
 
       // ── Phase 2: capture rollback snapshot ────────────────────────────────
@@ -1322,7 +1322,19 @@
         // For 'keep-existing' strategy: pre-load existing values and exclude them
         let envelopeToApply = _currentImport;
         if (conflictStrategy === 'keep-existing') {
-          envelopeToApply = await _applyKeepExistingStrategy(_currentImport);
+          // Issue #27: _applyKeepExistingStrategy now returns { envelope, totalKeys, skippedCount }
+          // so we can detect the all-conflict no-op case before calling applyImport().
+          const keepResult = await _applyKeepExistingStrategy(_currentImport);
+          envelopeToApply = keepResult.envelope;
+
+          if (keepResult.totalKeys > 0 && keepResult.skippedCount === keepResult.totalKeys) {
+            // All incoming keys already exist in storage - intentional no-op, not a failure.
+            _setStatus(applyStatusEl, '0 restored, ' + keepResult.skippedCount + ' kept - all values already up to date.', 'ok');
+            app().addLog('info', PLUGIN_ID, 'Keep-existing import: all ' + keepResult.skippedCount + ' key(s) already current - no writes needed');
+            app().addNotification('Backup & Restore', 'Import complete - 0 restored, ' + keepResult.skippedCount + ' kept.', 'success', PLUGIN_ID);
+            _currentImport = null;
+            return;
+          }
         }
 
         const result = await applyImport(envelopeToApply);
@@ -1332,6 +1344,8 @@
         // Advisory toast: fire when sf-settings was actually written and contains a bobWorkingDir.
         // Informs the user that the Bob Working Directory may need re-verification on this machine
         // and that the API key (never included in backups) must be re-entered. Issue #17.
+        // Note: unreachable in the all-conflict no-op path above (early return), satisfying
+        // Issue #17 deferred AC B-04: keep-existing that skips sf-settings does not fire the toast.
         if (result.writtenKeys && result.writtenKeys.includes('rc:session:sf-settings')) {
           const sfData = envelopeToApply.sections?.['com.replycators.salesforce-extractor']?.['rc:session:sf-settings'];
           if (sfData?.bobWorkingDir) {
@@ -1379,6 +1393,10 @@
    * Apply "keep-existing" conflict strategy:
    * For each key in the import, if a value already exists in storage, remove
    * that key from the import envelope so it is not overwritten.
+   *
+   * Returns { envelope, totalKeys, skippedCount } so the caller can detect the
+   * all-conflict no-op case (skippedCount === totalKeys > 0) without calling
+   * applyImport(), which would throw on an empty write plan. Issue #27.
    */
   async function _applyKeepExistingStrategy(envelope) {
     // Collect all keys in the envelope
@@ -1393,18 +1411,20 @@
       chrome.storage.local.get(allKeys, resolve);
     });
 
-    // Clone envelope and remove keys that already exist
+    // Clone envelope and remove keys that already exist; track how many were skipped
     const modified = _deepClone(envelope);
+    let skippedCount = 0;
     for (const entry of BR_PLUGIN_REGISTRY) {
       const section = modified.sections[entry.pluginId];
       if (!section) continue;
       for (const k of Object.keys(section)) {
         if (Object.prototype.hasOwnProperty.call(existing, k) && existing[k] !== undefined) {
           delete section[k];
+          skippedCount++;
         }
       }
     }
-    return modified;
+    return { envelope: modified, totalKeys: allKeys.length, skippedCount };
   }
 
   // ─── Plugin lifecycle ─────────────────────────────────────────────────────

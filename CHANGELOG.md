@@ -9,6 +9,28 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.47.8] - 2026-08-21
+### Backup & Restore - Treat all-conflict Keep existing imports as successful no-ops (Issue #27)
+**Type:** Bug Fix
+**Summary:** When all incoming backup keys already exist in storage, the "Keep existing on conflict" import strategy now correctly completes with a success notification ("0 restored, N kept - all values already up to date.") instead of throwing "Nothing to restore" and displaying a red failure notification. `_applyKeepExistingStrategy()` now returns skip metadata alongside the filtered envelope; the apply handler intercepts the all-conflict case before reaching `applyImport()`. The zero-writes error message in `applyImport()` is narrowed to the genuinely empty-backup case. Also resolves the deferred Issue #17 acceptance criterion B-04: advisory toast does not fire when keep-existing skips `rc:session:sf-settings`.
+**Files changed:**
+- `plugins/backup-restore.js` - `_applyKeepExistingStrategy()` returns `{ envelope, totalKeys, skippedCount }`; apply handler intercepts all-conflict no-op with success path; zero-writes error message narrowed; plugin version 1.0.2 -> 1.0.3
+- `dist/plugins/backup-restore.js` - mirror sync
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.4
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
 ## [1.47.7] - 2026-08-21
 ### Backup & Restore - Restore exact pre-import state and verify written values (Issue #26)
 **Type:** Bug Fix

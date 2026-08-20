@@ -60,7 +60,7 @@
 | Property | Value |
 |----------|-------|
 | Working directory | `[root]\WatsonX\ReplyCators\` |
-| Extension version | **1.47.7** |
+| Extension version | **1.47.8** |
 | Release status | **Production** |
 
 ReplyCators is a plugin-hosting Microsoft Edge extension (Manifest V3). A single dashboard UI hosts multiple plugins. The platform provides shared navigation, settings, storage, notifications, logging, and plugin lifecycle management. Plugins provide business functionality.
