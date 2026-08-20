@@ -19,7 +19,7 @@
 | | |
 |-|-|
 | Plugin ID | `com.replycators.backup-restore` |
-| Version | 1.0.0 |
+| Version | 1.0.3 |
 | Category | Platform utility |
 | Storage | None (this plugin does not persist state) |
 
