@@ -74,7 +74,7 @@ export class ExamplePlugin extends PluginBase {
       label: 'Say Hello',
       description: 'Greet the user with a notification',
       icon: '👋',
-      handler: (ctx) => this.handleAction('say-hello', ctx),
+      handler: (ctx: ActionContext) => this.handleAction('say-hello', ctx),
     });
 
     // Register a notification config

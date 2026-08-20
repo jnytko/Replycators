@@ -40,7 +40,7 @@ export class ApptioUpgradeCalculatorPlugin extends PluginBase {
       label:       'Open Upgrade Calculator',
       description: 'Calculate Apptio Planning upgrade dates for a customer',
       icon:        '📅',
-      handler:     (ctx) => this.handleAction('open-upgrade-calculator', ctx),
+      handler:     (ctx: ActionContext) => this.handleAction('open-upgrade-calculator', ctx),
     });
 
     context.registerNotification({
