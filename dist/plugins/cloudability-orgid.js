@@ -309,21 +309,24 @@
   let _cldMsgListenerBound  = false;
 
   function init() {
-    if (!pluginEnabled()) {
-      cldClearState();
-      cldShowUnavailable();
-      app().addLog('info', plugin.id, 'Cloudability OrgID plugin disabled');
-      return;
-    }
-
-    // Bind UI event listeners once at init (no async I/O here).
+    // ── Step 1: Bind UI event listeners unconditionally (once per session) ────
+    // Listeners are always bound regardless of current enabled state so that
+    // enable/disable transitions within the same session work without a reload.
+    // Work inside each handler is gated by pluginEnabled() at execution time.
     if (!_cldListenersBound) {
       _cldListenersBound = true;
 
-      document.getElementById('cld-refresh-btn')?.addEventListener('click', () => cldRetrieve(false));
-      document.getElementById('cld-widget-refresh')?.addEventListener('click', () => cldRetrieve(false));
+      document.getElementById('cld-refresh-btn')?.addEventListener('click', () => {
+        if (!pluginEnabled()) return;
+        cldRetrieve(false);
+      });
+      document.getElementById('cld-widget-refresh')?.addEventListener('click', () => {
+        if (!pluginEnabled()) return;
+        cldRetrieve(false);
+      });
 
       document.getElementById('cld-copy-btn')?.addEventListener('click', async () => {
+        if (!pluginEnabled()) return;
         if (!cldState.orgId) return;
         try {
           await navigator.clipboard.writeText(cldState.orgId);
@@ -337,6 +340,7 @@
       });
 
       document.getElementById('cld-include-diag-btn')?.addEventListener('click', () => {
+        if (!pluginEnabled()) return;
         if (!cldState.orgId) return;
         app().addLog('info', plugin.id, 'OrgID added to diagnostic context: ' + cldState.orgId);
         app().addNotification('Cloudability OrgID', 'OrgID included in diagnostics: ' + cldState.orgId, 'info', plugin.id);
@@ -346,6 +350,7 @@
       });
 
       document.getElementById('cld-widget-copy')?.addEventListener('click', async () => {
+        if (!pluginEnabled()) return;
         if (!cldState.orgId) return;
         try {
           await navigator.clipboard.writeText(cldState.orgId);
@@ -356,15 +361,18 @@
       });
     }
 
-    // ── Background push listener (RC_CLD_ORG_UPDATE) ─────────────────────────
+    // ── Step 2: Bind background push listener unconditionally (once per session) ──
     // background.js broadcasts RC_CLD_ORG_UPDATE whenever it successfully
     // retrieves or receives a proactive push for the OrgID.  We listen here so
     // both the plugin view AND the dashboard widget update automatically - with
     // no manual refresh and no polling.
     // Bound once at plugin init; the listener survives view switches.
+    // The pluginEnabled() gate inside the handler ensures that when the plugin
+    // is disabled, incoming broadcasts produce no state changes or log entries.
     if (!_cldMsgListenerBound) {
       _cldMsgListenerBound = true;
       chrome.runtime.onMessage.addListener((msg) => {
+        if (!pluginEnabled()) return;
         if (!msg || msg.type !== 'RC_CLD_ORG_UPDATE' || !msg.payload?.id) return;
         const d = msg.payload;
         cldState.orgId        = String(d.id).trim();
@@ -374,6 +382,16 @@
         cldUpdateUI('live');
         app().addLog('info', plugin.id, 'OrgID auto-updated from background: ' + cldState.orgId);
       });
+    }
+
+    // ── Step 3: Apply current enabled/disabled UI state ──────────────────────
+    // Listeners are now always bound above. This block only controls the initial
+    // UI presentation when the plugin starts in a disabled state.
+    if (!pluginEnabled()) {
+      cldClearState();
+      cldShowUnavailable();
+      app().addLog('info', plugin.id, 'Cloudability OrgID plugin disabled');
+      return;
     }
 
     // ── Startup: validate active tab first, then show data or unavailable ────

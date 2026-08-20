@@ -1415,7 +1415,7 @@ const PLUGINS = [
   {
     id: 'com.replycators.cloudability-orgid',
     name: 'Cloudability OrgID',
-    version: '4.0.4',
+    version: '4.0.5',
     description: 'Retrieves the Cloudability Organisation ID by intercepting the Cloudability settings API. Requires an open Cloudability tab.',
     author: 'ReplyCators Platform',
     category: 'cloudability',

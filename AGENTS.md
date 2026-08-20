@@ -484,10 +484,10 @@ All plugin logic is extracted from `dashboard.js` into self-contained modules un
 | Plugin | View ID | Plugin ID | Version | Category |
 |--------|---------|-----------|---------|----------|
 | Salesforce Case Extractor | `plugin-salesforce` | `com.replycators.salesforce-extractor` | 4.12.4 | CRM |
-| Cloudability OrgID | `plugin-cloudability-orgid` | `com.replycators.cloudability-orgid` | 4.0.4 | Cloud |
+| Cloudability OrgID | `plugin-cloudability-orgid` | `com.replycators.cloudability-orgid` | 4.0.5 | Cloud |
 | Edge Bookmark Finder | `plugin-edge-bookmarks` | `com.replycators.edge-bookmark-finder` | 1.0.2 | Productivity |
 | Apptio Planning Upgrade Calculator | `plugin-apptio-upgrade-calc` | `com.replycators.apptio-planning-upgrade-calculator` | 1.0.3 | Enterprise |
-| Workspace Starter | `plugin-workspace-starter` | `com.replycators.workspace-starter` | 2.0.2 | Productivity |
+| Workspace Starter | `plugin-workspace-starter` | `com.replycators.workspace-starter` | 2.0.3 | Productivity |
 | Tab Search | `plugin-tab-search` | `com.replycators.tab-search` | 1.0.1 | Productivity |
 | Snake | `plugin-snake` | `com.replycators.snake` | 1.0.1 | Games |
 | Example Plugin | `plugin-example` | `com.replycators.example-plugin` | 1.0.2 | Template |

@@ -9,6 +9,33 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.47.9] - 2026-08-22
+### Cloudability OrgID - Fix enable/disable lifecycle reversibility without reload (Issue #28)
+**Type:** Bug Fix
+**Summary:** Resolved two lifecycle defects in `plugins/cloudability-orgid.js`. Scenario A: when the plugin started the session disabled, `init()` returned early before binding any UI event listeners, leaving Refresh, Copy, Include-in-Diagnostics, widget Refresh, and widget Copy permanently inert for the rest of the session even after re-enabling via Plugin Manager. Scenario B: when the plugin started enabled and was then disabled, the `chrome.runtime.onMessage` listener for `RC_CLD_ORG_UPDATE` remained permanently active, silently mutating `cldState` and writing Activity Log entries despite the plugin being off. Fixed by moving all listener binding unconditionally above the `pluginEnabled()` guard (Steps 1 and 2), then adding `if (!pluginEnabled()) return;` as the first line in every handler and in the `RC_CLD_ORG_UPDATE` message handler. The `pluginEnabled()` early-exit block is preserved as Step 3 to control initial UI state when starting disabled. The `_cldListenersBound` / `_cldMsgListenerBound` idempotency flags remain fully effective - listeners are still bound exactly once per session. `rc:plugin:com.replycators.cloudability-orgid:orgid-cache` is never touched by this change.
+**Files changed:**
+- `plugins/cloudability-orgid.js` - listener binding moved above pluginEnabled() guard; pluginEnabled() gate added in 5 UI handlers and 1 message handler; plugin version 4.0.4 -> 4.0.5
+- `dist/plugins/cloudability-orgid.js` - mirror sync
+- `dashboard.js` - Cloudability OrgID version 4.0.4 -> 4.0.5 in PLUGINS[]
+- `dist/dashboard.js` - mirror sync
+- `dashboard.html` - rc-plugin-header__version v4.0.4 -> v4.0.5
+- `dist/dashboard.html` - mirror sync
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
+
 ## [1.47.8] - 2026-08-21
 ### Backup & Restore - Treat all-conflict Keep existing imports as successful no-ops (Issue #27)
 **Type:** Bug Fix
