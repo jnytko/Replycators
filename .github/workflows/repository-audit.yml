@@ -1,0 +1,141 @@
+name: Governance - Repository Audit
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  stage-audits:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - stage_id: stage-01-architecture
+            prompt_title: "Architecture - Architecture Audit"
+            source: architecture
+            output_file: .governance/findings/stage-01-architecture.json
+          - stage_id: stage-02-security
+            prompt_title: "Architecture - Security and Chrome Compliance Audit"
+            source: security
+            output_file: .governance/findings/stage-02-security.json
+          - stage_id: stage-03-performance
+            prompt_title: "Architecture - Performance and Diagnostics Audit"
+            source: performance
+            output_file: .governance/findings/stage-03-performance.json
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract prompt from prompt catalog
+        id: prompt
+        env:
+          PROMPT_TITLE: ${{ matrix.prompt_title }}
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import os
+
+          title = os.environ['PROMPT_TITLE']
+          heading = f"### {title}"
+          catalog = Path('docs/PROMPT-CATALOG.md').read_text(encoding='utf-8')
+          idx = catalog.find(heading)
+          if idx < 0:
+            raise SystemExit(f'Prompt not found: {title}')
+
+          tail = catalog[idx + len(heading):]
+          end = tail.find('\n### ')
+          body = tail[:end] if end >= 0 else tail
+          body = body.strip()
+
+          safe = title.lower().replace(' ', '-').replace('/', '-')
+          out_path = Path(f'.governance/prompts/{safe}.md')
+          out_path.parent.mkdir(parents=True, exist_ok=True)
+          out_path.write_text(body + '\n', encoding='utf-8')
+
+          with Path(os.environ['GITHUB_OUTPUT']).open('a', encoding='utf-8') as fh:
+            fh.write(f"prompt_path={out_path.as_posix()}\n")
+          PY
+
+      - name: Invoke Copilot Agent for audit stage
+        uses: github-copilot/agent@v1
+        with:
+          problem-statement: |
+            Run the exact prompt text in `${{ steps.prompt.outputs.prompt_path }}` from `docs/PROMPT-CATALOG.md`.
+            Generate a strict JSON array of findings for source `${{ matrix.source }}` and write it to `${{ matrix.output_file }}`.
+            Required fields: finding_id, severity, source, component, summary, evidence, root_cause, acceptance_criteria, recommended_action.
+
+      - name: Upload raw findings artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.stage_id }}-raw
+          path: |
+            .governance/prompts/
+            ${{ matrix.output_file }}
+          if-no-files-found: warn
+
+  process-findings:
+    runs-on: ubuntu-latest
+    needs: [stage-audits]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download stage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: stage-*-raw
+          path: .governance/downloads
+          merge-multiple: true
+
+      - name: Consolidate findings files
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+
+          const base = path.resolve('.governance/downloads');
+          const out = path.resolve('.governance/findings/raw-findings.json');
+          const files = [
+            'stage-01-architecture.json',
+            'stage-02-security.json',
+            'stage-03-performance.json'
+          ].map((name) => path.join(base, '.governance/findings', name));
+
+          const merged = [];
+          for (const file of files) {
+            if (!fs.existsSync(file)) continue;
+            const payload = JSON.parse(fs.readFileSync(file, 'utf8'));
+            if (Array.isArray(payload)) merged.push(...payload);
+          }
+
+          fs.mkdirSync(path.dirname(out), { recursive: true });
+          fs.writeFileSync(out, JSON.stringify(merged, null, 2));
+          console.log(`Merged ${merged.length} findings`);
+          NODE
+
+      - name: Validate findings with safeguards
+        run: node .github/scripts/governance-safeguards.js .governance/findings/raw-findings.json "" .governance/findings/validated-findings.json
+
+      - name: Create or update governance issues
+        run: node .github/scripts/process-findings.js .governance/findings/validated-findings.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Prioritize governance issues
+        run: node .github/scripts/prioritize-issues.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Upload processed findings artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: governance-repository-audit
+          path: .governance/findings/
+          if-no-files-found: warn

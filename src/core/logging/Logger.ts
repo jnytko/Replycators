@@ -18,6 +18,7 @@ export class Logger implements ILogger {
     debug: 0,
     info: 1,
     warn: 2,
+    warning: 2,
     error: 3,
   };
 
