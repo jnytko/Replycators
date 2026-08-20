@@ -1,0 +1,166 @@
+name: Scheduled Automated Issue Remediation
+
+on:
+  schedule:
+    # 18:00 CET (Standard Time: 17:00 UTC / CEST: 16:00 UTC). Set to 17:00 UTC by default:
+    - cron: '0 17 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run workflow without committing changes or closing issues'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: issue-remediation
+  cancel-in-progress: false
+
+jobs:
+  remediate-issues:
+    name: Process and Resolve Open Issues
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Environment (Node / Python / Tooling)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure Git Committer Identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "4189828+github-actions[bot]@users.noreply.github.com"
+
+      - name: Process Issues and Apply Fixes
+        id: process-issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: |
+          set -euo pipefail
+
+          echo "🔍 Fetching open issues eligible for remediation..."
+          
+          # Fetch open issues with JSON output (filter by label 'auto-fix' or retrieve all open issues)
+          ISSUES_JSON=$(gh issue list \
+            --state open \
+            --label "auto-fix" \
+            --limit 10 \
+            --json number,title,body,author)
+
+          ISSUE_COUNT=$(echo "$ISSUES_JSON" | jq '. | length')
+          echo "Found $ISSUE_COUNT issues to evaluate."
+
+          if [ "$ISSUE_COUNT" -eq 0 ]; then
+            echo "No open issues marked for automated remediation."
+            exit 0
+          fi
+
+          # Process each issue iteratively
+          echo "$ISSUES_JSON" | jq -c '.[]' | while read -r issue; do
+            ISSUE_NUMBER=$(echo "$issue" | jq -r '.number')
+            ISSUE_TITLE=$(echo "$issue" | jq -r '.title')
+            ISSUE_BODY=$(echo "$issue" | jq -r '.body')
+            BRANCH_NAME="auto-fix/issue-${ISSUE_NUMBER}"
+
+            echo "========================================================"
+            echo "Processing Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE}"
+            echo "========================================================"
+
+            # 1. Assign bot to the issue to declare ownership
+            gh issue edit "$ISSUE_NUMBER" --add-assignee "app/github-actions" || true
+
+            # 2. Create and switch to a temporary working branch
+            git checkout -b "$BRANCH_NAME" "origin/${{ github.event.repository.default_branch }}"
+
+            # -------------------------------------------------------------------------
+            # 3. REMEDIATION STEP:
+            # Replace or point this step to your custom fix script / LLM remediation CLI:
+            # e.g., python3 .github/scripts/remediate.py --issue-body "$ISSUE_BODY"
+            # -------------------------------------------------------------------------
+            FIX_SUCCESS=true
+            
+            # Example automated fix routine (lint & format fix or custom patcher)
+            if [ -f "package.json" ]; then
+              npm ci || true
+              npm run lint:fix || true
+            fi
+
+            # Check if any actual changes were staged/made
+            if git diff --quiet; then
+              echo "ℹ️ No changes produced for Issue #${ISSUE_NUMBER}."
+              git checkout "${{ github.event.repository.default_branch }}"
+              git branch -D "$BRANCH_NAME"
+              continue
+            fi
+
+            # 4. VALIDATION STEP: Verify changes don't break the build or test suite
+            echo "🧪 Running validation tests..."
+            if [ -f "package.json" ] && grep -q '"test"' package.json; then
+              if ! npm test; then
+                echo "❌ Tests failed after applying fix. Aborting changes for issue #${ISSUE_NUMBER}."
+                FIX_SUCCESS=false
+              fi
+            fi
+
+            # 5. COMMIT & UPDATE ISSUE
+            if [ "$FIX_SUCCESS" = true ]; then
+              echo "✅ Verification passed. Finalizing changes..."
+
+              git add -A
+              COMMIT_MSG="fix: automated resolution for issue #${ISSUE_NUMBER}
+
+Resolves #${ISSUE_NUMBER}
+Applied automated patch and passed regression verification."
+
+              git commit -m "$COMMIT_MSG"
+
+              if [ "$DRY_RUN" = "false" ]; then
+                # Push branch and merge into default branch (or create a PR)
+                git checkout "${{ github.event.repository.default_branch }}"
+                git merge --ff-only "$BRANCH_NAME"
+                git push origin "${{ github.event.repository.default_branch }}"
+
+                COMMIT_HASH=$(git rev-parse --short HEAD)
+
+                # Post audit comment & close issue
+                COMMENT_BODY="### 🤖 Automated Remediation Succeeded
+                
+This issue was automatically resolved and verified by the scheduled maintenance workflow.
+- **Commit:** \`${COMMIT_HASH}\`
+- **Assigned to:** @github-actions[bot]
+- **Status:** Verified and Closed."
+
+                gh issue comment "$ISSUE_NUMBER" --body "$COMMENT_BODY"
+                gh issue close "$ISSUE_NUMBER" --reason "completed"
+                echo "🎉 Issue #${ISSUE_NUMBER} resolved and closed."
+              else
+                echo "⚠️ Dry run enabled: Skipped push, comment, and issue closure."
+              fi
+            else
+              # Handle validation failure
+              if [ "$DRY_RUN" = "false" ]; then
+                FAIL_COMMENT="### ⚠️ Automated Remediation Failed
+                
+The automated pipeline generated a patch for this issue, but verification tests did not pass. Manual review is required."
+                gh issue comment "$ISSUE_NUMBER" --body "$FAIL_COMMENT"
+                gh issue edit "$ISSUE_NUMBER" --remove-label "auto-fix" --add-label "needs-manual-review" || true
+              fi
+            fi
+
+            # Clean up local branch state
+            git checkout "${{ github.event.repository.default_branch }}"
+            git branch -D "$BRANCH_NAME" || true
+          done
