@@ -148,4 +148,3 @@ Implement Stage 1 only:
 5. Run one architecture audit.
 6. Review the artifact manually.
 7. Record false positives before changing any issue or repository state.
-

@@ -8,7 +8,7 @@ import { PluginRegistry } from '../platform/registry/PluginRegistry';
 import { PluginManager } from '../platform/manager/PluginManager';
 import { PluginLoader } from '../platform/loader/PluginLoader';
 import { EventBus, PlatformEvents } from '../core/events/EventBus';
-import { Logger } from '../core/logging/Logger';
+import { Logger, getLogger } from '../core/logging/Logger';
 import { NotificationCenter } from '../core/notifications/NotificationCenter';
 import { DiagnosticsCenter } from '../core/diagnostics/DiagnosticsCenter';
 import { getStorage } from '../core/storage/StorageManager';
@@ -31,6 +31,7 @@ import type { LogEntry, LogLevel, PlatformNotification, NotificationType } from 
 // ─── Dashboard Order Persistence ─────────────────────────────────────────────
 
 const platformStorage = getStorage('platform');
+const logger = getLogger('dashboard');
 const DASHBOARD_ORDER_KEY = 'dashboard-plugin-order';
 
 async function loadDashboardOrder(): Promise<string[]> {
@@ -67,7 +68,7 @@ let lastFocusedElement: HTMLElement | null = null;
 
 // ─── Initialize ──────────────────────────────────────────────────────────────
 
-(async () => {
+async function initializeDashboard(): Promise<void> {
   await bootstrapPlatform();
   initTheme();
   renderPluginNav();
@@ -87,7 +88,16 @@ let lastFocusedElement: HTMLElement | null = null;
   const manifest = chrome.runtime.getManifest();
   const vEl = document.getElementById('rc-platform-version');
   if (vEl) vEl.textContent = `v${manifest.version}`;
-})();
+}
+
+void initializeDashboard().catch(err => {
+  logger.error('Dashboard initialization failed', err);
+  showToast({
+    title: 'ReplyCators',
+    message: `Dashboard initialization failed: ${err instanceof Error ? err.message : String(err)}`,
+    type: 'error',
+  });
+});
 
 // ─── Theme ───────────────────────────────────────────────────────────────────
 
@@ -193,12 +203,21 @@ async function renderDashboard(): Promise<void> {
       btn.innerHTML = `<span class="rc-action-card__icon">${action.icon ?? '⚡'}</span>
                        <span class="rc-action-card__label">${escapeHtml(action.label)}</span>`;
       btn.addEventListener('click', async () => {
-        const plugin = PluginLoader.getInstance().getPlugin(action.pluginId);
-        if (plugin) {
+        try {
+          const plugin = PluginLoader.getInstance().getPlugin(action.pluginId);
+          if (!plugin) throw new Error('Plugin is not loaded');
           const result = await plugin.handleAction(action.id, {});
           showToast({
             message: result.message ?? 'Action executed',
             type: result.success ? 'success' : 'error',
+            title: action.label,
+            source: action.pluginId,
+          });
+        } catch (err) {
+          logger.error(`Quick action failed: ${action.pluginId}/${action.id}`, err);
+          showToast({
+            message: `Action failed: ${err instanceof Error ? err.message : String(err)}`,
+            type: 'error',
             title: action.label,
             source: action.pluginId,
           });
@@ -583,7 +602,11 @@ function subscribeToEvents(): void {
   const bus = EventBus.getInstance();
 
   bus.on(PlatformEvents.NOTIFICATION, (data: unknown) => {
-    const payload = data as { action: string; notification: PlatformNotification };
+    if (!isNotificationEvent(data)) {
+      logger.warn('Ignored malformed notification event payload');
+      return;
+    }
+    const payload = data;
     if (payload.action === 'show') {
       showToast({
         message: payload.notification.message,
@@ -605,6 +628,21 @@ function subscribeToEvents(): void {
 
   bus.on(PlatformEvents.PLUGIN_ACTIVATED, async () => { updateStats(); await renderPluginManager(); });
   bus.on(PlatformEvents.PLUGIN_DEACTIVATED, async () => { updateStats(); await renderPluginManager(); });
+}
+
+function isNotificationEvent(
+  value: unknown
+): value is { action: string; notification: PlatformNotification } {
+  if (!value || typeof value !== 'object') return false;
+  const event = value as Record<string, unknown>;
+  const notification = event.notification;
+  if (!notification || typeof notification !== 'object') return false;
+  const candidate = notification as Record<string, unknown>;
+  return typeof event.action === 'string' &&
+    typeof candidate.id === 'string' &&
+    typeof candidate.title === 'string' &&
+    typeof candidate.message === 'string' &&
+    ['success', 'info', 'warning', 'error'].includes(String(candidate.type));
 }
 
 function renderNotificationList(): void {

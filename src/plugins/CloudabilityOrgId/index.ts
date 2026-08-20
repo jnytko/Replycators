@@ -96,7 +96,11 @@ export class CloudabilityOrgIdPlugin extends PluginBase {
     this.unsubscribeOrgRetrieved = context.services.events.on(
       'cld:org-retrieved',
       (data: unknown) => {
-        this.currentOrgData = data as OrgData;
+        if (!isOrgData(data)) {
+          context.services.logger.warn('Ignored malformed OrgID event payload');
+          return;
+        }
+        this.currentOrgData = data;
         context.services.logger.debug(
           `Plugin in-memory OrgID updated: ${this.currentOrgData.id}`
         );
@@ -241,3 +245,11 @@ export class CloudabilityOrgIdPlugin extends PluginBase {
 
 // Self-register with the platform
 PluginLoader.register(() => new CloudabilityOrgIdPlugin());
+
+function isOrgData(value: unknown): value is OrgData {
+  if (!value || typeof value !== 'object') return false;
+  const data = value as Record<string, unknown>;
+  return typeof data.id === 'string' && data.id.trim().length > 0 &&
+    typeof data.name === 'string' &&
+    typeof data.retrievedAt === 'number' && Number.isFinite(data.retrievedAt);
+}

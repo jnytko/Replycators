@@ -36,14 +36,18 @@ export class SettingsManager implements ISettingsService {
   async get<T extends SettingValue>(pluginId: string, key: string): Promise<T | undefined> {
     const storage = getStorage(`settings:${pluginId}`, 'sync');
     const value = await storage.get<T>(key);
-    if (value !== undefined) return value;
+    const schema = this.schemas.get(pluginId)?.find(s => s.key === key);
+    if (value !== undefined && (!schema || this.isValidValue(schema, value))) return value;
 
     // Fall back to schema default
-    const schema = this.schemas.get(pluginId)?.find(s => s.key === key);
     return schema?.default as T | undefined;
   }
 
   async set(pluginId: string, key: string, value: SettingValue): Promise<void> {
+    const schema = this.schemas.get(pluginId)?.find(s => s.key === key);
+    if (schema && !this.isValidValue(schema, value)) {
+      throw new TypeError(`Invalid value for setting "${pluginId}:${key}"`);
+    }
     const storage = getStorage(`settings:${pluginId}`, 'sync');
     await storage.set(key, value);
 
@@ -65,8 +69,14 @@ export class SettingsManager implements ISettingsService {
 
     // Override with stored values
     const storage = getStorage(`settings:${pluginId}`, 'sync');
-    const stored = await storage.getAll<SettingValue>(`settings:${pluginId}:`);
-    Object.assign(result, stored);
+    // StorageManager already owns the settings namespace; only filter within it.
+    const stored = await storage.getAll<SettingValue>('');
+    for (const [key, value] of Object.entries(stored)) {
+      const settingSchema = schema.find(item => item.key === key);
+      if (!settingSchema || this.isValidValue(settingSchema, value)) {
+        result[key] = value;
+      }
+    }
 
     return result;
   }
@@ -79,5 +89,19 @@ export class SettingsManager implements ISettingsService {
       await storage.clear();
     }
     EventBus.getInstance().emit(PlatformEvents.SETTINGS_CHANGED, { pluginId, key, value: null });
+  }
+
+  private isValidValue(schema: PluginSettingSchema, value: unknown): value is SettingValue {
+    switch (schema.type) {
+      case 'string':
+        return typeof value === 'string';
+      case 'number':
+        return typeof value === 'number' && Number.isFinite(value);
+      case 'boolean':
+        return typeof value === 'boolean';
+      case 'select':
+        return typeof value === 'string' &&
+          (!schema.options || schema.options.some(option => option.value === value));
+    }
   }
 }

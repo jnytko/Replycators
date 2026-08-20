@@ -59,4 +59,3 @@ Return a concise summary containing:
 - Manual QA still required.
 - Risks or blockers.
 - Branch and pull-request references when available.
-

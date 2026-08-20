@@ -7,7 +7,6 @@ import { PluginLoader } from '../loader/PluginLoader';
 import { PluginRegistry } from '../registry/PluginRegistry';
 import { getStorage } from '../../core/storage/StorageManager';
 import { getLogger } from '../../core/logging/Logger';
-import { EventBus, PlatformEvents } from '../../core/events/EventBus';
 
 const logger = getLogger('platform:manager');
 const storage = getStorage('platform', 'local');
@@ -18,6 +17,7 @@ export class PluginManager {
   private static instance: PluginManager;
   private disabledPlugins = new Set<string>();
   private initialized = false;
+  private initialization: Promise<void> | null = null;
 
   static getInstance(): PluginManager {
     if (!PluginManager.instance) {
@@ -26,13 +26,26 @@ export class PluginManager {
     return PluginManager.instance;
   }
 
-  async initialize(): Promise<void> {
-    if (this.initialized) return;
-    this.initialized = true;
+  initialize(): Promise<void> {
+    if (this.initialized) return Promise.resolve();
+    if (this.initialization) return this.initialization;
+
+    // Publish initialized only after every required startup step succeeds.
+    const initialization = this.initializeInternal()
+      .then(() => { this.initialized = true; })
+      .finally(() => { this.initialization = null; });
+    this.initialization = initialization;
+    return initialization;
+  }
+
+  private async initializeInternal(): Promise<void> {
 
     // Restore persisted disable list
-    const disabled = await storage.get<string[]>(DISABLED_PLUGINS_KEY) ?? [];
-    disabled.forEach(id => this.disabledPlugins.add(id));
+    const storedDisabled = await storage.get<unknown>(DISABLED_PLUGINS_KEY);
+    const disabled = Array.isArray(storedDisabled)
+      ? storedDisabled.filter((id): id is string => typeof id === 'string')
+      : [];
+    this.disabledPlugins = new Set(disabled);
 
     logger.info(`PluginManager initialized. Disabled plugins: [${disabled.join(', ')}]`);
 
@@ -59,9 +72,6 @@ export class PluginManager {
       return;
     }
 
-    this.disabledPlugins.delete(pluginId);
-    await this.persistDisabledList();
-
     const loader = PluginLoader.getInstance();
     if (!loader.isLoaded(pluginId)) {
       await loader.load(pluginId);
@@ -69,19 +79,37 @@ export class PluginManager {
       await loader.activate(pluginId);
     }
 
+    this.disabledPlugins.delete(pluginId);
+    try {
+      await this.persistDisabledList();
+    } catch (err) {
+      this.disabledPlugins.add(pluginId);
+      await loader.deactivate(pluginId);
+      throw err;
+    }
+
     logger.info(`Plugin enabled: ${pluginId}`);
-    EventBus.getInstance().emit(PlatformEvents.PLUGIN_ACTIVATED, { pluginId });
   }
 
   async disablePlugin(pluginId: string): Promise<void> {
-    this.disabledPlugins.add(pluginId);
-    await this.persistDisabledList();
+    if (this.disabledPlugins.has(pluginId)) {
+      logger.warn(`Plugin "${pluginId}" is already disabled.`);
+      return;
+    }
 
     const loader = PluginLoader.getInstance();
     await loader.deactivate(pluginId);
 
+    this.disabledPlugins.add(pluginId);
+    try {
+      await this.persistDisabledList();
+    } catch (err) {
+      this.disabledPlugins.delete(pluginId);
+      await loader.activate(pluginId);
+      throw err;
+    }
+
     logger.info(`Plugin disabled: ${pluginId}`);
-    EventBus.getInstance().emit(PlatformEvents.PLUGIN_DEACTIVATED, { pluginId });
   }
 
   async removePlugin(pluginId: string): Promise<void> {

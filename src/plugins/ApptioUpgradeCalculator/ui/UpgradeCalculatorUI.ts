@@ -646,7 +646,7 @@ function bindEvents(container: HTMLElement, ctx: PluginContext): void {
 
     // Sort all releases by Production Date DESC (most recent first)
     const sortedDesc = [...releases].sort(
-      (a, b) => new Date(b.productionDate).getTime() - new Date(a.productionDate).getTime()
+      (a, b) => parseDate(b.productionDate).getTime() - parseDate(a.productionDate).getTime()
     );
 
     // Determine display set before applying text query
@@ -681,8 +681,8 @@ function bindEvents(container: HTMLElement, ctx: PluginContext): void {
 
     // For badge logic we still need the "next" release from the full sorted list
     const nextRelease = [...releases]
-      .sort((a, b) => new Date(a.productionDate).getTime() - new Date(b.productionDate).getTime())
-      .find(r => new Date(r.productionDate) > today);
+      .sort((a, b) => parseDate(a.productionDate).getTime() - parseDate(b.productionDate).getTime())
+      .find(r => parseDate(r.productionDate) > today);
 
     scheduleTbody.innerHTML = '';
 

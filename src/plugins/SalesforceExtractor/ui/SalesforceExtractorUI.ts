@@ -25,6 +25,8 @@ import { PromptExecutionPanel } from '../prompts/PromptExecutionPanel';
 import { PromptManager } from '../prompts/PromptManager';
 import type { PromptDefinition } from '../prompts/types';
 
+const PLUGIN_ID = 'com.replycators.salesforce-extractor';
+
 export function renderSalesforceUI(container: HTMLElement, ctx: PluginContext): void {
   container.innerHTML = getShellHTML();
   initUI(container, ctx).catch(err => {
@@ -183,6 +185,18 @@ async function initUI(container: HTMLElement, ctx: PluginContext): Promise<void>
         managerInstance = null;
       },
       onPromptsChanged: refreshSelector,
+      onError: (err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        ctx.services.logger.error('Prompt manager operation failed', err);
+        ctx.services.notifications.show({
+          id: `sf-prompt-error-${Date.now()}`,
+          title: 'Salesforce Case Extractor',
+          message: `Prompt operation failed: ${message}`,
+          type: 'error',
+          duration: 5000,
+          pluginId: PLUGIN_ID,
+        });
+      },
     });
   };
 
@@ -352,21 +366,21 @@ function formatResult(result: SalesforceExtractResult): string {
   out += `Subject     : ${result.subject || 'N/A'}\n`;
   out += `Account     : ${result.accountName || 'N/A'}\n`;
   out += `Contact     : ${result.contactName || 'N/A'}\n`;
-  out += `Status      : ${(result as any).status || 'N/A'}\n`;
-  out += `Priority    : ${(result as any).priority || 'N/A'}\n\n`;
+  out += `Status      : ${result.status || 'N/A'}\n`;
+  out += `Priority    : ${result.priority || result.severityLevel || 'N/A'}\n\n`;
 
   out += `${SEP2}\nDESCRIPTION\n${SEP2}\n\n`;
   out += `${result.description || '(No description)'}\n\n`;
 
-  if ((result as any).agentDescription) {
+  if (result.agentDescription) {
     out += `${SEP2}\nAGENT DESCRIPTION\n${SEP2}\n\n`;
-    out += `${(result as any).agentDescription}\n\n`;
+    out += `${result.agentDescription}\n\n`;
   }
 
   if (result.posts?.length > 0) {
     out += `${SEP}\nCASE HISTORY  (chronological — oldest first)\n${SEP}\n\n`;
     result.posts.forEach((post, i) => {
-      const typeTag = (post as any).type === 'internal' ? '[Internal Post]' : '[Customer Post]';
+      const typeTag = post.type === 'internal' ? '[Internal Post]' : '[Customer Post]';
       out += `Post #${i + 1}  ${typeTag}\n`;
       out += `Author    : ${post.author}\n`;
       out += `Timestamp : ${post.timestamp}\n\n`;
@@ -408,7 +422,10 @@ function getActiveSalesforceTab(): Promise<chrome.tabs.Tab | null> {
 }
 
 function safeInject(tabId: number): Promise<void> {
-  return chrome.scripting.executeScript({ target: { tabId }, files: ['sf-content.js'] })
+  return chrome.scripting.executeScript({
+    target: { tabId },
+    files: ['plugins/salesforce/content/sf-content.js'],
+  })
     .then(() => {})
     .catch(() => {});
 }

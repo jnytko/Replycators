@@ -70,6 +70,8 @@ CORE LAYER:      EventBus | StorageManager | Logger | NotificationCenter
 
 > These files exist as scaffolding for RC-015 Phase 2. They are **not loaded by the active runtime**.
 > The active equivalents are implemented inline in `dashboard.js` and `plugins/*.js`.
+> The v1.47.10 hardening pass added runtime validation, asynchronous error containment,
+> transactional lifecycle state changes, and verified packaged-asset paths to this scaffold.
 
 | Component | File | Purpose (planned) |
 |-----------|------|---------|

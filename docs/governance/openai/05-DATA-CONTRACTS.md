@@ -162,4 +162,3 @@ Do not parse human prose to recover critical identifiers.
 - Workflows must reject unsupported schema versions.
 - Historical artifacts retain their original schema version.
 - Schema migrations must be deterministic and tested.
-

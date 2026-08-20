@@ -58,4 +58,3 @@ The complete governance integration is operational when:
 - Required CI, regression, documentation, and manual QA evidence is recorded.
 - Every finding is resolved, invalidated, deferred with justification, or escalated.
 - Release readiness is derived from stored evidence rather than a model assertion alone.
-

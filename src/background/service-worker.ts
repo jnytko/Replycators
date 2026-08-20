@@ -37,9 +37,11 @@ const ORGID_PLUGIN_ID = 'com.replycators.cloudability-orgid';
 
 // ─── Bootstrap on install / service worker start ──────────────────────────────
 
-chrome.runtime.onInstalled.addListener(async (details) => {
+chrome.runtime.onInstalled.addListener((details) => {
   logger.info(`Extension installed/updated. Reason: ${details.reason}`);
-  await bootstrapPlatform();
+  void bootstrapPlatform().catch(err => {
+    logger.error(`[RC:background] Install bootstrap failed: ${String(err)}`);
+  });
 });
 
 // Also bootstrap on service worker startup (after browser restart)
@@ -190,6 +192,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (type === 'RC_TOGGLE_PLUGIN') {
     const { pluginId, enabled } = message.payload ?? {};
+    if (typeof pluginId !== 'string' || typeof enabled !== 'boolean') {
+      sendResponse({ success: false, error: 'Invalid plugin toggle payload' });
+      return true;
+    }
     const manager = PluginManager.getInstance();
     const op = enabled ? manager.enablePlugin(pluginId) : manager.disablePlugin(pluginId);
     op.then(() => sendResponse({ success: true })).catch(err => sendResponse({ success: false, error: String(err) }));

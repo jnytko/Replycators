@@ -308,7 +308,8 @@ export class PromptExecutionPanel {
     } catch (err) {
       this.setStatus(`❌ Failed to launch Bob: ${err instanceof Error ? err.message : String(err)}`, 'error');
     } finally {
-      this.btnExecute.disabled = !this.selectedPrompt?.enabled;
+      // Re-evaluate attachment readiness because files can change while Bob launches.
+      this.updateExecuteButton();
     }
   }
 

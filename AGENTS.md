@@ -60,7 +60,7 @@
 | Property | Value |
 |----------|-------|
 | Working directory | `[root]\WatsonX\ReplyCators\` |
-| Extension version | **1.47.8** |
+| Extension version | **1.47.10** |
 | Release status | **Production** |
 
 ReplyCators is a plugin-hosting Microsoft Edge extension (Manifest V3). A single dashboard UI hosts multiple plugins. The platform provides shared navigation, settings, storage, notifications, logging, and plugin lifecycle management. Plugins provide business functionality.
@@ -1522,6 +1522,7 @@ Complete record: `docs/TECH-DEBT-RESOLVED.md`
 | `docs/CONTRIBUTING.md` | Contribution workflow, branching strategy, versioning, commit format. | On-demand |
 | `docs/CONTRIBUTOR-ONBOARDING.md` | Human contributor onboarding guide. First-week checklist, GitHub workflow, AI development expectations, Definition of Done. | On-demand (new contributors) |
 | `docs/PROMPT-CATALOG.md` | AI prompt governance catalog. Versioned, reviewed prompts for all common development workflows. | On-demand (AI-assisted tasks) |
+| `docs/governance/openai/README.md` | OpenAI and Codex continuous repository governance starter kit. Entry point for architecture, setup, implementation, security, validation, operations, and rollout documents. | On-demand (governance implementation tasks) |
 | `docs/STARTUP-FLOW.md` | Full boot sequence, plugin load order, service worker lifecycle. | On-demand |
 | `docs/STORAGE.md` | Complete storage schema: all keys, namespaces, platform settings. | On-demand |
 | `docs/SETTINGS.md` | Full settings reference: all settings, options, defaults. | On-demand |

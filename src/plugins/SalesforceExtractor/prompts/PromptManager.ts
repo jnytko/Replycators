@@ -21,6 +21,7 @@ export interface PromptManagerOptions {
   container: HTMLElement;
   onClose: () => void;
   onPromptsChanged: () => void;
+  onError?: (error: unknown) => void;
 }
 
 type ManagerView = 'list' | 'edit';
@@ -29,6 +30,7 @@ export class PromptManager {
   private container: HTMLElement;
   private onClose: () => void;
   private onPromptsChanged: () => void;
+  private onError: (error: unknown) => void;
   private view: ManagerView = 'list';
   private editingId: string | null = null;
 
@@ -36,6 +38,7 @@ export class PromptManager {
     this.container = opts.container;
     this.onClose = opts.onClose;
     this.onPromptsChanged = opts.onPromptsChanged;
+    this.onError = opts.onError ?? (() => {});
     this.renderListView();
   }
 
@@ -78,7 +81,11 @@ export class PromptManager {
       if (!btn) return;
       const action = btn.dataset['action']!;
       const id = btn.dataset['id']!;
-      await this.handleListAction(action, id);
+      try {
+        await this.handleListAction(action, id);
+      } catch (err) {
+        this.onError(err);
+      }
     });
   }
 

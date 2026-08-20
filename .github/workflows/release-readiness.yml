@@ -14,16 +14,17 @@ on:
         type: string
 
 permissions:
-  contents: read
   issues: write
+
+concurrency:
+  group: governance-release-readiness-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   readiness:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Aggregate governance readiness
         id: aggregate
         uses: actions/github-script@v7
@@ -83,13 +84,19 @@ jobs:
             core.setOutput('summary', lines.join('\n'));
 
       - name: Comment summary on issue
-        if: ${{ (inputs.issue_number || github.event.inputs.issue_number) != '' }}
+        if: inputs.issue_number != ''
         uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            const issueNumber = Number('${{ inputs.issue_number || github.event.inputs.issue_number }}');
+            const issueNumber = Number.parseInt(process.env.ISSUE_NUMBER ?? '', 10);
+            if (!Number.isSafeInteger(issueNumber) || issueNumber <= 0) {
+              core.setFailed('issue_number must be a positive integer.');
+              return;
+            }
             const summaryPath = '.governance/findings/release-readiness.md';
             const summary = fs.existsSync(summaryPath)
               ? fs.readFileSync(summaryPath, 'utf8')
@@ -107,6 +114,7 @@ jobs:
           name: governance-release-readiness
           path: .governance/findings/release-readiness.md
           if-no-files-found: warn
+          retention-days: 7
 
       - name: Fail when blockers exist
         if: steps.aggregate.outputs.release_ready != 'true'

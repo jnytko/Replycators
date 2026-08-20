@@ -9,6 +9,44 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## Unreleased
+### CI - Remove non-runnable governance workflows and harden supported automation
+**Type:** Maintenance
+**Summary:** Removed five agent-driven governance workflows that referenced the unavailable `github-copilot/agent@v1` action and would fail without producing actionable results. Retained the deterministic CI and manual release-readiness workflows, added least-privilege permissions, concurrency cancellation, job timeouts, shorter artifact retention, parallel root-to-`dist/` verification, and safe environment-based parsing of the optional issue number. Updated governance documentation so it no longer represents the OpenAI starter kit as active automation.
+**Files changed:**
+- `.github/workflows/ci.yml` - Added explicit permissions, concurrency, timeouts, artifact retention, and parallel sync verification
+- `.github/workflows/release-readiness.yml` - Removed unnecessary checkout, reduced permissions, and hardened issue-number validation
+- `.github/workflows/governance-orchestrator.yml`, `.github/workflows/issue-analysis.yml`, `.github/workflows/repository-audit.yml`, `.github/workflows/documentation-audit.yml`, `.github/workflows/defect-remediation.yml` - Removed non-runnable workflows
+- `README.md`, `docs/governance/openai/` - Corrected the active automation inventory and implementation baseline
+**Breaking changes:** None
+
+### Documentation - Add OpenAI governance implementation starter kit
+**Type:** Governance
+**Summary:** Added a documentation-only implementation pack for introducing OpenAI Responses API analysis and Codex remediation into the existing GitHub governance scaffold. The pack separates purpose, architecture, prerequisites, phased implementation, data contracts, prompt design, security, validation, operations, and rollout guidance, with non-runtime copy-ready examples. No extension runtime behavior or version changed.
+**Files changed:**
+- `docs/governance/openai/` - Added the OpenAI governance starter kit and examples
+- `docs/index.md` - Added the starter kit to the Operations documentation index
+- `README.md` - Linked the starter kit from Continuous Governance Automation
+- `AGENTS.md` - Added the starter kit to the authoritative documentation map
+**Breaking changes:** None
+
+---
+
+## [1.47.10] - 2026-08-21
+### TypeScript scaffold - Static safety and runtime-boundary hardening
+**Type:** Bug Fix
+**Summary:** Corrected the audited TypeScript scaffold defects without promoting `src/` to the active runtime. Fixed namespaced settings enumeration, Chrome storage error propagation, rejected asynchronous event handlers, retryable platform initialization, transactional plugin enable/disable state, duplicate lifecycle events, Salesforce and Apptio packaged-asset paths, OrgID cache TTL and message timeout handling, concurrent OrgID request deduplication, calendar-date/version parsing, and attachment execution readiness. Added defensive validation for settings, stored prompts, cached schedules, cached bookmarks, OrgID messages, Salesforce extraction responses, notification events, and plugin toggle requests. Dashboard bootstrap and quick-action failures now surface through platform logging and notifications. Package and extension version metadata advanced to 1.47.10.
+**Files changed:**
+- `src/core/`, `src/platform/`, `src/background/`, `src/popup/` - Core error containment, validation, lifecycle, and dashboard hardening
+- `src/plugins/ApptioUpgradeCalculator/`, `src/plugins/CloudabilityOrgId/`, `src/plugins/EdgeBookmarkFinder/`, `src/plugins/SalesforceExtractor/` - Plugin boundary, cache, concurrency, asset-path, and type fixes
+- `manifest.json`, `package.json`, `package-lock.json`, `dashboard.html`, `dashboard.js` - Platform version 1.47.8 -> 1.47.10
+- `dist/manifest.json`, `dist/package.json`, `dist/dashboard.html`, `dist/dashboard.js` - Root runtime mirror version sync
+- `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/PACKAGING.md` - Version and TypeScript scaffold documentation
+**Breaking changes:** None
+**Runtime note:** Root JavaScript remains the active production implementation. This release hardens the inactive TypeScript scaffold for RC-015 Phase 2 and does not change the root plugin behavior.
+
+---
+
 ## [1.47.9] - 2026-08-22
 ### Cloudability OrgID - Fix enable/disable lifecycle reversibility without reload (Issue #28)
 **Type:** Bug Fix
@@ -3266,6 +3304,7 @@ Format follows the [Versioning Rules](AGENTS.md#versioning-rules) defined in `AG
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
+| 1.47.10 | 2026-08-21 | TypeScript scaffold static-safety hardening: storage/settings validation, async error containment, transactional plugin lifecycle state, external payload guards, corrected packaged-asset paths, and OrgID cache/concurrency fixes. |
 | 1.37.0 | 2026-08-04 | Diagnostics three-tab IA: Overview (summary + warnings + snapshot), System Checks (all dependency cards), Cache & Storage (quota + caches). First-run auto-run flag migrated to chrome.storage.local (persistent). |
 | 1.36.0 | 2026-08-03 | Maintenance Center: Diagnostics + Backup & Restore consolidated into new top-level nav destination. Notifications Center now contains only Notifications + Activity. |
 | 1.35.0 | 2026-08-03 | Icon uniqueness policy added. Example Plugin icon replaced (App-Window-Code). Copy URL button standardized to ⧉. Example Plugin disabled by default. Canonical plugin order locked. |

@@ -169,4 +169,3 @@ Before accepting a release-readiness result, verify:
 - Documentation and versions are aligned.
 - No critical or escalated blocker remains.
 - Every run finding has a recognized disposition.
-

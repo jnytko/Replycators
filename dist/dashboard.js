@@ -1,6 +1,6 @@
 /**
  * ReplyCators — Dashboard Controller
- * v1.47.8
+ * v1.47.10
  *
  * Application shell and orchestrator for the ReplyCators plugin-based Edge extension.
  * Owns: startup coordination, session restoration, shared services (window.ReplyCatorsApp),

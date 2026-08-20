@@ -145,4 +145,3 @@ Advance from issue writing to remediation only when:
 - Branch and pull-request creation is isolated.
 - CI protects `main`.
 - Manual QA requirements cannot be bypassed.
-

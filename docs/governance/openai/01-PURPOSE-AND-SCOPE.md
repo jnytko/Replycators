@@ -99,4 +99,3 @@ The integration succeeds when:
 - Validation failures return work to implementation or escalation.
 - Manual QA requirements remain visible and blocking where appropriate.
 - Every finding reaches a recorded terminal or escalation outcome.
-

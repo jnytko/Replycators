@@ -125,22 +125,18 @@ After editing any root-level file, reload the extension at `edge://extensions/`.
 
 ## Continuous Governance Automation
 
-Repository governance automation is implemented in GitHub Actions and uses prompts sourced directly from `docs/PROMPT-CATALOG.md`.
+Repository automation is deliberately limited to workflows that can run deterministically with supported GitHub Actions:
 
-- Orchestrator: `.github/workflows/governance-orchestrator.yml` (daily schedule and manual dispatch)
-- Stage workflows:
-  - `.github/workflows/issue-analysis.yml`
-  - `.github/workflows/repository-audit.yml`
-  - `.github/workflows/documentation-audit.yml`
-  - `.github/workflows/defect-remediation.yml`
-  - `.github/workflows/release-readiness.yml`
-- Finding processors:
+- `.github/workflows/ci.yml` performs TypeScript type-checking, the production build, and an independent root-to-`dist/` synchronization check.
+- `.github/workflows/release-readiness.yml` is a manual or reusable issue-label gate that publishes a readiness artifact and can optionally comment on an issue.
+- Governance support utilities are retained for a future, explicitly configured implementation:
   - `.github/scripts/governance-safeguards.js`
   - `.github/scripts/process-findings.js`
   - `.github/scripts/prioritize-issues.js`
-- Label schema: `.github/labels.json`
 
-All findings are processed into GitHub Issues with severity, state, source, and governance labels for autonomous tracking and escalation.
+The label schema is stored in `.github/labels.json`. Automated agent-analysis stages are not currently enabled; no workflow depends on an unconfigured or unavailable agent action.
+
+For the phased OpenAI and Codex implementation plan, setup instructions, security model, data contracts, operational runbook, and copy-ready examples, start with [`docs/governance/openai/README.md`](docs/governance/openai/README.md). The starter kit is documentation-only and does not change the active extension runtime.
 
 ---
 

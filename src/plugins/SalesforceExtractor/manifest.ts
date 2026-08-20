@@ -21,7 +21,7 @@ export const SF_MANIFEST: PluginManifest = {
   contentScripts: [
     {
       matches: ['https://*.salesforce.com/*', 'https://*.lightning.force.com/*'],
-      js: ['plugins/SalesforceExtractor/content/sf-content.js'],
+      js: ['plugins/salesforce/content/sf-content.js'],
       runAt: 'document_idle',
     },
   ],

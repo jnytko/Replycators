@@ -177,4 +177,3 @@ Use a dedicated revert pull request:
 7. Preserve normal reviews and branch protection.
 
 Do not push an automatic revert directly to `main`.
-
