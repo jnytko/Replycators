@@ -9,6 +9,27 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.47.7] - 2026-08-21
+### Backup & Restore - Restore exact pre-import state and verify written values (Issue #26)
+**Type:** Bug Fix
+**Summary:** Corrected three transactional integrity flaws in backup import rollback and verification. Snapshot capture now tracks key absence so newly created keys are completely removed upon rollback, rollback failure rejection is properly propagated without falsely reporting restoration, and read-back verification performs value equality checks against intended writes.
+**Files changed:**
+- `plugins/backup-restore.js` - capture key presence metadata in rollback snapshot; restore values and remove newly-created keys on rollback; strictly propagate rollback errors; verify written values via serialization equality check during Phase 4 read-back; plugin version 1.0.1 - 1.0.2
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.4
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
 ## [1.47.6] - 2026-08-21
 ### Apptio Documentation Finder - Preserve legacy data when migration verification fails (Issue #25)
 **Type:** Bug Fix

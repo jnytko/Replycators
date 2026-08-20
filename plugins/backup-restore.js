@@ -1,6 +1,6 @@
 /**
  * ReplyCators - Backup & Restore Plugin
- * v1.0.1
+ * v1.0.2
  *
  * Platform-wide, versioned, extensible backup and restore system.
  *
@@ -857,12 +857,20 @@
 
       // ── Phase 2: capture rollback snapshot ────────────────────────────────
       const keysToSnapshot = Object.keys(writes);
-      _rollbackSnap = await new Promise((resolve, reject) => {
+      const existingValues = await new Promise((resolve, reject) => {
         chrome.storage.local.get(keysToSnapshot, result => {
           if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
-          else resolve(result);
+          else resolve(result || {});
         });
       });
+
+      _rollbackSnap = {};
+      for (const k of keysToSnapshot) {
+        _rollbackSnap[k] = {
+          present: Object.prototype.hasOwnProperty.call(existingValues, k) && existingValues[k] !== undefined,
+          value: existingValues[k]
+        };
+      }
 
       // ── Phase 3: write ────────────────────────────────────────────────────
       await new Promise((resolve, reject) => {
@@ -880,10 +888,13 @@
         });
       });
 
-      // Spot-check: every written key must be present in read-back
-      const missingAfterWrite = keysToSnapshot.filter(k => !(k in readBack));
-      if (missingAfterWrite.length > 0) {
-        throw new Error('Read-back verification failed - missing keys: ' + missingAfterWrite.join(', '));
+      // Spot-check: every written key must be present in read-back and match intended values
+      const failedKeys = keysToSnapshot.filter(k => {
+        if (!(k in readBack)) return true;
+        return JSON.stringify(readBack[k]) !== JSON.stringify(writes[k]);
+      });
+      if (failedKeys.length > 0) {
+        throw new Error('Read-back verification failed - mismatched or missing keys: ' + failedKeys.join(', '));
       }
 
       // ── Phase 5: notify platform ──────────────────────────────────────────
@@ -899,14 +910,34 @@
       // ── Rollback ──────────────────────────────────────────────────────────
       if (_rollbackSnap !== null) {
         try {
-          await new Promise(resolve => {
-            chrome.storage.local.set(_rollbackSnap, () => {
-              if (chrome.runtime.lastError) {
-                app().addLog('error', PLUGIN_ID, 'Rollback failed: ' + chrome.runtime.lastError.message);
-              }
-              resolve();
+          const toRestore = {};
+          const toRemove = [];
+          for (const [k, entry] of Object.entries(_rollbackSnap)) {
+            if (entry.present) {
+              toRestore[k] = entry.value;
+            } else {
+              toRemove.push(k);
+            }
+          }
+
+          if (Object.keys(toRestore).length > 0) {
+            await new Promise((resolve, reject) => {
+              chrome.storage.local.set(toRestore, () => {
+                if (chrome.runtime.lastError) reject(new Error('Rollback set failed: ' + chrome.runtime.lastError.message));
+                else resolve();
+              });
             });
-          });
+          }
+
+          if (toRemove.length > 0) {
+            await new Promise((resolve, reject) => {
+              chrome.storage.local.remove(toRemove, () => {
+                if (chrome.runtime.lastError) reject(new Error('Rollback remove failed: ' + chrome.runtime.lastError.message));
+                else resolve();
+              });
+            });
+          }
+
           app().addLog('warn', PLUGIN_ID, 'Import failed - rolled back to previous state');
           app().addNotification('Import Failed - Rolled Back', 'Settings restored to previous state.', 'warning', PLUGIN_ID);
         } catch (rollbackErr) {
