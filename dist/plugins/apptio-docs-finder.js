@@ -134,6 +134,7 @@
   let _debugOpen       = false;
   let _pendingUrl      = '';
   let _rendered        = false;     // true after first render() call
+  let _migrationToastShown = false;
   // F-09: guard so _migrateStorage() issues at most one storage round-trip per session.
   let _migrationDone   = false;
   // F-01: guard so the document keydown listener is registered exactly once per session.
@@ -142,10 +143,37 @@
   // ── Storage helpers ──────────────────────────────────────────────────────────
 
   function _set(data) {
-    return new Promise(r => chrome.storage.local.set(data, r));
+    return new Promise((resolve, reject) => {
+      chrome.storage.local.set(data, () => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
+        resolve();
+      });
+    });
   }
   function _get(keys) {
-    return new Promise(r => chrome.storage.local.get(keys, r));
+    return new Promise((resolve, reject) => {
+      chrome.storage.local.get(keys, result => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
+        resolve(result);
+      });
+    });
+  }
+  function _remove(keys) {
+    return new Promise((resolve, reject) => {
+      chrome.storage.local.remove(keys, () => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
+        resolve();
+      });
+    });
   }
 
   async function _getSources()      { const r = await _get([STORE.SOURCES]);      return r[STORE.SOURCES]      || DEFAULT_SOURCES; }
@@ -190,7 +218,13 @@
   }
   async function _getLastRefresh() { const r = await _get([STORE.LAST_REFRESH]); return r[STORE.LAST_REFRESH] || null; }
 
-  async function _saveDiag(record)  { await _set({ [STORE.DIAG]: record }); }
+  async function _saveDiag(record)  {
+    try {
+      await _set({ [STORE.DIAG]: record });
+    } catch (_) {
+      // Diagnostics persistence is best-effort only.
+    }
+  }
 
   async function _clearAllData() {
     await Promise.all([_clearRecent(), _clearRecentlyOpened(), _clearFavorites()]);
@@ -254,26 +288,41 @@
   async function _migrateStorage() {
     // F-09: skip storage round-trip entirely after first successful migration check.
     if (_migrationDone) return;
-    _migrationDone = true;
 
-    const legacyValues = await _get(Object.values(LEGACY_KEYS));
-    const hasSomeLegacy = Object.values(LEGACY_KEYS).some(k => legacyValues[k] !== undefined);
-    if (!hasSomeLegacy) return; // nothing to migrate
+    try {
+      const legacyValues = await _get(Object.values(LEGACY_KEYS));
+      const hasSomeLegacy = Object.values(LEGACY_KEYS).some(k => legacyValues[k] !== undefined);
+      if (!hasSomeLegacy) {
+        _migrationDone = true;
+        return;
+      }
 
-    const migrations = {};
-    if (legacyValues[LEGACY_KEYS.SOURCES]      !== undefined) migrations[STORE.SOURCES]      = legacyValues[LEGACY_KEYS.SOURCES];
-    if (legacyValues[LEGACY_KEYS.QUICK_LINKS]  !== undefined) migrations[STORE.QUICK_LINKS]  = legacyValues[LEGACY_KEYS.QUICK_LINKS];
-    if (legacyValues[LEGACY_KEYS.RECENT]       !== undefined) migrations[STORE.RECENT]       = legacyValues[LEGACY_KEYS.RECENT];
-    if (legacyValues[LEGACY_KEYS.OPENED]       !== undefined) migrations[STORE.OPENED]       = legacyValues[LEGACY_KEYS.OPENED];
-    if (legacyValues[LEGACY_KEYS.FAVORITES]    !== undefined) migrations[STORE.FAVORITES]    = legacyValues[LEGACY_KEYS.FAVORITES];
-    if (legacyValues[LEGACY_KEYS.SETTINGS]     !== undefined) migrations[STORE.SETTINGS]     = legacyValues[LEGACY_KEYS.SETTINGS];
-    if (legacyValues[LEGACY_KEYS.LAST_REFRESH] !== undefined) migrations[STORE.LAST_REFRESH] = legacyValues[LEGACY_KEYS.LAST_REFRESH];
-    if (legacyValues[LEGACY_KEYS.DIAG]         !== undefined) migrations[STORE.DIAG]         = legacyValues[LEGACY_KEYS.DIAG];
+      const migrations = {};
+      if (legacyValues[LEGACY_KEYS.SOURCES]      !== undefined) migrations[STORE.SOURCES]      = legacyValues[LEGACY_KEYS.SOURCES];
+      if (legacyValues[LEGACY_KEYS.QUICK_LINKS]  !== undefined) migrations[STORE.QUICK_LINKS]  = legacyValues[LEGACY_KEYS.QUICK_LINKS];
+      if (legacyValues[LEGACY_KEYS.RECENT]       !== undefined) migrations[STORE.RECENT]       = legacyValues[LEGACY_KEYS.RECENT];
+      if (legacyValues[LEGACY_KEYS.OPENED]       !== undefined) migrations[STORE.OPENED]       = legacyValues[LEGACY_KEYS.OPENED];
+      if (legacyValues[LEGACY_KEYS.FAVORITES]    !== undefined) migrations[STORE.FAVORITES]    = legacyValues[LEGACY_KEYS.FAVORITES];
+      if (legacyValues[LEGACY_KEYS.SETTINGS]     !== undefined) migrations[STORE.SETTINGS]     = legacyValues[LEGACY_KEYS.SETTINGS];
+      if (legacyValues[LEGACY_KEYS.LAST_REFRESH] !== undefined) migrations[STORE.LAST_REFRESH] = legacyValues[LEGACY_KEYS.LAST_REFRESH];
+      if (legacyValues[LEGACY_KEYS.DIAG]         !== undefined) migrations[STORE.DIAG]         = legacyValues[LEGACY_KEYS.DIAG];
 
-    await _set(migrations);
-    await new Promise(r => chrome.storage.local.remove(Object.values(LEGACY_KEYS), r));
+      const migrationKeys = Object.keys(migrations);
+      await _set(migrations);
 
-    app()?.addLog?.('info', PLUGIN_ID, 'Storage migration complete - legacy adn_* keys moved to rc:plugin namespace');
+      const readBack = await _get(migrationKeys);
+      const verified = migrationKeys.every(key => readBack[key] !== undefined);
+      if (!verified) {
+        throw new Error('Migration write verification failed');
+      }
+
+      await _remove(Object.values(LEGACY_KEYS));
+      _migrationDone = true;
+      app()?.addLog?.('info', PLUGIN_ID, 'Storage migration complete - legacy adn_* keys moved to rc:plugin namespace');
+    } catch (err) {
+      app()?.addLog?.('warn', PLUGIN_ID, 'Storage migration failed - legacy adn_* keys preserved for retry: ' + (err && err.message ? err.message : String(err)));
+      throw err;
+    }
   }
 
   // ── URL builders ─────────────────────────────────────────────────────────────
@@ -734,11 +783,11 @@
     items.forEach(item => {
       listEl.appendChild(_makeItemCard(item, 'fav', async () => {
         await _removeFavorite(item.url);
-        _renderFavorites();
-        _refreshFavsBadge();
+        await _renderFavorites();
+        await _refreshFavsBadge();
       }));
     });
-    _refreshFavsBadge();
+    await _refreshFavsBadge();
   }
 
   async function _refreshFavsBadge() {
@@ -763,7 +812,7 @@
     items.forEach(item => {
       listEl.appendChild(_makeItemCard(item, 'recent', async () => {
         await _addFavorite({ label: item.query, url: item.url, domain: item.domain });
-        _refreshFavsBadge();
+        await _refreshFavsBadge();
       }));
     });
   }
@@ -782,7 +831,7 @@
     items.forEach(item => {
       listEl.appendChild(_makeItemCard(item, 'opened', async () => {
         await _addFavorite({ label: item.label || item.url, url: item.url, domain: item.domain || '' });
-        _refreshFavsBadge();
+        await _refreshFavsBadge();
       }));
     });
   }
@@ -819,7 +868,15 @@
     body.addEventListener('click',   () => _openUrl(item.url));
     body.addEventListener('keydown', e => { if (e.key === 'Enter') _openUrl(item.url); });
     li.querySelector('.js-open').addEventListener('click', e => { e.stopPropagation(); _openUrl(item.url); });
-    li.querySelector('.js-star').addEventListener('click', e => { e.stopPropagation(); actionFn(); });
+    li.querySelector('.js-star').addEventListener('click', async e => {
+      e.stopPropagation();
+      try {
+        await actionFn();
+      } catch (err) {
+        app()?.addLog?.('error', PLUGIN_ID, 'List action failed: ' + (err && err.message ? err.message : String(err)));
+        app()?.showToast?.('Unable to update saved documentation items. Please try again.', 'error', 'Apptio Docs Finder');
+      }
+    });
 
     return li;
   }
@@ -941,8 +998,13 @@
     const domain = _activeDomain.charAt(0).toUpperCase() + _activeDomain.slice(1);
     const entry  = { query, domain, category: src ? src.label : '', url: result.url };
 
-    if (_settings.saveSearchHistory) await _saveRecentSearch(entry);
-    if (_settings.saveOpenHistory)   await _saveRecentlyOpened({ label: query + ' - ' + (src ? src.label : domain), url: result.url, domain });
+    try {
+      if (_settings.saveSearchHistory) await _saveRecentSearch(entry);
+      if (_settings.saveOpenHistory)   await _saveRecentlyOpened({ label: query + ' - ' + (src ? src.label : domain), url: result.url, domain });
+    } catch (err) {
+      app()?.addLog?.('error', PLUGIN_ID, 'Search history save failed: ' + (err && err.message ? err.message : String(err)));
+      app()?.showToast?.('Search opened, but history could not be saved.', 'warning', 'Apptio Docs Finder');
+    }
 
     app()?.addLog?.('info', PLUGIN_ID, 'Searched IBM Docs: "' + query + '" - ' + domain + (src ? ' / ' + src.label : ''));
     _openUrl(result.url);
@@ -1006,10 +1068,15 @@
         const src    = _selectedSource();
         const result = _buildUrlSafe(query, src ? src.scope : '', _activeDomain);
         const domain = _activeDomain.charAt(0).toUpperCase() + _activeDomain.slice(1);
-        await _addFavorite({ label: query + ' - ' + (src ? src.label : domain), url: result.url, query, domain });
-        favSearchBtn.textContent = 'Saved';
-        setTimeout(() => { favSearchBtn.textContent = 'Save'; }, 1000);
-        _refreshFavsBadge();
+        try {
+          await _addFavorite({ label: query + ' - ' + (src ? src.label : domain), url: result.url, query, domain });
+          favSearchBtn.textContent = 'Saved';
+          setTimeout(() => { favSearchBtn.textContent = 'Save'; }, 1000);
+          await _refreshFavsBadge();
+        } catch (err) {
+          app()?.addLog?.('error', PLUGIN_ID, 'Save favorite failed: ' + (err && err.message ? err.message : String(err)));
+          app()?.showToast?.('Unable to save this documentation search to favorites.', 'error', 'Apptio Docs Finder');
+        }
       });
     }
 
@@ -1035,10 +1102,14 @@
     if (clearFavsBtn) {
       clearFavsBtn.addEventListener('click', async () => {
         if (!confirm('Remove all favorites?')) return;
-        await _clearFavorites();
-        _renderFavorites();
-        _refreshFavsBadge();
-        app()?.addLog?.('info', PLUGIN_ID, 'All favorites cleared by user');
+        try {
+          await _clearFavorites();
+          await _renderFavorites();
+          app()?.addLog?.('info', PLUGIN_ID, 'All favorites cleared by user');
+        } catch (err) {
+          app()?.addLog?.('error', PLUGIN_ID, 'Clear favorites failed: ' + (err && err.message ? err.message : String(err)));
+          app()?.showToast?.('Unable to clear favorites.', 'error', 'Apptio Docs Finder');
+        }
       });
     }
 
@@ -1047,14 +1118,19 @@
     if (clearRecentBtn) {
       clearRecentBtn.addEventListener('click', async () => {
         if (!confirm('Clear all recent searches?')) return;
-        await _clearRecent();
-        const listEl = _$('adf-recent-list');
-        const emptyEl = _$('adf-recent-empty');
-        if (listEl) listEl.innerHTML = '';
-        if (emptyEl) emptyEl.hidden = false;
-        const countEl = _$('adf-recent-count');
-        if (countEl) countEl.textContent = '';
-        app()?.addLog?.('info', PLUGIN_ID, 'Recent searches cleared by user');
+        try {
+          await _clearRecent();
+          const listEl = _$('adf-recent-list');
+          const emptyEl = _$('adf-recent-empty');
+          if (listEl) listEl.innerHTML = '';
+          if (emptyEl) emptyEl.hidden = false;
+          const countEl = _$('adf-recent-count');
+          if (countEl) countEl.textContent = '';
+          app()?.addLog?.('info', PLUGIN_ID, 'Recent searches cleared by user');
+        } catch (err) {
+          app()?.addLog?.('error', PLUGIN_ID, 'Clear recent searches failed: ' + (err && err.message ? err.message : String(err)));
+          app()?.showToast?.('Unable to clear recent searches.', 'error', 'Apptio Docs Finder');
+        }
       });
     }
 
@@ -1063,14 +1139,19 @@
     if (clearOpenedBtn) {
       clearOpenedBtn.addEventListener('click', async () => {
         if (!confirm('Clear all opened pages history?')) return;
-        await _clearRecentlyOpened();
-        const listEl = _$('adf-opened-list');
-        const emptyEl = _$('adf-opened-empty');
-        if (listEl) listEl.innerHTML = '';
-        if (emptyEl) emptyEl.hidden = false;
-        const countEl = _$('adf-opened-count');
-        if (countEl) countEl.textContent = '';
-        app()?.addLog?.('info', PLUGIN_ID, 'Opened pages cleared by user');
+        try {
+          await _clearRecentlyOpened();
+          const listEl = _$('adf-opened-list');
+          const emptyEl = _$('adf-opened-empty');
+          if (listEl) listEl.innerHTML = '';
+          if (emptyEl) emptyEl.hidden = false;
+          const countEl = _$('adf-opened-count');
+          if (countEl) countEl.textContent = '';
+          app()?.addLog?.('info', PLUGIN_ID, 'Opened pages cleared by user');
+        } catch (err) {
+          app()?.addLog?.('error', PLUGIN_ID, 'Clear opened pages failed: ' + (err && err.message ? err.message : String(err)));
+          app()?.showToast?.('Unable to clear opened pages history.', 'error', 'Apptio Docs Finder');
+        }
       });
     }
 
@@ -1079,9 +1160,12 @@
     if (refreshStatusBtn) {
       refreshStatusBtn.addEventListener('click', async () => {
         refreshStatusBtn.disabled = true;
-        await _doRefresh(_$('adf-index-status-msg'));
-        await _renderStatus();
-        refreshStatusBtn.disabled = false;
+        try {
+          await _doRefresh(_$('adf-index-status-msg'));
+          await _renderStatus();
+        } finally {
+          refreshStatusBtn.disabled = false;
+        }
       });
     }
 
@@ -1093,27 +1177,46 @@
 
     if (backSourcesBtn) {
       backSourcesBtn.addEventListener('click', async () => {
-        await _flushSourcesList();
-        _sources = await _getSources();
-        _renderSourceSelect();
-        _closeOverlay();
+        try {
+          await _flushSourcesList();
+          _sources = await _getSources();
+          _renderSourceSelect();
+          _closeOverlay();
+        } catch (err) {
+          app()?.addLog?.('error', PLUGIN_ID, 'Save sources failed: ' + (err && err.message ? err.message : String(err)));
+          app()?.showToast?.('Unable to save documentation sources.', 'error', 'Apptio Docs Finder');
+        }
       });
     }
     if (resetSourcesBtn) {
       resetSourcesBtn.addEventListener('click', async () => {
         if (!confirm('Reset all sources to defaults?')) return;
-        await _resetSources();
-        await _resetQuickLinks();
-        _sources    = await _getSources();
-        _quickLinks = await _getQuickLinks();
-        _renderSourcesList();
-        _renderSourceSelect();
-        _renderQuickLinks();
-        _setMsg(_$('adf-refresh-status'), 'Reset to defaults', 'ok');
-        app()?.addLog?.('info', PLUGIN_ID, 'Documentation sources reset to defaults by user');
+        try {
+          await _resetSources();
+          await _resetQuickLinks();
+          _sources    = await _getSources();
+          _quickLinks = await _getQuickLinks();
+          _renderSourcesList();
+          _renderSourceSelect();
+          _renderQuickLinks();
+          _setMsg(_$('adf-refresh-status'), 'Reset to defaults', 'ok');
+          app()?.addLog?.('info', PLUGIN_ID, 'Documentation sources reset to defaults by user');
+        } catch (err) {
+          app()?.addLog?.('error', PLUGIN_ID, 'Reset documentation sources failed: ' + (err && err.message ? err.message : String(err)));
+          app()?.showToast?.('Unable to reset documentation sources.', 'error', 'Apptio Docs Finder');
+        }
       });
     }
-    if (refreshCatsBtn) refreshCatsBtn.addEventListener('click', () => _doRefresh(_$('adf-refresh-status')));
+    if (refreshCatsBtn) {
+      refreshCatsBtn.addEventListener('click', async () => {
+        try {
+          await _doRefresh(_$('adf-refresh-status'));
+        } catch (err) {
+          app()?.addLog?.('error', PLUGIN_ID, 'Refresh categories failed: ' + (err && err.message ? err.message : String(err)));
+          app()?.showToast?.('Unable to refresh documentation sources.', 'error', 'Apptio Docs Finder');
+        }
+      });
+    }
     if (addSourceBtn) {
       addSourceBtn.addEventListener('click', () => {
         _appendSourceRow({ id: 'new-' + Date.now(), domain: 'apptio', label: '', scope: '', hint: '' });
@@ -1190,31 +1293,44 @@
     const container = document.getElementById('adf-docs-container');
     if (!container) return;
 
-    // Run storage migration once (idempotent)
-    await _migrateStorage();
-
-    // Load plugin settings
-    _settings = await _getSettings();
-
-    if (!_rendered) {
-      // Load sources/quick-links from storage (falls back to DEFAULT_SOURCES /
-      // DEFAULT_QUICK_LINKS automatically when storage is empty - no live fetch
-      // required before the main UI can appear).
-      [_sources, _quickLinks] = await Promise.all([_getSources(), _getQuickLinks()]);
-      _renderMainUI(container);
-      _rendered = true;
-
-      // Attempt a background refresh the first time the view is opened so the
-      // category list stays current - but never block or replace the main UI.
-      const lastRefresh = await _getLastRefresh();
-      if (!lastRefresh) {
-        _doRefresh(null).catch(() => {});
+    try {
+      // Run storage migration once (idempotent)
+      try {
+        await _migrateStorage();
+        _migrationToastShown = false;
+      } catch (_) {
+        if (!_migrationToastShown) {
+          app()?.showToast?.('Apptio Docs Finder settings migration failed. Legacy data was preserved and migration will retry next session.', 'warning', 'Apptio Docs Finder');
+          _migrationToastShown = true;
+        }
       }
-    } else {
-      // Return visit - reset any open overlay, go to Search tab, refresh state.
-      if (_overlay) _closeOverlay();
-      if (_activeTab !== 'search') _showTab('search');
-      _refreshFavsBadge();
+
+      // Load plugin settings
+      _settings = await _getSettings();
+
+      if (!_rendered) {
+        // Load sources/quick-links from storage (falls back to DEFAULT_SOURCES /
+        // DEFAULT_QUICK_LINKS automatically when storage is empty - no live fetch
+        // required before the main UI can appear).
+        [_sources, _quickLinks] = await Promise.all([_getSources(), _getQuickLinks()]);
+        _renderMainUI(container);
+        _rendered = true;
+
+        // Attempt a background refresh the first time the view is opened so the
+        // category list stays current - but never block or replace the main UI.
+        const lastRefresh = await _getLastRefresh();
+        if (!lastRefresh) {
+          _doRefresh(null).catch(() => {});
+        }
+      } else {
+        // Return visit - reset any open overlay, go to Search tab, refresh state.
+        if (_overlay) _closeOverlay();
+        if (_activeTab !== 'search') _showTab('search');
+        await _refreshFavsBadge();
+      }
+    } catch (err) {
+      app()?.addLog?.('error', PLUGIN_ID, 'Plugin navigation failed: ' + (err && err.message ? err.message : String(err)));
+      app()?.showToast?.('Unable to load Apptio Documentation Finder.', 'error', 'Apptio Docs Finder');
     }
   }
 

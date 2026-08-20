@@ -491,7 +491,7 @@ All plugin logic is extracted from `dashboard.js` into self-contained modules un
 | Tab Search | `plugin-tab-search` | `com.replycators.tab-search` | 1.0.1 | Productivity |
 | Snake | `plugin-snake` | `com.replycators.snake` | 1.0.1 | Games |
 | Example Plugin | `plugin-example` | `com.replycators.example-plugin` | 1.0.2 | Template |
-| Apptio Documentation Finder | `plugin-apptio-docs-finder` | `com.replycators.apptio-docs-finder` | 1.0.2 | Productivity |
+| Apptio Documentation Finder | `plugin-apptio-docs-finder` | `com.replycators.apptio-docs-finder` | 1.0.3 | Productivity |
 | Environment Dashboards Launcher | `plugin-env-dashboards` | `com.replycators.env-dashboards` | 1.4.0 | Support |
 
 ### Plugin Source Locations

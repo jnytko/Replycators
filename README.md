@@ -64,7 +64,7 @@ For the full setup guide including the IBM Bob Execute feature, see [docs/INSTAL
 | Workspace Starter | 2.0.3 | Productivity | Launches named workspace profiles with optional tab grouping |
 | Tab Search | 1.0.1 | Productivity | Instant live search across all open browser tabs |
 | Snake | 1.0.1 | Games | Classic retro Snake game with high score persistence |
-| Apptio Documentation Finder | 1.0.2 | Productivity | IBM Docs search for Apptio products with favorites and quick links |
+| Apptio Documentation Finder | 1.0.3 | Productivity | IBM Docs search for Apptio products with favorites and quick links |
 | Environment Dashboards Launcher | 1.3.0 | Support | Launches environment-specific dashboards with favorites and recents |
 | Example Plugin | 1.0.2 | Template | Canonical reference implementation for plugin developers |
 

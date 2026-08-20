@@ -1,8 +1,9 @@
 ﻿{
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "module": "CommonJS",
     "moduleResolution": "node",
+    "baseUrl": "./src",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "strict": true,
     "noImplicitAny": true,
@@ -21,14 +22,14 @@
     "rootDir": "./src",
     "types": ["chrome"],
     "paths": {
-      "@replycators/sdk":         ["./src/sdk/index.ts"],
-      "@replycators/sdk/*":       ["./src/sdk/*"],
-      "@replycators/core/*":      ["./src/core/*"],
-      "@replycators/platform/*":  ["./src/platform/*"],
-      "./sdk":                    ["./src/sdk/index.ts"],
-      "./sdk/*":                  ["./src/sdk/*"],
-      "./platform/*":             ["./src/platform/*"],
-      "./core/*":                 ["./src/core/*"]
+      "@replycators/sdk":         ["sdk/index.ts"],
+      "@replycators/sdk/*":       ["sdk/*"],
+      "@replycators/core/*":      ["core/*"],
+      "@replycators/platform/*":  ["platform/*"],
+      "./sdk":                    ["sdk/index.ts"],
+      "./sdk/*":                  ["sdk/*"],
+      "./platform/*":             ["platform/*"],
+      "./core/*":                 ["core/*"]
     }
   },
   "include": ["src/**/*"],

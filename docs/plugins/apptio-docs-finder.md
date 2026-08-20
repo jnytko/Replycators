@@ -21,7 +21,7 @@
 | | |
 |-|-|
 | Plugin ID | `com.replycators.apptio-docs-finder` |
-| Version | 1.0.2 |
+| Version | 1.0.3 |
 | Category | Productivity |
 | Status | Active |
 | Runtime module | `plugins/apptio-docs-finder.js` |

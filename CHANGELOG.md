@@ -10,11 +10,16 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 ---
 
 ## [1.47.6] - 2026-08-21
-### Platform - Maintenance release
-**Type:** Maintenance
-**Summary:** Internal maintenance; no user-facing changes.
+### Apptio Documentation Finder - Preserve legacy data when migration verification fails (Issue #25)
+**Type:** Bug Fix
+**Summary:** The Apptio Documentation Finder's legacy `adn_*` storage migration now treats storage operations as fallible, verifies namespaced writes before removing legacy keys, and preserves legacy data for retry if migration fails. The plugin also catches storage-write failures in affected user flows so storage errors surface as controlled logs and user notifications instead of silent or uncaught failures.
 **Files changed:**
-- `manifest.json`, `package.json` - v1.47.6
+- `plugins/apptio-docs-finder.js` - make storage helpers reject on `chrome.runtime.lastError`; add `_remove()`; verify migrated writes before deleting legacy keys; keep legacy data on failure; catch newly surfaced storage failures in affected save/clear flows; plugin version 1.0.2 - 1.0.3
+- `dashboard.js` - Apptio Documentation Finder version 1.0.2 - 1.0.3
+- `dashboard.html` - Apptio Documentation Finder header version 1.0.2 - 1.0.3
+- `README.md` - Apptio Documentation Finder version 1.0.2 - 1.0.3
+- `docs/plugins/apptio-docs-finder.md` - Apptio Documentation Finder version 1.0.2 - 1.0.3
+- `AGENTS.md` - Apptio Documentation Finder inventory version 1.0.2 - 1.0.3
 **Breaking changes:** None
 **Plugin versions at this release:**
 - Salesforce Case Extractor: 4.12.4
@@ -25,7 +30,7 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 - Tab Search: 1.0.1
 - Snake: 1.0.1
 - Example Plugin: 1.0.2
-- Apptio Documentation Finder: 1.0.2
+- Apptio Documentation Finder: 1.0.3
 - Environment Dashboards Launcher: 1.4.0
 
 ---

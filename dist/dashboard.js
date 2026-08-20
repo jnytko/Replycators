@@ -1513,7 +1513,7 @@ const PLUGINS = [
   {
     id: 'com.replycators.apptio-docs-finder',
     name: 'Apptio Documentation Finder',
-    version: '1.0.2',
+    version: '1.0.3',
     description: 'Search IBM Apptio documentation instantly. Supports Apptio, Platform, Cloudability, and Targetprocess product families. Live category refresh from IBM Documentation API, favorites, recent searches, and URL previews.',
     author: 'ReplyCators Platform',
     category: 'general',
