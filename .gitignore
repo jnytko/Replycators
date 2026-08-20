@@ -91,8 +91,8 @@ node/
 Python/
 python/
 dotnet/
-sdk/
-SDK/
+/sdk/
+/SDK/
 
 # ── Bob agent workspace ───────────────────────────────────────────────────────
 # .bob/ is created by the Bob agent and should not be committed.
