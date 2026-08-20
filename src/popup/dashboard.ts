@@ -319,7 +319,7 @@ async function createPluginRow(
   const manager = PluginManager.getInstance();
   const isEnabled = manager.isEnabled(manifest.id);
   const statusClass = `rc-health--${health.status}`;
-  const tags = (manifest.tags ?? []).slice(0, 3).map(t => `<span class="rc-tag">${escapeHtml(t)}</span>`).join('');
+  const tags = (manifest.tags ?? []).slice(0, 3).map((t: string) => `<span class="rc-tag">${escapeHtml(t)}</span>`).join('');
 
   // Determine current position in saved order (fall back to registration order)
   const orderList: string[] = savedOrder.length > 0

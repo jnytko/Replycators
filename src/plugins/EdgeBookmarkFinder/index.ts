@@ -36,7 +36,7 @@ export class EdgeBookmarkFinderPlugin extends PluginBase {
       label: 'Search Bookmarks',
       description: 'Search Microsoft Edge bookmarks by title, URL, domain, or folder',
       icon: '🔖',
-      handler: (ctx) => this.handleAction('search-bookmarks', ctx),
+      handler: (ctx: ActionContext) => this.handleAction('search-bookmarks', ctx),
     });
 
     context.registerNotification({
