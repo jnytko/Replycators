@@ -251,6 +251,9 @@ export function getSemanticIconPath(semanticId: string): string {
 /** @deprecated Use getSemanticIconPath instead. */
 export const getIcon = getSemanticIconPath.bind(null);
 
+/** Alias for getSemanticIconPath — preferred readable name. */
+export const getSemanticIcon = getSemanticIconPath;
+
 /** Get all icon paths organized by category. */
 export function getAllIcons() {
   return ICON_REGISTRY;
