@@ -16,6 +16,7 @@
 - [Built-in Plugins](#built-in-plugins)
 - [Project Structure](#project-structure)
 - [Building from Source](#building-from-source)
+- [Continuous Governance Automation](#continuous-governance-automation)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [Third-Party Notices](#third-party-notices)
@@ -119,6 +120,27 @@ npm run package      # Clean + build + create ZIP artefact
 ```
 
 After editing any root-level file, reload the extension at `edge://extensions/`.
+
+---
+
+## Continuous Governance Automation
+
+Repository governance automation is implemented in GitHub Actions and uses prompts sourced directly from `docs/PROMPT-CATALOG.md`.
+
+- Orchestrator: `.github/workflows/governance-orchestrator.yml` (daily schedule and manual dispatch)
+- Stage workflows:
+  - `.github/workflows/issue-analysis.yml`
+  - `.github/workflows/repository-audit.yml`
+  - `.github/workflows/documentation-audit.yml`
+  - `.github/workflows/defect-remediation.yml`
+  - `.github/workflows/release-readiness.yml`
+- Finding processors:
+  - `.github/scripts/governance-safeguards.js`
+  - `.github/scripts/process-findings.js`
+  - `.github/scripts/prioritize-issues.js`
+- Label schema: `.github/labels.json`
+
+All findings are processed into GitHub Issues with severity, state, source, and governance labels for autonomous tracking and escalation.
 
 ---
 
