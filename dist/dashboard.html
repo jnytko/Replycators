@@ -22,7 +22,7 @@
         <img src="assets/icons/icon48.png" class="rc-sidebar__logo" alt="ReplyCators" />
         <div class="rc-sidebar__brand-text">
           <span class="rc-sidebar__name">ReplyCators</span>
-          <span class="rc-sidebar__version" id="rc-platform-version">v1.47.2</span>
+          <span class="rc-sidebar__version" id="rc-platform-version">v1.47.6</span>
         </div>
       </div>
 
@@ -470,28 +470,6 @@
               </div>
             </div>
 
-            <!-- ApptioOne Upgrade Calculator widget -->
-            <div class="rc-widget-card" data-plugin-widget="com.replycators.apptioone-upgrade-calculator">
-              <div class="rc-widget-card__header">
-                <div class="rc-widget-card__title-group">
-                  <span class="rc-widget-card__title"><span data-icon="plugins.apptioOneUpgradeCalculator" aria-hidden="true" class="rc-widget-icon"></span> ApptioOne Upgrade Calc</span>
-                  <button class="rc-doc-icon" data-doc-view="plugin-apptioone-upgrade-calc"
-                          title="View ApptioOne Upgrade Calculator documentation" aria-label="View ApptioOne Upgrade Calculator documentation">
-                    <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
-                  </button>
-                </div>
-                <button class="rc-widget-card__open" data-view="plugin-apptioone-upgrade-calc"
-                        title="Open ApptioOne Upgrade Calculator" aria-label="Open ApptioOne Upgrade Calculator">
-                  <span aria-hidden="true" style="display:inline-block;font-size:12px;line-height:1;">↗</span>
-                </button>
-              </div>
-              <div class="rc-widget-card__body" style="padding:12px 14px 14px;">
-                <p class="rc-muted" style="font-size:12px;margin-bottom:10px;">Analyze Apptio upgrade requests from the TargetProcess board.</p>
-                <button id="aouc-widget-open-btn" class="rc-btn rc-btn--primary rc-btn--sm"
-                        title="Open the ApptioOne Upgrade Calculator to analyze upgrade requests">Open Analyzer</button>
-              </div>
-            </div>
-
             <!-- Example Plugin widget — DEFAULT ORDER last (always last by default) -->
             <div class="rc-widget-card" data-plugin-widget="com.replycators.example-plugin">
               <div class="rc-widget-card__header">
@@ -660,7 +638,6 @@
                 <option value="com.replycators.tab-search">Tab Search</option>
                 <option value="com.replycators.apptio-docs-finder">Apptio Documentation Finder</option>
                 <option value="com.replycators.env-dashboards">Environment Dashboards Launcher</option>
-                <option value="com.replycators.apptioone-upgrade-calculator">ApptioOne Upgrade Calculator</option>
               </select>
               <button id="activity-clear-btn" class="rc-btn rc-btn--ghost rc-btn--sm"
                       title="Clear all log entries from this session">Clear</button>
@@ -1727,22 +1704,6 @@
           </div>
         </div>
 
-        <!-- APPTIOONE UPGRADE CALCULATOR PLUGIN VIEW -->
-        <div class="rc-view rc-plugin-page" id="view-plugin-apptioone-upgrade-calc">
-          <div class="rc-plugin-header">
-            <span class="rc-plugin-header__icon"><span data-icon="plugins.apptioOneUpgradeCalculator" aria-hidden="true" class="rc-widget-icon"></span></span>
-            <span class="rc-plugin-header__name">ApptioOne Upgrade Calculator</span>
-            <span class="rc-plugin-header__version">v1.0.1</span>
-            <button class="rc-doc-icon" data-doc-view="plugin-apptioone-upgrade-calc"
-                    title="View ApptioOne Upgrade Calculator documentation" aria-label="View ApptioOne Upgrade Calculator documentation">
-              <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
-            </button>
-          </div>
-          <div class="rc-plugin-body" id="aouc-container">
-            <div class="rc-plugin-loading"><span data-icon="states.loading" aria-hidden="true"></span> Loading…</div>
-          </div>
-        </div>
-
         <!-- SNAKE PLUGIN VIEW — Retro Arcade Snake -->
         <div class="rc-view rc-plugin-page" id="view-plugin-snake">
           <!-- Standard header: icon + name + version + doc icon.
@@ -2044,7 +2005,6 @@
   <script src="plugins/example-plugin.js"></script>
   <script src="plugins/bookmark-finder.js"></script>
   <script src="plugins/apptio-upgrade-calculator.js"></script>
-  <script src="plugins/apptioone-upgrade-calculator.js"></script>
   <script src="plugins/snake.js"></script>
   <script src="plugins/workspace-starter.js"></script>
   <script src="plugins/tab-search.js"></script>

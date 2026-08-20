@@ -974,28 +974,6 @@ body.rc-sidepanel .rc-marketplace-banner {
   font-weight: 700;
 }
 
-/* ── Apptio Planning Upgrade Calculator ─────────────────────────────────────── */
-.auc-stat {
-  background: var(--rc-surface);
-  border: 1px solid var(--rc-border);
-  border-radius: 6px;
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 100px;
-}
-.auc-stat-label {
-  font-size: 10px;
-  color: var(--rc-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.auc-stat-value {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--rc-text);
-}
 .rc-text-accent {
   color: var(--rc-accent, #3b82d4);
 }
@@ -2336,6 +2314,8 @@ body.rc-sidepanel .rc-toast-container {
 
 /* ── Utility: used by delete confirm row ─────────────────────────────────── */
 .rc-hidden { display: none !important; }
+/* Plugin use: class="hidden" — hide by default, toggled by JS */
+.hidden    { display: none !important; }
 
 /* ── Danger colour variable fallback (in case theme doesn't define it) ───── */
 :root {
@@ -4535,3 +4515,5 @@ body.rc-sidepanel .edl-card-grid {
 .edl-fav-remove:focus-visible {
   outline: 2px solid var(--rc-accent, #3b82d4);
 }
+
+

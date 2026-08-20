@@ -241,7 +241,6 @@
       cloudabilityOrgId:            _BASE + 'plugins/cloudability-orgid.svg',        // Human-Resources-Hierarchy-Man (org chart = org ID)
       edgeBookmarkFinder:           _BASE + 'plugins/edge-bookmark-finder.svg',      // Bookmarks-Document
       apptioUpgradeCalculator:      _BASE + 'plugins/apptio-upgrade-calculator.svg', // Analytics-Board-Graph-Line (upgrade trend)
-      apptioOneUpgradeCalculator:   _BASE + 'plugins/data-search.svg',               // Data-Search (analyze upgrade request data)
       apptioDocsFinder:             _BASE + 'plugins/apptio-docs-finder.svg',        // Book-Search
       workspaceStarter:             _BASE + 'plugins/workspace-starter.svg',         // Launch-Go (rocket)
       tabSearch:                    _BASE + 'plugins/tab-search.svg',                // Network-Search (browser + magnifier)

@@ -1,6 +1,6 @@
 /**
  * ReplyCators — Dashboard Controller
- * v1.47.2
+ * v1.47.6
  *
  * Application shell and orchestrator for the ReplyCators plugin-based Edge extension.
  * Owns: startup coordination, session restoration, shared services (window.ReplyCatorsApp),
@@ -1538,20 +1538,6 @@ const PLUGINS = [
     navHook: 'onNavigate',
     leaveHook: 'onLeave',
   },
-  {
-    id: 'com.replycators.apptioone-upgrade-calculator',
-    name: 'ApptioOne Upgrade Calculator',
-    version: '1.0.1',
-    description: 'Analyzes Apptio Upgrade Requests from the TargetProcess board. Auto-detects the active customer environment, opens the board in background, and displays structured upgrade request data with timeline analysis.',
-    author: 'ReplyCators Platform',
-    category: 'apptione',
-    tags: ['apptio', 'upgrade', 'targetprocess', 'tp', 'analyzer'],
-    icon: 'plugins.apptioOneUpgradeCalculator',
-    viewId: 'plugin-apptioone-upgrade-calc',
-    pluginKey: 'ApptioOneUpgradeCalculator',
-    navHook: 'onNavigate',
-    leaveHook: 'onLeave',
-  },
 ];
 
 const MARKETPLACE_PLUGINS = [
@@ -1587,7 +1573,6 @@ const PLUGIN_DOC_MAP = {
   'plugin-tab-search':          'tab-search',
   'plugin-apptio-docs-finder':  'apptio-docs-finder',
   'plugin-apptio-upgrade-calc':      'apptio-calculator',
-  'plugin-apptioone-upgrade-calc':   'apptioone-upgrade-calculator',
   'plugin-edge-bookmarks':           'bookmark-finder',
   'plugin-snake':               'snake',
   'plugin-example':             'example-plugin',
@@ -1644,12 +1629,11 @@ const DEFAULT_PLUGIN_ORDER = [
   'com.replycators.workspace-starter',              // #5
   'com.replycators.tab-search',                     // #6
   'com.replycators.edge-bookmark-finder',           // #7
-  // #8 - #9: enterprise utilities
+  // #8: enterprise utilities
   'com.replycators.apptio-planning-upgrade-calculator', // #8
-  'com.replycators.apptioone-upgrade-calculator',       // #9
-  // #10 - #11: games and reference
-  'com.replycators.snake',                          // #10
-  'com.replycators.example-plugin',                 // #11
+  // #9 - #10: games and reference
+  'com.replycators.snake',                          // #9
+  'com.replycators.example-plugin',                 // #10
 ];
 
 // Dashboard widget display order — array of plugin IDs.
@@ -2564,15 +2548,15 @@ async function loadPreflightChecks() {
 
   const startMs = Date.now();
 
-  const SF_ID  = 'com.replycators.salesforce-extractor';
-  const CLD_ID = 'com.replycators.cloudability-orgid';
-  const ADF_ID = 'com.replycators.apptio-docs-finder';
-  const BM_ID  = 'com.replycators.edge-bookmark-finder';
+  const SF_ID   = 'com.replycators.salesforce-extractor';
+  const CLD_ID  = 'com.replycators.cloudability-orgid';
+  const ADF_ID  = 'com.replycators.apptio-docs-finder';
+  const BM_ID   = 'com.replycators.edge-bookmark-finder';
 
-  const sfEnabled  = pluginStates[SF_ID]?.enabled  !== false;
-  const cldEnabled = pluginStates[CLD_ID]?.enabled !== false;
-  const adfEnabled = pluginStates[ADF_ID]?.enabled !== false;
-  const bmEnabled  = pluginStates[BM_ID]?.enabled  !== false;
+  const sfEnabled   = pluginStates[SF_ID]?.enabled   !== false;
+  const cldEnabled  = pluginStates[CLD_ID]?.enabled  !== false;
+  const adfEnabled  = pluginStates[ADF_ID]?.enabled  !== false;
+  const bmEnabled   = pluginStates[BM_ID]?.enabled   !== false;
 
   const LOCAL_QUOTA = chrome.storage.local.QUOTA_BYTES; // 5,242,880
 
@@ -4817,7 +4801,6 @@ document.addEventListener('DOMContentLoaded', () => {
     _safeInit('TabSearch',                 () => window.ReplyCatorsPlugins?.TabSearch?.init?.());
     _safeInit('ApptioDocsFinder',             () => window.ReplyCatorsPlugins?.ApptioDocsFinder?.init?.());
     _safeInit('EnvDashboards',                () => window.ReplyCatorsPlugins?.EnvDashboards?.init?.());
-    _safeInit('ApptioOneUpgradeCalculator',   () => window.ReplyCatorsPlugins?.ApptioOneUpgradeCalculator?.init?.());
     _safeInit('BackupRestore',                () => window.ReplyCatorsPlugins?.BackupRestore?.init?.());
     _safeInit('Marketplace',               () => window.ReplyCatorsPlugins?.Marketplace?.render?.());
 

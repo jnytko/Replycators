@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ReplyCators",
   "short_name": "ReplyCators",
-  "version": "1.47.2",
+  "version": "1.47.6",
   "description": "A plugin-based platform for intelligent reply creation and data extraction across enterprise tools.",
   "author": "ReplyCators Platform Team",
 
@@ -49,7 +49,6 @@
     "https://*.lightning.force.com/*",
     "https://*.apptio.com/*",
     "https://*.apps.papt.to/*",
-    "https://apptioupgrades.tpondemand.com/*",
     "https://community.ibm.com/*",
     "https://www.ibm.com/*"
   ],
@@ -79,13 +78,6 @@
       ],
       "js": ["plugins/cloudability/content/cloudability-detector.js"],
       "run_at": "document_end"
-    },
-    {
-      "matches": [
-        "https://apptioupgrades.tpondemand.com/*"
-      ],
-      "js": ["plugins/apptioone-upgrade-calculator/content/tp-content.js"],
-      "run_at": "document_idle"
     }
   ],
 
@@ -93,8 +85,6 @@
     {
       "resources": [
         "plugins/apptio-upgrade-calculator/apptio-schedule.json",
-        "plugins/apptioone-upgrade-calculator/content/tp-content.js",
-        "plugins/apptioone-upgrade-calculator/content/env-content.js",
         "assets/icons/*.png",
         "assets/icons/streamline-ultimate-colors-free/**/*.svg"
       ],

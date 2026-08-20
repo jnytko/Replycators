@@ -60,7 +60,7 @@
 | Property | Value |
 |----------|-------|
 | Working directory | `[root]\WatsonX\ReplyCators\` |
-| Extension version | **1.47.1** |
+| Extension version | **1.47.6** |
 | Release status | **Production** |
 
 ReplyCators is a plugin-hosting Microsoft Edge extension (Manifest V3). A single dashboard UI hosts multiple plugins. The platform provides shared navigation, settings, storage, notifications, logging, and plugin lifecycle management. Plugins provide business functionality.
@@ -361,7 +361,6 @@ All sub-views inside one feature area must share layout, interaction model, visu
 | Apptio Docs Finder last refresh | `chrome.storage.local` | `rc:plugin:com.replycators.apptio-docs-finder:last-refresh` |
 | Apptio Docs Finder diagnostics | `chrome.storage.local` | `rc:plugin:com.replycators.apptio-docs-finder:diag` |
 | Environment Dashboards state | `chrome.storage.local` | `rc:plugin:com.replycators.env-dashboards:state` |
-| ApptioOne Upgrade Calculator selections | `chrome.storage.local` | `rc:plugin:com.replycators.apptioone-upgrade-calculator:last-calc` |
 | Salesforce prompts | `chrome.storage.local` | `rc:plugin:com.replycators.salesforce-extractor:prompts` |
 | Salesforce last download | `chrome.storage.local` | `rc:plugin:com.replycators.salesforce-extractor:last-download` |
 | Salesforce selected prompt | `chrome.storage.local` | `rc:plugin:com.replycators.salesforce-extractor:selected-prompt` |
@@ -494,7 +493,6 @@ All plugin logic is extracted from `dashboard.js` into self-contained modules un
 | Example Plugin | `plugin-example` | `com.replycators.example-plugin` | 1.0.2 | Template |
 | Apptio Documentation Finder | `plugin-apptio-docs-finder` | `com.replycators.apptio-docs-finder` | 1.0.2 | Productivity |
 | Environment Dashboards Launcher | `plugin-env-dashboards` | `com.replycators.env-dashboards` | 1.4.0 | Support |
-| ApptioOne Upgrade Calculator | `plugin-apptioone-upgrade-calc` | `com.replycators.apptioone-upgrade-calculator` | 1.0.1 | ApptioOne |
 
 ### Plugin Source Locations
 
@@ -510,7 +508,6 @@ All plugin logic is extracted from `dashboard.js` into self-contained modules un
 | Example Plugin | `src/plugins/ExamplePlugin/` | None | None | `plugins/example-plugin.js` |
 | Apptio Docs Finder | None | None | None | `plugins/apptio-docs-finder.js` |
 | Environment Dashboards | None | None | None | `plugins/env-dashboards.js` |
-| ApptioOne Upgrade Calculator | None | `plugins/apptioone-upgrade-calculator/content/tp-content.js`, `plugins/apptioone-upgrade-calculator/content/env-content.js` | None | `plugins/apptioone-upgrade-calculator.js` |
 
 ### Plugin Lifecycle
 
@@ -625,7 +622,6 @@ interface WorkspaceStarterData {
 | `rc:plugin:com.replycators.apptio-docs-finder:last-refresh` | ISO timestamp |
 | `rc:plugin:com.replycators.apptio-docs-finder:diag` | Last refresh diagnostic record |
 | `rc:plugin:com.replycators.env-dashboards:state` | `{ lastEnv, favorites, recents }` |
-| `rc:plugin:com.replycators.apptioone-upgrade-calculator:last-calc` | User search and selection cache |
 
 ### Storage Migration Rules
 
@@ -728,7 +724,6 @@ User clicks icon -> Chrome loads dashboard.html (root)
 | `view-plugin-snake` | `plugin-snake` | Snake game |
 | `view-plugin-apptio-docs-finder` | `plugin-apptio-docs-finder` | Apptio Documentation Finder |
 | `view-plugin-env-dashboards` | `plugin-env-dashboards` | Environment Dashboards Launcher |
-| `view-plugin-apptioone-upgrade-calc` | `plugin-apptioone-upgrade-calc` | ApptioOne Upgrade Calculator |
 
 > Compat redirects: `navigateTo('diagnostics')` -> `maintenance` (Diagnostics tab); `navigateTo('backup-restore')` -> `maintenance` (Backup & Restore tab).
 
@@ -1565,7 +1560,6 @@ Complete record: `docs/TECH-DEBT-RESOLVED.md`
 | `docs/plugins/marketplace.md` | Marketplace |
 | `docs/plugins/apptio-docs-finder.md` | Apptio Documentation Finder |
 | `docs/plugins/backup-restore.md` | Backup & Restore |
-| `docs/plugins/apptioone-upgrade-calculator.md` | ApptioOne Upgrade Calculator |
 
 ### User Documentation (In-Extension)
 
