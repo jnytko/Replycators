@@ -34,15 +34,14 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install axios dotenv
+        run: npm install axios
 
       - name: Run sequential analysis on auto-fix issues
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |
-          node .github/scripts/analyze-issues.js
+        run: node .github/scripts/analyze-issues.js
 
   remediate-issues:
     name: Process and Resolve Open Issues
@@ -62,7 +61,6 @@ jobs:
       - run: |
           set -euo pipefail
           
-          # Fetch issues and process them sequentially
           ISSUES_JSON=$(gh issue list --state open --label "auto-fix" --limit 10 --json number,title,body,author --sort created)
           ISSUE_COUNT=$(echo "$ISSUES_JSON" | jq '. | length')
           
@@ -73,7 +71,6 @@ jobs:
           
           echo "Found $ISSUE_COUNT issue(s) to process."
           
-          # Process each issue sequentially, not in a subshell
           FAILED_ISSUES=()
           PROCESSED_ISSUES=()
           
@@ -87,22 +84,18 @@ jobs:
             echo "Processing Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE}"
             echo "=========================================="
             
-            # Ensure we're on the default branch before creating a new branch
             git checkout "${{ github.event.repository.default_branch }}" || {
               echo "ERROR: Failed to checkout default branch for issue #${ISSUE_NUMBER}"
               FAILED_ISSUES+=("$ISSUE_NUMBER")
               continue
             }
             
-            # Clean up any leftover branches from previous failures
             git branch -D "$BRANCH_NAME" 2>/dev/null || true
             
-            # Assign the issue to github-actions bot
-            gh issue edit "$ISSUE_NUMBER" --add-assignee "app/github-actions" || {
-              echo "WARNING: Could not assign issue #${ISSUE_NUMBER}, but continuing..."
+            gh issue edit "$ISSUE_NUMBER" --add-assignee "github-actions" || {
+              echo "WARNING: Could not assign issue #${ISSUE_NUMBER}, continuing..."
             }
             
-            # Create and checkout feature branch
             if ! git checkout -b "$BRANCH_NAME" "origin/${{ github.event.repository.default_branch }}"; then
               echo "ERROR: Failed to create branch for issue #${ISSUE_NUMBER}"
               FAILED_ISSUES+=("$ISSUE_NUMBER")
@@ -110,20 +103,10 @@ jobs:
               continue
             fi
             
-            # Run linting fixes if package.json exists
             if [ -f "package.json" ]; then
-              echo "Running npm ci..."
-              npm ci || {
-                echo "WARNING: npm ci failed, attempting to continue..."
-              }
-              
-              echo "Running lint:fix..."
-              npm run lint:fix || {
-                echo "WARNING: npm run lint:fix failed, attempting to continue..."
-              }
+              npm ci || true
             fi
             
-            # Check if there are actual changes
             if git diff --quiet; then
               echo "No changes detected for issue #${ISSUE_NUMBER}. Skipping."
               git checkout "${{ github.event.repository.default_branch }}" || true
@@ -132,7 +115,6 @@ jobs:
               continue
             fi
             
-            # Run tests if they exist
             if [ -f "package.json" ] && grep -q '"test"' package.json; then
               echo "Running tests for issue #${ISSUE_NUMBER}..."
               if ! npm test; then
@@ -145,7 +127,6 @@ jobs:
               fi
             fi
             
-            # Commit changes
             git add -A
             git commit -m "fix: automated resolution for issue #${ISSUE_NUMBER}" || {
               echo "ERROR: Failed to commit changes for issue #${ISSUE_NUMBER}"
@@ -156,7 +137,6 @@ jobs:
               continue
             }
             
-            # Push changes and close issue (if not a dry run)
             if [ "${{ github.event.inputs.dry_run }}" != "true" ]; then
               if git push origin "$BRANCH_NAME"; then
                 if gh issue close "$ISSUE_NUMBER" --reason "completed"; then
@@ -175,13 +155,11 @@ jobs:
               PROCESSED_ISSUES+=("$ISSUE_NUMBER (dry run)")
             fi
             
-            # Cleanup
             git checkout "${{ github.event.repository.default_branch }}" || true
             git branch -D "$BRANCH_NAME" || true
             
           done < <(echo "$ISSUES_JSON" | jq -c '.[]')
           
-          # Summary
           echo ""
           echo "=========================================="
           echo "WORKFLOW SUMMARY"
