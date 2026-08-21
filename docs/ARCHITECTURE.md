@@ -183,7 +183,7 @@ The feedback workflow uses **no backend or direct email transport**.
 | Cloudability OrgID | 4.0.5 | Background enrichment service. Resolves OrgID via proactive push (MAIN-world XHR intercept) or pull (SPA navigation). 24h TTL cache, exponential retry. No-erase policy on failure. |
 | Edge Bookmark Finder | 1.0.3 | Searches Microsoft Edge bookmarks. Recursive scan, real-time multi-word search, domain analytics, duplicate detection. |
 | Apptio Planning Upgrade Calculator | 1.0.3 | Calculates upgrade dates. Dynamic release discovery via IBM Community. Three-tier retrieval: live fetch, 24h cache, bundled fallback. |
-| Workspace Starter | 2.0.3 | Named workspace profile launcher. Profile CRUD, favorites, categories, recents, tab grouping, import/export. |
+| Workspace Starter | 2.0.4 | Named workspace profile launcher. Profile CRUD, favorites, categories, recents, tab grouping, import/export. |
 | Tab Search | 1.0.1 | Instant browser tab search. Live query, search, sort, group-by-domain, duplicate detection, per-tab actions. No persistent storage. |
 | Snake | 1.0.2 | Classic retro Snake game. Plugin-owned rendering and high score persistence. High score notification on new record. |
 | Example Plugin | 1.0.2 | Canonical reference implementation. Demonstrates complete plugin lifecycle. |

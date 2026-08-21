@@ -228,7 +228,7 @@
 
   // ── Launch profile ─────────────────────────────────────────────────────────
 
-  function wsLaunchProfile(id) {
+  async function wsLaunchProfile(id) {
     const profile = wsProfiles.find(p => p.id === id);
     if (!profile) {
       app().addNotification('Workspace Starter', 'Profile not found.', 'error', PLUGIN_ID);
@@ -241,40 +241,109 @@
 
     const mode = profile.launchMode || 'tab-group';
 
-    if (mode === 'tab-group') {
-      // Create all tabs then group them
-      const createTabPromises = profile.urls.map(url =>
-        new Promise(resolve =>
-          chrome.tabs.create({ url, active: false }, tab => resolve(tab))
-        )
-      );
-      Promise.all(createTabPromises).then(tabs => {
-        const tabIds = tabs.map(t => t.id);
-        if (chrome.tabGroups && chrome.tabs.group) {
-          chrome.tabs.group({ tabIds }, groupId => {
-            if (!chrome.runtime.lastError && groupId !== undefined) {
-              chrome.tabGroups.update(groupId, { title: profile.name, collapsed: false });
-            }
-          });
-        }
-        // Bring focus to first tab
-        chrome.tabs.update(tabIds[0], { active: true });
-      });
-    } else {
-      // Plain tabs - open all, focus the first
-      profile.urls.forEach((url, i) => {
-        chrome.tabs.create({ url, active: i === 0 });
+    function createTabSafe(url, active) {
+      return new Promise(resolve => {
+        chrome.tabs.create({ url, active }, tab => {
+          const err = chrome.runtime.lastError;
+          if (err || !tab || typeof tab.id !== 'number') {
+            app().addLog(
+              'warn',
+              PLUGIN_ID,
+              'Workspace launch tab create failed for "' + profile.name + '" [' + url + ']: ' + (err ? err.message : 'null tab')
+            );
+            resolve(null);
+            return;
+          }
+          resolve(tab);
+        });
       });
     }
+
+    function groupTabsSafe(tabIds) {
+      if (mode !== 'tab-group' || !chrome.tabGroups || !chrome.tabs.group || tabIds.length === 0) {
+        return Promise.resolve();
+      }
+      return new Promise(resolve => {
+        chrome.tabs.group({ tabIds }, groupId => {
+          const groupErr = chrome.runtime.lastError;
+          if (groupErr || groupId === undefined) {
+            app().addLog(
+              'warn',
+              PLUGIN_ID,
+              'Workspace launch tab group failed for "' + profile.name + '": ' + (groupErr ? groupErr.message : 'invalid group ID')
+            );
+            resolve();
+            return;
+          }
+          chrome.tabGroups.update(groupId, { title: profile.name, collapsed: false }, () => {
+            const updateErr = chrome.runtime.lastError;
+            if (updateErr) {
+              app().addLog(
+                'warn',
+                PLUGIN_ID,
+                'Workspace launch tab group update failed for "' + profile.name + '": ' + updateErr.message
+              );
+            }
+            resolve();
+          });
+        });
+      });
+    }
+
+    function focusTabSafe(tabId) {
+      return new Promise(resolve => {
+        chrome.tabs.update(tabId, { active: true }, () => {
+          const err = chrome.runtime.lastError;
+          if (err) {
+            app().addLog('warn', PLUGIN_ID, 'Workspace launch focus failed for "' + profile.name + '": ' + err.message);
+          }
+          resolve();
+        });
+      });
+    }
+
+    const createdTabs = await Promise.all(
+      profile.urls.map((url, index) => createTabSafe(url, mode === 'tabs' ? index === 0 : false))
+    );
+    const openedTabs = createdTabs.filter(tab => tab && typeof tab.id === 'number');
+    const failedCount = createdTabs.length - openedTabs.length;
+
+    if (openedTabs.length === 0) {
+      app().addLog('error', PLUGIN_ID, 'Workspace launch failed for "' + profile.name + '" - 0 of ' + profile.urls.length + ' tab(s) opened');
+      app().addNotification(
+        'Workspace Launch Failed',
+        '"' + profile.name + '" - 0 tab(s) opened.',
+        'error', PLUGIN_ID
+      );
+      return;
+    }
+
+    const tabIds = openedTabs.map(tab => tab.id);
+    await groupTabsSafe(tabIds);
+    await focusTabSafe(tabIds[0]);
 
     wsSaveLastLaunched(id);
     wsPushRecent(id);
     wsUpdateWidget();
 
-    app().addLog('info', PLUGIN_ID, 'Launched profile "' + profile.name + '" (' + profile.urls.length + ' URL(s), mode: ' + mode + ')');
+    if (failedCount > 0) {
+      app().addLog(
+        'warn',
+        PLUGIN_ID,
+        'Workspace launch partially completed for "' + profile.name + '" (' + openedTabs.length + ' opened, ' + failedCount + ' failed, mode: ' + mode + ')'
+      );
+      app().addNotification(
+        'Workspace Partially Launched',
+        '"' + profile.name + '" - ' + openedTabs.length + ' tab(s) opened, ' + failedCount + ' failed.',
+        'warning', PLUGIN_ID
+      );
+      return;
+    }
+
+    app().addLog('info', PLUGIN_ID, 'Launched profile "' + profile.name + '" (' + openedTabs.length + ' URL(s), mode: ' + mode + ')');
     app().addNotification(
       'Workspace Launched',
-      '"' + profile.name + '" - ' + profile.urls.length + ' tab(s) opened.',
+      '"' + profile.name + '" - ' + openedTabs.length + ' tab(s) opened.',
       'success', PLUGIN_ID
     );
   }

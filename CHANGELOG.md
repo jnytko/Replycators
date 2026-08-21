@@ -9,6 +9,34 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.49.6] - 2026-08-21
+### Workspace Starter - Defer launch success until tab creation completes
+**Type:** Bug Fix
+**Summary:** Fixed Workspace Starter so it records launch success only after Chrome tab-creation callbacks complete. Full failures now leave recents and last-launched untouched, partial failures show warning feedback with opened/failed counts, and each failed tab creation is logged for diagnostics.
+**Files changed:**
+- `plugins/workspace-starter.js` - Reworked `wsLaunchProfile()` to await tab creation callbacks, guard null/invalid tabs, group only successful tabs, and commit success state only after verified opens; plugin version 2.0.3 - 2.0.4
+- `dashboard.js` - Workspace Starter version 2.0.3 - 2.0.4; platform v1.49.5 - v1.49.6
+- `dashboard.html` - Platform version display v1.49.5 - v1.49.6; Workspace Starter header version 2.0.3 - 2.0.4
+- `manifest.json`, `package.json` - Platform version 1.49.5 - 1.49.6
+- `README.md`, `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/plugins/workspace-starter.md`, `plugins/documentation.js` - Updated Workspace Starter versions and launch-behavior documentation
+- `dist/manifest.json`, `dist/package.json`, `dist/dashboard.html`, `dist/dashboard.js`, `dist/plugins/workspace-starter.js` - Mirror of root after sync
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.3
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.4
+- Tab Search: 1.0.1
+- Snake: 1.0.4
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
 ## [1.49.5] - 2026-08-25
 ### Snake - Scope hotkeys away from focused controls
 **Type:** Bug Fix

@@ -2,7 +2,7 @@
 
 > A plugin-based Microsoft Edge extension platform for intelligent reply creation and data extraction across enterprise tools.
 
-[![Version](https://img.shields.io/badge/version-1.49.5-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.49.6-blue.svg)](CHANGELOG.md)
 [![Manifest](https://img.shields.io/badge/manifest-v3-green.svg)](manifest.json)
 [![Platform](https://img.shields.io/badge/platform-Microsoft%20Edge-0078D4.svg)](https://microsoftedge.microsoft.com)
 [![License: Icons](https://img.shields.io/badge/icons-CC%20BY%204.0-lightgrey.svg)](ICON-LICENSE.md)
@@ -62,7 +62,7 @@ For the full setup guide including the IBM Bob Execute feature, see [docs/INSTAL
 | Cloudability OrgID | 4.0.5 | Cloud | Automatically resolves Cloudability Organisation ID with zero user interaction |
 | Edge Bookmark Finder | 1.0.3 | Productivity | Searches Microsoft Edge bookmarks with real-time multi-word filtering |
 | Apptio Planning Upgrade Calculator | 1.0.3 | Enterprise | Calculates Apptio Planning upgrade dates with dynamic release discovery |
-| Workspace Starter | 2.0.3 | Productivity | Launches named workspace profiles with optional tab grouping |
+| Workspace Starter | 2.0.4 | Productivity | Launches named workspace profiles with optional tab grouping |
 | Tab Search | 1.0.1 | Productivity | Instant live search across all open browser tabs |
 | Snake | 1.0.4 | Games | Classic retro Snake game with high score persistence |
 | Apptio Documentation Finder | 1.0.3 | Productivity | IBM Docs search for Apptio products with favorites and quick links |
