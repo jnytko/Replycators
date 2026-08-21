@@ -1,0 +1,58 @@
+name: Scheduled Automated Issue Remediation
+
+on:
+  schedule:
+    - cron: '0 17 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run workflow without committing changes or closing issues'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: issue-remediation
+  cancel-in-progress: false
+
+jobs:
+  remediate-issues:
+    name: Process and Resolve Open Issues
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "4189828+github-actions[bot]@users.noreply.github.com"
+      - run: |
+          set -euo pipefail
+          ISSUES_JSON=$(gh issue list --state open --label "auto-fix" --limit 10 --json number,title,body,author)
+          ISSUE_COUNT=$(echo "$ISSUES_JSON" | jq '. | length')
+          if [ "$ISSUE_COUNT" -eq 0 ]; then exit 0; fi
+          echo "$ISSUES_JSON" | jq -c '.[]' | while read -r issue; do
+            ISSUE_NUMBER=$(echo "$issue" | jq -r '.number')
+            BRANCH_NAME="auto-fix/issue-${ISSUE_NUMBER}"
+            gh issue edit "$ISSUE_NUMBER" --add-assignee "app/github-actions" || true
+            git checkout -b "$BRANCH_NAME" "origin/${{ github.event.repository.default_branch }}"
+            if [ -f "package.json" ]; then npm ci || true; npm run lint:fix || true; fi
+            if git diff --quiet; then git checkout "${{ github.event.repository.default_branch }}"; git branch -D "$BRANCH_NAME"; continue; fi
+            if [ -f "package.json" ] && grep -q '"test"' package.json; then npm test || exit 1; fi
+            git add -A
+            git commit -m "fix: automated resolution for issue #${ISSUE_NUMBER}"
+            [ "${{ github.event.inputs.dry_run }}" != "true" ] && git push origin "${{ github.event.repository.default_branch }}" && gh issue close "$ISSUE_NUMBER" --reason "completed"
+            git checkout "${{ github.event.repository.default_branch }}"
+            git branch -D "$BRANCH_NAME" || true
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

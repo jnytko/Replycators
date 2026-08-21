@@ -105,8 +105,12 @@ export class DiagnosticsCenter {
   }
 
   private getStorageBytesInUse(area: 'local' | 'sync'): Promise<number> {
-    return new Promise((resolve) => {
-      chrome.storage[area].getBytesInUse(null, (bytes) => resolve(bytes));
+    return new Promise((resolve, reject) => {
+      chrome.storage[area].getBytesInUse(null, (bytes) => {
+        const error = chrome.runtime.lastError;
+        if (error) reject(new Error(error.message));
+        else resolve(bytes);
+      });
     });
   }
 }

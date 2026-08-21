@@ -68,10 +68,15 @@ export class PromptRegistry {
 
   /** Load stored prompts, seeding from built-ins if first run. */
   async load(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       chrome.storage.local.get(STORAGE_KEY, (result) => {
-        const saved = result[STORAGE_KEY] as PromptStore | undefined;
-        if (saved && saved.version === STORE_VERSION) {
+        const error = chrome.runtime.lastError;
+        if (error) {
+          reject(new Error(error.message));
+          return;
+        }
+        const saved: unknown = result[STORAGE_KEY];
+        if (isPromptStore(saved)) {
           // Merge: ensure any new built-ins that aren't in the store get added
           this.store = this.mergeBuiltins(saved);
         } else {
@@ -85,8 +90,12 @@ export class PromptRegistry {
   /** Persist current state to storage. */
   async save(): Promise<void> {
     if (!this.store) return;
-    return new Promise((resolve) => {
-      chrome.storage.local.set({ [STORAGE_KEY]: this.store }, resolve);
+    return new Promise((resolve, reject) => {
+      chrome.storage.local.set({ [STORAGE_KEY]: this.store }, () => {
+        const error = chrome.runtime.lastError;
+        if (error) reject(new Error(error.message));
+        else resolve();
+      });
     });
   }
 
@@ -216,16 +225,55 @@ export class PromptRegistry {
   }
 
   private mergeBuiltins(saved: PromptStore): PromptStore {
+    // Never mutate the storage callback object in place.
+    const merged: PromptStore = {
+      prompts: { ...saved.prompts },
+      order: [...new Set(saved.order)],
+      version: saved.version,
+    };
     // Add any built-in that is new (not yet in saved store)
     BUILTIN_PROMPTS.forEach(bp => {
-      if (!saved.prompts[bp.id]) {
-        saved.prompts[bp.id] = { ...bp };
-        saved.order.unshift(bp.id); // prepend new built-ins
+      if (!merged.prompts[bp.id]) {
+        merged.prompts[bp.id] = { ...bp };
+        merged.order.unshift(bp.id); // prepend new built-ins
       }
     });
-    return saved;
+    merged.order = merged.order.filter(id => !!merged.prompts[id]);
+    const orderedIds = new Set(merged.order);
+    for (const id of Object.keys(merged.prompts)) {
+      if (!orderedIds.has(id)) merged.order.push(id);
+    }
+    return merged;
   }
 }
 
 /** Singleton — one registry per plugin session. */
 export const promptRegistry = new PromptRegistry();
+
+function isPromptDefinition(value: unknown, expectedId: string): value is PromptDefinition {
+  if (!value || typeof value !== 'object') return false;
+  const prompt = value as Record<string, unknown>;
+  return prompt.id === expectedId && /^[a-z0-9][a-z0-9-]{0,127}$/i.test(expectedId) &&
+    typeof prompt.name === 'string' &&
+    typeof prompt.promptText === 'string' &&
+    typeof prompt.order === 'number' && Number.isFinite(prompt.order) &&
+    typeof prompt.visible === 'boolean' &&
+    typeof prompt.enabled === 'boolean' &&
+    (prompt.source === 'builtin' || prompt.source === 'custom') &&
+    (prompt.description === undefined || typeof prompt.description === 'string') &&
+    (prompt.systemText === undefined || typeof prompt.systemText === 'string') &&
+    (prompt.executionInstructions === undefined || typeof prompt.executionInstructions === 'string') &&
+    (prompt.lastModified === undefined || typeof prompt.lastModified === 'string');
+}
+
+function isPromptStore(value: unknown): value is PromptStore {
+  if (!value || typeof value !== 'object') return false;
+  const store = value as Record<string, unknown>;
+  if (store.version !== STORE_VERSION || !Array.isArray(store.order) ||
+      !store.order.every(id => typeof id === 'string') ||
+      !store.prompts || typeof store.prompts !== 'object') {
+    return false;
+  }
+  return Object.entries(store.prompts as Record<string, unknown>)
+    .every(([id, prompt]) => isPromptDefinition(prompt, id));
+}

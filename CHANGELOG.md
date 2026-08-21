@@ -3396,6 +3396,7 @@ Format follows the [Versioning Rules](AGENTS.md#versioning-rules) defined in `AG
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
+| 1.47.10 | 2026-08-21 | TypeScript scaffold static-safety hardening: storage/settings validation, async error containment, transactional plugin lifecycle state, external payload guards, corrected packaged-asset paths, and OrgID cache/concurrency fixes. |
 | 1.37.0 | 2026-08-04 | Diagnostics three-tab IA: Overview (summary + warnings + snapshot), System Checks (all dependency cards), Cache & Storage (quota + caches). First-run auto-run flag migrated to chrome.storage.local (persistent). |
 | 1.36.0 | 2026-08-03 | Maintenance Center: Diagnostics + Backup & Restore consolidated into new top-level nav destination. Notifications Center now contains only Notifications + Activity. |
 | 1.35.0 | 2026-08-03 | Icon uniqueness policy added. Example Plugin icon replaced (App-Window-Code). Copy URL button standardized to ⧉. Example Plugin disabled by default. Canonical plugin order locked. |

@@ -134,8 +134,13 @@ function bindEvents(container: HTMLElement, ctx: PluginContext): void {
 
   // Load prefs
   chrome.storage.local.get([PREFS_KEY, SCAN_KEY], result => {
-    const savedPrefs = result[PREFS_KEY] as Prefs | undefined;
-    if (savedPrefs) {
+    if (chrome.runtime.lastError) {
+      logger.error(`${PLUGIN_ID}: failed to load saved state — ${chrome.runtime.lastError.message}`);
+      void runScan();
+      return;
+    }
+    const savedPrefs: unknown = result[PREFS_KEY];
+    if (isPrefs(savedPrefs)) {
       prefs = { ...prefs, ...savedPrefs };
       searchEl.value  = prefs.lastSearch || '';
       filterEl.value  = prefs.filter || 'all';
@@ -143,8 +148,8 @@ function bindEvents(container: HTMLElement, ctx: PluginContext): void {
       optFolders.checked = prefs.includeFolders !== false;
     }
     // Use cached scan if available
-    const cachedScan = result[SCAN_KEY] as BookmarkScan | undefined;
-    if (cachedScan && cachedScan.bookmarks) {
+    const cachedScan: unknown = result[SCAN_KEY];
+    if (isBookmarkScan(cachedScan)) {
       scan = cachedScan;
       updateStats();
       renderResults();
@@ -155,7 +160,11 @@ function bindEvents(container: HTMLElement, ctx: PluginContext): void {
   });
 
   function savePrefs(): void {
-    chrome.storage.local.set({ [PREFS_KEY]: prefs });
+    chrome.storage.local.set({ [PREFS_KEY]: prefs }, () => {
+      if (chrome.runtime.lastError) {
+        logger.error(`${PLUGIN_ID}: failed to save preferences — ${chrome.runtime.lastError.message}`);
+      }
+    });
   }
 
   async function runScan(): Promise<void> {
@@ -173,7 +182,11 @@ function bindEvents(container: HTMLElement, ctx: PluginContext): void {
         return;
       }
       permError.style.display = 'none';
-      chrome.storage.local.set({ [SCAN_KEY]: scan });
+      chrome.storage.local.set({ [SCAN_KEY]: scan }, () => {
+        if (chrome.runtime.lastError) {
+          logger.error(`${PLUGIN_ID}: failed to cache scan — ${chrome.runtime.lastError.message}`);
+        }
+      });
       logger.info(`${PLUGIN_ID}: scanned ${scan.totalBookmarks} bookmarks, ${scan.totalFolders} folders`);
       updateStats();
       renderResults();
@@ -228,7 +241,7 @@ function bindEvents(container: HTMLElement, ctx: PluginContext): void {
     if (!q) {
       // No search — show all bookmarks
       results = scan.bookmarks;
-      if (filt === 'folders')    results = scan.folders as any;
+      if (filt === 'folders')    results = scan.folders;
       if (filt === 'duplicates') results = scan.bookmarks.filter(b => b.isDuplicate);
     } else {
       results = searchBookmarks(scan, q, {
@@ -254,8 +267,8 @@ function bindEvents(container: HTMLElement, ctx: PluginContext): void {
     results.slice(0, 200).forEach(item => {
       const el = document.createElement('div');
 
-      if ('url' in item) {
-        const b = item as FlatBookmark;
+      if (isFlatBookmark(item)) {
+        const b = item;
         el.style.cssText = `border-bottom:1px solid var(--rc-border);padding:7px 4px;${b.isDuplicate ? 'background:var(--rc-surface);' : ''}`;
         el.innerHTML = `
           <div style="display:flex;align-items:flex-start;gap:6px;">
@@ -276,7 +289,7 @@ function bindEvents(container: HTMLElement, ctx: PluginContext): void {
             </div>
           </div>`;
       } else {
-        const f = item as FlatFolder;
+        const f = item;
         el.style.cssText = 'border-bottom:1px solid var(--rc-border);padding:7px 4px;';
         el.innerHTML = `
           <div style="display:flex;align-items:center;gap:6px;">
@@ -304,14 +317,19 @@ function bindEvents(container: HTMLElement, ctx: PluginContext): void {
     // Bind open/copy buttons
     resultsEl.querySelectorAll<HTMLButtonElement>('.bm-open-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const url = btn.dataset.url!;
+        const url = getSafeBookmarkUrl(btn.dataset.url);
+        if (!url) {
+          setStatus('❌ This bookmark URL cannot be opened safely.', 'error');
+          return;
+        }
         chrome.tabs.create({ url, active: true });
         logger.info(`${PLUGIN_ID}: opened bookmark — ${url}`);
       });
     });
     resultsEl.querySelectorAll<HTMLButtonElement>('.bm-copy-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const url = btn.dataset.url!;
+        const url = btn.dataset.url;
+        if (!url) return;
         navigator.clipboard.writeText(url).then(() => {
           ctx.services.notifications.show({
             id: 'bm-copy-' + Date.now(),
@@ -322,6 +340,9 @@ function bindEvents(container: HTMLElement, ctx: PluginContext): void {
             pluginId: PLUGIN_ID,
           });
           logger.info(`${PLUGIN_ID}: copied URL — ${url}`);
+        }).catch(err => {
+          logger.error(`${PLUGIN_ID}: clipboard write failed`, err);
+          setStatus('❌ Could not copy the bookmark URL.', 'error');
         });
       });
     });
@@ -340,7 +361,10 @@ function bindEvents(container: HTMLElement, ctx: PluginContext): void {
       </div>`).join('');
 
     recentList.querySelectorAll<HTMLButtonElement>('.bm-recent-open').forEach(btn => {
-      btn.addEventListener('click', () => chrome.tabs.create({ url: btn.dataset.url!, active: true }));
+      btn.addEventListener('click', () => {
+        const url = getSafeBookmarkUrl(btn.dataset.url);
+        if (url) chrome.tabs.create({ url, active: true });
+      });
     });
   }
 
@@ -377,4 +401,63 @@ function bindEvents(container: HTMLElement, ctx: PluginContext): void {
     statusEl.className     = `rc-status rc-status--${type}`;
     statusEl.style.display = msg ? 'block' : 'none';
   }
+}
+
+function getSafeBookmarkUrl(value: string | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return ['http:', 'https:', 'file:', 'ftp:'].includes(url.protocol) ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+function isPrefs(value: unknown): value is Prefs {
+  if (!value || typeof value !== 'object') return false;
+  const prefs = value as Record<string, unknown>;
+  return typeof prefs.lastSearch === 'string' &&
+    typeof prefs.filter === 'string' && ['all', 'bookmarks', 'folders', 'duplicates'].includes(prefs.filter) &&
+    typeof prefs.includeUrls === 'boolean' &&
+    typeof prefs.includeFolders === 'boolean' &&
+    Array.isArray(prefs.searchHistory) && prefs.searchHistory.length <= 20 &&
+    prefs.searchHistory.every(v => typeof v === 'string');
+}
+
+function isBookmarkScan(value: unknown): value is BookmarkScan {
+  if (!value || typeof value !== 'object') return false;
+  const scan = value as Record<string, unknown>;
+  return Array.isArray(scan.bookmarks) &&
+    scan.bookmarks.every(isFlatBookmark) &&
+    Array.isArray(scan.folders) &&
+    scan.folders.every(isFlatFolder) &&
+    Array.isArray(scan.commonDomains) && scan.commonDomains.every(value => {
+      if (!value || typeof value !== 'object') return false;
+      const domain = value as Record<string, unknown>;
+      return typeof domain.domain === 'string' &&
+        typeof domain.count === 'number' && Number.isFinite(domain.count);
+    }) &&
+    Array.isArray(scan.recentBookmarks) && scan.recentBookmarks.every(isFlatBookmark) &&
+    ['totalBookmarks', 'totalFolders', 'deepestLevel', 'duplicateCount',
+      'emptyFolderCount', 'scannedAt'].every(key =>
+        typeof scan[key] === 'number' && Number.isFinite(scan[key] as number)) &&
+    typeof scan.permissionError === 'boolean';
+}
+
+function isFlatBookmark(value: unknown): value is FlatBookmark {
+  if (!value || typeof value !== 'object') return false;
+  const bookmark = value as Record<string, unknown>;
+  return ['id', 'title', 'url', 'domain', 'path'].every(key => typeof bookmark[key] === 'string') &&
+    typeof bookmark.depth === 'number' && Number.isFinite(bookmark.depth) &&
+    (bookmark.dateAdded === null ||
+      (typeof bookmark.dateAdded === 'number' && Number.isFinite(bookmark.dateAdded)));
+}
+
+function isFlatFolder(value: unknown): value is FlatFolder {
+  if (!value || typeof value !== 'object') return false;
+  const folder = value as Record<string, unknown>;
+  return ['id', 'title', 'path'].every(key => typeof folder[key] === 'string') &&
+    typeof folder.depth === 'number' && Number.isFinite(folder.depth) &&
+    typeof folder.bookmarkCount === 'number' && Number.isFinite(folder.bookmarkCount) &&
+    typeof folder.isEmpty === 'boolean';
 }

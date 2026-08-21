@@ -1,0 +1,53 @@
+name: OpenAI Governance Audit Example
+
+# Documentation example only.
+# Review before copying to .github/workflows/openai-governance-audit.yml.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: replycators-openai-governance-audit
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  architecture-audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install ephemeral CI dependencies
+        run: npm ci
+
+      - name: Run read-only OpenAI architecture audit
+        run: node .github/scripts/openai-audit.js
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_AUDIT_MODEL: gpt-5.6-terra
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA: ${{ github.sha }}
+
+      - name: Validate findings with repository safeguards
+        run: >
+          node .github/scripts/governance-safeguards.js
+          .governance/findings/openai-architecture-audit.findings.json
+          architecture
+          .governance/findings/openai-architecture-validated.json
+
+      - name: Upload audit evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: openai-governance-audit-${{ github.run_id }}
+          path: .governance/findings/
+          if-no-files-found: error

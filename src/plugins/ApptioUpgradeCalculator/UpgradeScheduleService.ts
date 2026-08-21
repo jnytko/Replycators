@@ -46,6 +46,7 @@ export const IBM_COMMUNITY_URL =
 
 const CACHE_STORAGE_KEY = 'schedule-cache';
 const DEFAULT_TTL_MS    = 24 * 60 * 60 * 1000; // 24 h
+const FALLBACK_SCHEDULE_PATH = 'plugins/apptio-upgrade-calculator/apptio-schedule.json';
 
 // ─── Version Pattern ──────────────────────────────────────────────────────────
 //
@@ -56,7 +57,8 @@ const DEFAULT_TTL_MS    = 24 * 60 * 60 * 1000; // 24 h
 // Minor part is 1–3 digits so "6.0", "6.1", "10.0" are all valid.
 // The mandatory \b word-boundaries prevent matching mid-string sequences.
 //
-const VERSION_RE = /\b([3-9]\d{0,1}\.\d{1,3})\b/;
+const VERSION_RE = /\b((?:[3-9]|[1-9]\d)\.\d{1,3})\b/;
+const VERSION_VALUE_RE = /^(?:[3-9]|[1-9]\d)\.\d{1,3}$/;
 
 // ─── Date Extraction Helpers ──────────────────────────────────────────────────
 
@@ -120,14 +122,24 @@ function extractVersion(text: string): string | null {
 
 function isValidDateStr(s: string): boolean {
   if (!s || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
-  const d = new Date(s + 'T00:00:00');
-  return !isNaN(d.getTime());
+  const [year, month, day] = s.split('-').map(Number);
+  const d = new Date(year, month - 1, day);
+  return d.getFullYear() === year && d.getMonth() === month - 1 && d.getDate() === day;
+}
+
+function isReleaseEntry(value: unknown): value is ReleaseEntry {
+  if (!value || typeof value !== 'object') return false;
+  const release = value as Record<string, unknown>;
+  return typeof release.version === 'string' && VERSION_VALUE_RE.test(release.version) &&
+    typeof release.sandboxDate === 'string' && isValidDateStr(release.sandboxDate) &&
+    typeof release.productionDate === 'string' && isValidDateStr(release.productionDate);
 }
 
 function addDaysToStr(dateStr: string, n: number): string {
   const d = new Date(dateStr + 'T00:00:00');
   d.setDate(d.getDate() + n);
-  return d.toISOString().split('T')[0];
+  // Format local calendar components; toISOString() can shift the date by timezone.
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 // ─── Parsing Strategies ───────────────────────────────────────────────────────
@@ -216,8 +228,14 @@ function deduplicateReleases(releases: ReleaseEntry[]): ReleaseEntry[] {
     if (!seen.has(r.version)) seen.set(r.version, r);
   }
   return Array.from(seen.values()).sort(
-    (a, b) => parseFloat(a.version) - parseFloat(b.version)
+    (a, b) => compareVersions(a.version, b.version)
   );
+}
+
+function compareVersions(a: string, b: string): number {
+  const [aMajor, aMinor] = a.split('.').map(Number);
+  const [bMajor, bMinor] = b.split('.').map(Number);
+  return aMajor - bMajor || aMinor - bMinor;
 }
 
 function parseReleasesFromHtml(html: string): ReleaseEntry[] {
@@ -280,16 +298,21 @@ async function loadCachedSchedule(
       logger.warn('Cache validation failed: releases array is empty');
       return null;
     }
+    if (!cached.releases.every(isReleaseEntry)) {
+      logger.warn('Cache validation failed: invalid release entry');
+      return null;
+    }
     if (!cached.lastUpdated)                   {
       logger.warn('Cache validation failed: missing lastUpdated field');
       return null;
     }
-    const ageMs = Date.now() - new Date(cached.lastUpdated).getTime();
+    const updatedAt = new Date(cached.lastUpdated).getTime();
+    const ageMs = Date.now() - updatedAt;
     if (isNaN(ageMs))                          {
       logger.warn('Cache validation failed: lastUpdated is not a valid date');
       return null;
     }
-    if (ageMs > ttlMs)                         {
+    if (ageMs < 0 || ageMs > Math.max(0, ttlMs)) {
       logger.info(`Cache expired (age ${Math.round(ageMs / 60000)} min, TTL ${Math.round(ttlMs / 60000)} min)`);
       return null;
     }
@@ -322,15 +345,20 @@ async function cacheSchedule(
  */
 async function loadLocalSchedule(logger: ILogger): Promise<Schedule> {
   try {
-    const url  = chrome.runtime.getURL('apptio-schedule.json');
+    const url  = chrome.runtime.getURL(FALLBACK_SCHEDULE_PATH);
     const resp = await fetch(url);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json() as { releases?: ReleaseEntry[]; lastUpdated?: string };
-    const releases = Array.isArray(data.releases) ? data.releases : [];
+    const data: unknown = await resp.json();
+    const record = data && typeof data === 'object' ? data as Record<string, unknown> : {};
+    const releases = Array.isArray(record.releases)
+      ? record.releases.filter(isReleaseEntry)
+      : [];
     logger.info(`Loaded ${releases.length} releases from local fallback schedule`);
     return {
       releases,
-      lastUpdated: data.lastUpdated || new Date().toISOString(),
+      lastUpdated: typeof record.lastUpdated === 'string'
+        ? record.lastUpdated
+        : new Date().toISOString(),
       source: 'local',
     };
   } catch (err) {

@@ -227,8 +227,13 @@ export class AttachmentManager {
       this.notify();
       const reader = new FileReader();
       reader.onload = () => {
-        attachment.content = reader.result as string;
-        attachment.status = 'ready';
+        if (typeof reader.result !== 'string') {
+          attachment.error = `Could not decode "${attachment.file.name}" as text.`;
+          attachment.status = 'error';
+        } else {
+          attachment.content = reader.result;
+          attachment.status = 'ready';
+        }
         this.notify();
         resolve();
       };

@@ -85,6 +85,8 @@ export class PluginLoader {
       this.loadedPlugins.set(pluginId, plugin);
       logger.info(`Plugin loaded: ${pluginId} (${loadTime}ms)`);
       EventBus.getInstance().emit(PlatformEvents.PLUGIN_LOADED, { pluginId, loadTime });
+      // initialize() leaves the plugin active, so publish the matching lifecycle event.
+      EventBus.getInstance().emit(PlatformEvents.PLUGIN_ACTIVATED, { pluginId });
 
       return plugin;
     } catch (err) {

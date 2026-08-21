@@ -51,6 +51,7 @@ This page provides a navigable index of all engineering documentation for the Re
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Common issues and fixes for all plugins and the platform |
 | [PACKAGING.md](PACKAGING.md) | Packaging, distribution, and pre-release versioning checklist |
 | [BOB-HELPER-SERVER.md](BOB-HELPER-SERVER.md) | Technical reference for `tools/bob-helper-server.js` |
+| [governance/openai/README.md](governance/openai/README.md) | Start here for the OpenAI and Codex continuous repository governance implementation kit |
 
 ---
 

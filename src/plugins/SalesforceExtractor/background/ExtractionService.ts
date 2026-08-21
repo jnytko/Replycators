@@ -11,8 +11,14 @@ export interface SalesforceExtractResult {
   contactName: string;
   subject: string;
   description: string;
+  agentDescription?: string;
+  severityLevel?: string;
+  primaryProduct?: string;
+  nextActionDatetime?: string;
+  status?: string;
+  priority?: string;
   posts: PostEntry[];
-  rawText: string;
+  rawText?: string;
   extractedAt: number;
   tabId: number;
 }
@@ -21,9 +27,40 @@ export interface PostEntry {
   author: string;
   timestamp: string;
   content: string;
+  type?: string;
 }
 
 const SF_URL_PATTERN = /salesforce\.com|lightning\.force\.com/i;
+const SF_CONTENT_SCRIPT = 'plugins/salesforce/content/sf-content.js';
+
+function isPostEntry(value: unknown): value is PostEntry {
+  if (!value || typeof value !== 'object') return false;
+  const post = value as Record<string, unknown>;
+  return typeof post.author === 'string' &&
+    typeof post.timestamp === 'string' &&
+    typeof post.content === 'string' &&
+    (post.type === undefined || typeof post.type === 'string');
+}
+
+function isExtractPayload(
+  value: unknown
+): value is Omit<SalesforceExtractResult, 'tabId' | 'extractedAt'> {
+  if (!value || typeof value !== 'object') return false;
+  const data = value as Record<string, unknown>;
+  return typeof data.caseNumber === 'string' &&
+    typeof data.accountName === 'string' &&
+    typeof data.contactName === 'string' &&
+    typeof data.subject === 'string' &&
+    typeof data.description === 'string' &&
+    (data.agentDescription === undefined || typeof data.agentDescription === 'string') &&
+    (data.severityLevel === undefined || typeof data.severityLevel === 'string') &&
+    (data.primaryProduct === undefined || typeof data.primaryProduct === 'string') &&
+    (data.nextActionDatetime === undefined || typeof data.nextActionDatetime === 'string') &&
+    (data.status === undefined || typeof data.status === 'string') &&
+    (data.priority === undefined || typeof data.priority === 'string') &&
+    (data.rawText === undefined || typeof data.rawText === 'string') &&
+    Array.isArray(data.posts) && data.posts.every(isPostEntry);
+}
 
 export class SalesforceExtractionService {
   constructor(private services: PlatformServices) {}
@@ -34,8 +71,9 @@ export class SalesforceExtractionService {
     try {
       // Inject content script (idempotent — duplicate injection is caught)
       await this.injectContentScript(tabId);
-    } catch (_) {
-      // Already injected; continue
+    } catch (err) {
+      this.services.logger.error(`Failed to inject Salesforce content script into tab ${tabId}`, err);
+      return null;
     }
 
     return new Promise<SalesforceExtractResult | null>((resolve) => {
@@ -50,6 +88,11 @@ export class SalesforceExtractionService {
           }
           if (response.result === null) {
             resolve(null); // Case number mismatch
+            return;
+          }
+          if (!isExtractPayload(response.data)) {
+            this.services.logger.error(`Invalid extraction response from tab ${tabId}`);
+            resolve(null);
             return;
           }
           resolve({ ...response.data, tabId, extractedAt: Date.now() });
@@ -81,7 +124,7 @@ export class SalesforceExtractionService {
   private async injectContentScript(tabId: number): Promise<void> {
     await chrome.scripting.executeScript({
       target: { tabId },
-      files: ['plugins/SalesforceExtractor/content/sf-content.js'],
+      files: [SF_CONTENT_SCRIPT],
     });
   }
 }

@@ -16,6 +16,7 @@
 - [Built-in Plugins](#built-in-plugins)
 - [Project Structure](#project-structure)
 - [Building from Source](#building-from-source)
+- [Continuous Governance Automation](#continuous-governance-automation)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [Third-Party Notices](#third-party-notices)
@@ -119,6 +120,23 @@ npm run package      # Clean + build + create ZIP artefact
 ```
 
 After editing any root-level file, reload the extension at `edge://extensions/`.
+
+---
+
+## Continuous Governance Automation
+
+Repository automation is deliberately limited to workflows that can run deterministically with supported GitHub Actions:
+
+- `.github/workflows/ci.yml` performs TypeScript type-checking, the production build, and an independent root-to-`dist/` synchronization check.
+- `.github/workflows/release-readiness.yml` is a manual or reusable issue-label gate that publishes a readiness artifact and can optionally comment on an issue.
+- Governance support utilities are retained for a future, explicitly configured implementation:
+  - `.github/scripts/governance-safeguards.js`
+  - `.github/scripts/process-findings.js`
+  - `.github/scripts/prioritize-issues.js`
+
+The label schema is stored in `.github/labels.json`. Automated agent-analysis stages are not currently enabled; no workflow depends on an unconfigured or unavailable agent action.
+
+For the phased OpenAI and Codex implementation plan, setup instructions, security model, data contracts, operational runbook, and copy-ready examples, start with [`docs/governance/openai/README.md`](docs/governance/openai/README.md). The starter kit is documentation-only and does not change the active extension runtime.
 
 ---
 

@@ -66,11 +66,17 @@ export class SalesforceExtractorPlugin extends PluginBase {
         const tabId = context.tabId;
         if (!tabId) return { success: false, message: 'No tab ID provided' };
         const result = await svc.extractFromTab(tabId, '');
-        return { success: true, data: result, message: 'Extraction complete' };
+        return {
+          success: result !== null,
+          data: result,
+          message: result ? 'Extraction complete' : 'Extraction failed',
+        };
       }
 
       if (actionId === 'extract-by-case-number') {
-        const caseNumber = context.pluginData?.caseNumber as string ?? '';
+        const rawCaseNumber = context.pluginData?.caseNumber;
+        const caseNumber = typeof rawCaseNumber === 'string' ? rawCaseNumber.trim() : '';
+        if (!caseNumber) return { success: false, message: 'A case number is required' };
         const result = await svc.extractByCaseNumber(caseNumber);
         return { success: !!result, data: result, message: result ? 'Case found' : 'Case not found' };
       }

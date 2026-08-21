@@ -51,6 +51,23 @@ interface DetectorResponse {
   error?: string;
 }
 
+function isOrgData(value: unknown): value is OrgData {
+  if (!value || typeof value !== 'object') return false;
+  const data = value as Record<string, unknown>;
+  return typeof data.id === 'string' && data.id.trim().length > 0 &&
+    typeof data.name === 'string' &&
+    typeof data.retrievedAt === 'number' && Number.isFinite(data.retrievedAt);
+}
+
+function isDetectorResponse(value: unknown): value is DetectorResponse {
+  if (!value || typeof value !== 'object') return false;
+  const response = value as Record<string, unknown>;
+  return typeof response.success === 'boolean' &&
+    (response.id === null || typeof response.id === 'string') &&
+    (response.name === null || typeof response.name === 'string') &&
+    (response.error === undefined || typeof response.error === 'string');
+}
+
 interface OrgIdStats {
   cacheHits: number;
   cacheMisses: number;
@@ -158,12 +175,16 @@ export class OrgIdBackgroundService {
    * @param timeoutMs  Per-attempt timeout for the detector message (default 8 s).
    * @param forceRefresh  When true, bypass the cache and always retrieve live.
    */
-  async retrieve(timeoutMs = 8000, forceRefresh = false): Promise<OrgRetrievalOutcome> {
+  async retrieve(
+    timeoutMs = 8000,
+    forceRefresh = false,
+    cacheTtlMs = DEFAULT_CACHE_TTL_MS
+  ): Promise<OrgRetrievalOutcome> {
     const t0 = Date.now();
 
     // ── Cache hit path ───────────────────────────────────────────────────────
     if (!forceRefresh) {
-      const cached = await this.loadCachedOrgData(timeoutMs);
+      const cached = await this.loadCachedOrgData(cacheTtlMs);
       if (cached) {
         this.stats.cacheHits++;
         const dur = Date.now() - t0;
@@ -210,15 +231,15 @@ export class OrgIdBackgroundService {
    * Returns undefined if no cached entry exists OR if the TTL has expired.
    */
   async loadCachedOrgData(cacheTtlMs?: number): Promise<OrgData | undefined> {
-    const cached = await this.services.storage.get<OrgData>(CACHE_KEY);
-    if (!cached?.id) {
+    const cached = await this.services.storage.get<unknown>(CACHE_KEY);
+    if (!isOrgData(cached)) {
       this.services.logger.debug('Cache miss: no OrgID in storage');
       return undefined;
     }
 
-    const ttl = cacheTtlMs ?? DEFAULT_CACHE_TTL_MS;
-    const age = Date.now() - (cached.retrievedAt ?? 0);
-    if (age > ttl) {
+    const ttl = Math.max(0, cacheTtlMs ?? DEFAULT_CACHE_TTL_MS);
+    const age = Date.now() - cached.retrievedAt;
+    if (age < 0 || age > ttl) {
       this.services.logger.debug(
         `Cache miss: OrgID ${cached.id} expired (age=${age}ms, ttl=${ttl}ms)`
       );
@@ -321,7 +342,7 @@ export class OrgIdBackgroundService {
     }
 
     // Step 3: Request OrgID from the detector
-    const response = await this._sendRetrievalMessage(tabId);
+    const response = await this._sendRetrievalMessage(tabId, timeoutMs);
     if (!response) {
       const error = 'No response from Cloudability detector script.';
       logger.error(error);
@@ -373,7 +394,7 @@ export class OrgIdBackgroundService {
     const logger = this.services.logger;
 
     // Check if we already have a fresh cached value before going further
-    const cached = await this.loadCachedOrgData(timeoutMs);
+    const cached = await this.loadCachedOrgData();
     if (cached) {
       logger.debug(`Background enrichment skipped — valid cache (OrgID=${cached.id})`);
       return;
@@ -390,8 +411,17 @@ export class OrgIdBackgroundService {
       targetTabId = tab.id;
     }
 
+    if (this.inFlight) {
+      logger.debug('Background enrichment joining existing in-flight request');
+      await this.inFlight;
+      return;
+    }
+
     logger.info(`Background enrichment triggered — tabId=${targetTabId}`);
-    const outcome = await this._retrieveWithTabId(targetTabId, timeoutMs ?? 8000);
+    // The known-tab path still participates in global request deduplication.
+    this.inFlight = this._retrieveWithTabId(targetTabId, timeoutMs ?? 8000)
+      .finally(() => { this.inFlight = null; });
+    const outcome = await this.inFlight;
 
     if (!outcome.success) {
       logger.warn(`Background enrichment failed: ${outcome.error}`);
@@ -403,6 +433,11 @@ export class OrgIdBackgroundService {
   private _findCloudabilityTab(): Promise<chrome.tabs.Tab | undefined> {
     return new Promise((resolve) => {
       chrome.tabs.query({}, (tabs) => {
+        if (chrome.runtime.lastError) {
+          this.services.logger.error(`Tab query failed: ${chrome.runtime.lastError.message}`);
+          resolve(undefined);
+          return;
+        }
         const found = tabs.find(
           (t) => !!t.url && CLOUDABILITY_PATTERN.test(t.url)
         );
@@ -418,20 +453,37 @@ export class OrgIdBackgroundService {
     });
   }
 
-  private _sendRetrievalMessage(tabId: number): Promise<DetectorResponse | null> {
+  private _sendRetrievalMessage(tabId: number, timeoutMs: number): Promise<DetectorResponse | null> {
     return new Promise((resolve) => {
+      let settled = false;
+      const finish = (result: DetectorResponse | null): void => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(result);
+      };
+      const timer = setTimeout(() => {
+        this.services.logger.warn(`Detector message timed out on tabId=${tabId}`);
+        finish(null);
+      }, Math.max(1, timeoutMs));
+
       chrome.tabs.sendMessage(
         tabId,
         { type: 'RC_GET_CLOUDABILITY_ORG' },
-        (response: DetectorResponse | undefined) => {
+        (response: unknown) => {
           if (chrome.runtime.lastError) {
             this.services.logger.error(
               `Messaging error on tabId=${tabId}: ${chrome.runtime.lastError.message}`
             );
-            resolve(null);
+            finish(null);
             return;
           }
-          resolve(response ?? null);
+          if (!isDetectorResponse(response)) {
+            this.services.logger.error(`Invalid detector response on tabId=${tabId}`);
+            finish(null);
+            return;
+          }
+          finish(response);
         }
       );
     });

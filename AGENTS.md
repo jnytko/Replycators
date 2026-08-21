@@ -1538,6 +1538,7 @@ Complete record: `docs/TECH-DEBT-RESOLVED.md`
 | `docs/CONTRIBUTING.md` | Contribution workflow, branching strategy, versioning, commit format. | On-demand |
 | `docs/CONTRIBUTOR-ONBOARDING.md` | Human contributor onboarding guide. First-week checklist, GitHub workflow, AI development expectations, Definition of Done. | On-demand (new contributors) |
 | `docs/PROMPT-CATALOG.md` | AI prompt governance catalog. Versioned, reviewed prompts for all common development workflows. | On-demand (AI-assisted tasks) |
+| `docs/governance/openai/README.md` | OpenAI and Codex continuous repository governance starter kit. Entry point for architecture, setup, implementation, security, validation, operations, and rollout documents. | On-demand (governance implementation tasks) |
 | `docs/STARTUP-FLOW.md` | Full boot sequence, plugin load order, service worker lifecycle. | On-demand |
 | `docs/STORAGE.md` | Complete storage schema: all keys, namespaces, platform settings. | On-demand |
 | `docs/SETTINGS.md` | Full settings reference: all settings, options, defaults. | On-demand |

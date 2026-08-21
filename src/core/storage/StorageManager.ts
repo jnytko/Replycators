@@ -22,8 +22,13 @@ export class StorageManager implements IStorageService {
 
   async get<T>(key: string): Promise<T | undefined> {
     const fullKey = this.key(key);
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       chrome.storage[this.area].get(fullKey, (result) => {
+        const error = chrome.runtime.lastError;
+        if (error) {
+          reject(new Error(error.message));
+          return;
+        }
         resolve(result[fullKey] as T | undefined);
       });
     });
@@ -51,19 +56,33 @@ export class StorageManager implements IStorageService {
 
   async clear(prefix?: string): Promise<void> {
     const searchPrefix = prefix ? this.key(prefix) : `rc:${this.namespace}:`;
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       chrome.storage[this.area].get(null, (all) => {
+        const readError = chrome.runtime.lastError;
+        if (readError) {
+          reject(new Error(readError.message));
+          return;
+        }
         const keysToRemove = Object.keys(all).filter(k => k.startsWith(searchPrefix));
         if (keysToRemove.length === 0) { resolve(); return; }
-        chrome.storage[this.area].remove(keysToRemove, () => resolve());
+        chrome.storage[this.area].remove(keysToRemove, () => {
+          const removeError = chrome.runtime.lastError;
+          if (removeError) reject(new Error(removeError.message));
+          else resolve();
+        });
       });
     });
   }
 
   async getAll<T>(prefix: string): Promise<Record<string, T>> {
     const fullPrefix = this.key(prefix);
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       chrome.storage[this.area].get(null, (all) => {
+        const error = chrome.runtime.lastError;
+        if (error) {
+          reject(new Error(error.message));
+          return;
+        }
         const result: Record<string, T> = {};
         for (const [k, v] of Object.entries(all)) {
           if (k.startsWith(fullPrefix)) {

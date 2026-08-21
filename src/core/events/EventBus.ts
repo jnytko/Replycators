@@ -33,9 +33,15 @@ export class EventBus implements IEventBus {
     const snapshot = [...subs];
     for (const sub of snapshot) {
       try {
-        sub.handler(data);
+        const result = sub.handler(data);
+        // A synchronous try/catch cannot observe a rejected async handler.
+        if (result instanceof Promise) {
+          void result.catch(err => {
+            this.reportHandlerError(event, err);
+          });
+        }
       } catch (err) {
-        getLogger('platform').error(`EventBus handler error for event "${event}"`, err);
+        this.reportHandlerError(event, err);
       }
     }
 
@@ -77,6 +83,12 @@ export class EventBus implements IEventBus {
     if (this.eventHistory.length > this.maxHistory) {
       this.eventHistory.shift();
     }
+  }
+
+  private reportHandlerError(event: string, error: unknown): void {
+    // Logging a failing log subscriber would recursively emit the same event.
+    if (event === PlatformEvents.LOG_ENTRY) return;
+    getLogger('platform').error(`EventBus handler error for event "${event}"`, error);
   }
 }
 
