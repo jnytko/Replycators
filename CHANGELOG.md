@@ -9,6 +9,30 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.49.5] - 2026-08-25
+### Snake - Scope hotkeys away from focused controls
+**Type:** Bug Fix
+**Summary:** Fixed double state-transition when pressing Enter or Space on the Pause button (or any other focused interactive control). Added an early return in `handleKey()` when the event target is a BUTTON, SELECT, INPUT, A, or TEXTAREA so the document-level listener no longer intercepts keys already handled by a focused element.
+**Files changed:**
+- `plugins/snake.js` - Added interactive-control target guard at top of `handleKey()`; added explanatory comment on `attachKeys`/`detachKeys`
+- `dist/plugins/snake.js` - Mirror of root
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.3
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.4
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
 ## [1.49.4] - 2026-08-25
 ### Snake - Responsive canvas in narrow side panels
 **Type:** Bug Fix

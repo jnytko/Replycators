@@ -356,6 +356,14 @@
   // Only guards: no 180° reversal, ignore same-axis repeat.
 
   function handleKey(e) {
+    // Scope hotkeys away from interactive controls. When a button, select,
+    // input, link, or textarea has keyboard focus the browser synthesises a
+    // click event AND fires keydown on document, producing a double dispatch.
+    // Return early so only the element's own handler runs.
+    const tag = e.target && e.target.tagName;
+    if (tag === 'BUTTON' || tag === 'SELECT' || tag === 'INPUT' ||
+        tag === 'A'      || tag === 'TEXTAREA') return;
+
     const KEY_MAP = {
       ArrowUp:    {x:  0, y: -1},
       ArrowDown:  {x:  0, y:  1},
@@ -387,6 +395,9 @@
     nextDir = mapped;
   }
 
+  // handleKey guards against interactive-control targets, so document-level
+  // attachment is safe. Both functions use the same named reference so
+  // removeEventListener reliably unregisters the listener.
   function attachKeys() { document.addEventListener('keydown', handleKey); }
   function detachKeys()  { document.removeEventListener('keydown', handleKey); }
 
