@@ -751,6 +751,7 @@
       ${ul([
         'Switch to a Salesforce case tab - the detection banner updates automatically.',
         'The <strong>Extract</strong> button enables once a valid case page is detected.',
+        'Switching to a non-Salesforce tab while the Side Panel stays open immediately changes the status back to <strong>No active tab</strong> and disables <strong>Extract</strong> without clearing the last extracted result.',
         '(Optional) Enable scope toggles if internal or diagnostic content is needed.',
         'Click <strong>Extract</strong> - the case summary appears in the Extracted Content panel.',
         'Use <strong>Copy</strong> to copy the summary to the clipboard.',
