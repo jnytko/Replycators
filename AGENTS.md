@@ -60,7 +60,7 @@
 | Property | Value |
 |----------|-------|
 | Working directory | `[root]\WatsonX\ReplyCators\` |
-| Extension version | **1.49.7** |
+| Extension version | **1.49.8** |
 | Release status | **Production** |
 
 ReplyCators is a plugin-hosting Microsoft Edge extension (Manifest V3). A single dashboard UI hosts multiple plugins. The platform provides shared navigation, settings, storage, notifications, logging, and plugin lifecycle management. Plugins provide business functionality.
@@ -489,7 +489,7 @@ All plugin logic is extracted from `dashboard.js` into self-contained modules un
 | Plugin | View ID | Plugin ID | Version | Category |
 |--------|---------|-----------|---------|----------|
 | Salesforce Case Extractor | `plugin-salesforce` | `com.replycators.salesforce-extractor` | 4.12.5 | CRM |
-| Cloudability OrgID | `plugin-cloudability-orgid` | `com.replycators.cloudability-orgid` | 4.0.5 | Cloud |
+| Cloudability OrgID | `plugin-cloudability-orgid` | `com.replycators.cloudability-orgid` | 4.0.6 | Cloud |
 | Edge Bookmark Finder | `plugin-edge-bookmarks` | `com.replycators.edge-bookmark-finder` | 1.0.3 | Productivity |
 | Apptio Planning Upgrade Calculator | `plugin-apptio-upgrade-calc` | `com.replycators.apptio-planning-upgrade-calculator` | 1.0.3 | Enterprise |
 | Workspace Starter | `plugin-workspace-starter` | `com.replycators.workspace-starter` | 2.0.4 | Productivity |

@@ -1,6 +1,6 @@
 /**
  * ReplyCators — Dashboard Controller
- * v1.49.7
+ * v1.49.8
  *
  * Application shell and orchestrator for the ReplyCators plugin-based Edge extension.
  * Owns: startup coordination, session restoration, shared services (window.ReplyCatorsApp),
@@ -1415,7 +1415,7 @@ const PLUGINS = [
   {
     id: 'com.replycators.cloudability-orgid',
     name: 'Cloudability OrgID',
-    version: '4.0.5',
+    version: '4.0.6',
     description: 'Retrieves the Cloudability Organisation ID by intercepting the Cloudability settings API. Requires an open Cloudability tab.',
     author: 'ReplyCators Platform',
     category: 'cloudability',

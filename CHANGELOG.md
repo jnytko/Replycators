@@ -9,6 +9,29 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.49.8] - 2026-08-21
+### Cloudability OrgID - Stop detector from forwarding data when plugin is disabled
+**Type:** Bug Fix
+**Summary:** `cloudability-detector.js` now reads `rc:session:plugin-states` at startup and exits immediately if the Cloudability OrgID plugin is disabled, preventing any `RC_CLD_ORG_READY` messages and OrgID cache updates when the plugin is off. A tracking comment documenting the known MAIN-world interceptor limitation (Option B - dynamic registration) is added to `cloudability-interceptor.js`. The MAIN-world XHR/fetch patches remain on the page when the plugin is disabled - full suppression requires dynamic content script registration (Option B, separate ADR per AGENTS.md §6).
+**Files changed:**
+- `plugins/cloudability/content/cloudability-detector.js` - Added `rc:session:plugin-states` check at entry; all listeners and background push only run when the plugin is enabled
+- `plugins/cloudability/content/cloudability-interceptor.js` - Added tracking comment describing the MAIN-world limitation and Option B architectural work item
+- `dist/plugins/cloudability/content/cloudability-detector.js` - Mirror sync
+- `dist/plugins/cloudability/content/cloudability-interceptor.js` - Mirror sync
+- `dashboard.js` - Cloudability OrgID version `4.0.5` -> `4.0.6`; platform version `1.49.7` -> `1.49.8`
+- `dashboard.html` - Cloudability plugin header version synced to `v4.0.6`; platform version display updated to `v1.49.8`
+- `manifest.json`, `package.json` - Platform version `1.49.7` -> `1.49.8`
+- `AGENTS.md` - Extension version and Cloudability plugin inventory version updated
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.5
+- Cloudability OrgID: 4.0.6
+- Edge Bookmark Finder: 1.0.3
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.4
+
+---
+
 ## [1.49.7] - 2026-08-21
 ### Salesforce Case Extractor - Reset connected state on non-Salesforce tab activation
 **Type:** Bug Fix

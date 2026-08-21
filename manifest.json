@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ReplyCators",
   "short_name": "ReplyCators",
-  "version": "1.49.7",
+  "version": "1.49.8",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv3BGGO/LLXenRpl50+VD9VQowOxBtXkbh/hbwEueDWgT918t5qvY4owVaAo/6bICQtFmafB1NReF4Yvao6VvU9kx+NDeoh/NeSgXKHnZKb+PTDWrYzTeNlbXb4xiTOulBD/Wz4/kx9T+4v9mZuHYbMxknccPJv9tm0CizpXo9wdNhzOYKHHqnQmtJsdvBFrhOlEaKCbX4i7/oT7r654FgT8rFJfjatEeOX2eGuBj5+gWf+Jt8YItaCdaTt72WeIx6WnvBRAzO3Ddu/mb9lA3hK0NpxoX7ABFG9YBwHOwSwWrdc1q1lhXJpySi/VRMfqqG+YDxpzSvvTFOD4PROmEuwIDAQAB",
   "description": "A plugin-based platform for intelligent reply creation and data extraction across enterprise tools.",
   "author": "ReplyCators Platform Team",

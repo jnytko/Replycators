@@ -30,6 +30,30 @@
   }
   window.__rcCldDetector = true;
 
+  // ── Plugin enabled check (Option C) ─────────────────────────────────────────
+  // Check whether the Cloudability OrgID plugin is enabled before installing
+  // any listeners or forwarding data to the background service worker.
+  // If disabled, we exit early so no OrgID data is captured or stored.
+  // NOTE: The MAIN-world interceptor (cloudability-interceptor.js) runs at
+  // document_start and cannot perform this async check — its XHR/fetch patches
+  // will still be present on the page when the plugin is disabled. That is a
+  // known limitation tracked for resolution under Option B (dynamic content
+  // script registration via chrome.scripting — requires a new ADR per
+  // AGENTS.md §6 and is filed as a separate architectural work item).
+  chrome.storage.local.get('rc:session:plugin-states', function (result) {
+    var states = (result && result['rc:session:plugin-states']) || {};
+    var pluginEntry = states['com.replycators.cloudability-orgid'];
+    var enabled = !pluginEntry || pluginEntry.enabled !== false;
+    if (!enabled) {
+      // Plugin is disabled — do not install any listeners or forward OrgID data.
+      return;
+    }
+    _initDetector();
+  });
+
+  /** @returns {void} */
+  function _initDetector() {
+
   /** Session-scoped cache — populated when the interceptor fires. */
   var cachedOrg = null;   // { id, name }
 
@@ -165,5 +189,7 @@
 
     return true; // keep message channel open for async sendResponse
   });
+
+  } // end _initDetector
 
 })();
