@@ -61,7 +61,7 @@ jobs:
       - run: |
           set -euo pipefail
           
-          ISSUES_JSON=$(gh issue list --state open --label "auto-fix" --limit 10 --json number,title,body,author --sort created)
+          ISSUES_JSON=$(gh issue list --state open --label "auto-fix" --limit 10 --json number,title,body,author)
           ISSUE_COUNT=$(echo "$ISSUES_JSON" | jq '. | length')
           
           if [ "$ISSUE_COUNT" -eq 0 ]; then
