@@ -1894,12 +1894,21 @@
             'Internal posts included - review before sharing externally.', 'warning', plugin.id);
         }
 
+        // Apply privacy redaction to the persisted object when Privacy Mode is ON.
+        // In-memory buffers (_lastRawText, _lastBaseText, _lastExtractionPosts) always
+        // retain raw data so Bob execution and in-session re-sort are unaffected.
+        const _privacyOn = sfPrivacyEnabled();
         app().persistSfResult({
-          rawText:     _lastRawText,
-          caseNumber:  result.caseNumber || '',
-          accountName: result.accountName || '',
-          posts:       result.posts || [],
-          extractedAt: Date.now(),
+          rawText:          _privacyOn ? sfApplyPrivacy(_lastRawText)      : _lastRawText,
+          caseNumber:       result.caseNumber || '',
+          accountName:      _privacyOn ? '[REDACTED_ACCOUNT]'              : (result.accountName || ''),
+          posts:            _privacyOn
+            ? rawPosts.map(p => ({ ...p,
+                content: sfApplyPrivacy(p.content || ''),
+                author:  sfApplyPrivacy(p.author  || '') }))
+            : rawPosts,
+          extractedAt:      Date.now(),
+          _privacyRedacted: _privacyOn ? true : undefined,
         });
 
         const postCount   = result.posts?.length || 0;

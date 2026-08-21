@@ -4838,3 +4838,11 @@ body.rc-sidepanel .edl-card-grid {
   padding: 16px 0;
 }
 
+
+/* Privacy Mode scope hint - sub-label shown under the toggle checkbox */
+.rc-help-text {
+  display: block;
+  font-size: 0.8em;
+  opacity: 0.7;
+  margin-top: 2px;
+}
