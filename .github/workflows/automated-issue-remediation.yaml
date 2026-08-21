@@ -21,8 +21,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  analyze-issues:
+    name: Analyze Issues with Prompts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install axios dotenv
+
+      - name: Run sequential analysis on auto-fix issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          node .github/scripts/analyze-issues.js
+
   remediate-issues:
     name: Process and Resolve Open Issues
+    needs: analyze-issues
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
