@@ -37,22 +37,143 @@ jobs:
           git config user.email "4189828+github-actions[bot]@users.noreply.github.com"
       - run: |
           set -euo pipefail
-          ISSUES_JSON=$(gh issue list --state open --label "auto-fix" --limit 10 --json number,title,body,author)
+          
+          # Fetch issues and process them sequentially
+          ISSUES_JSON=$(gh issue list --state open --label "auto-fix" --limit 10 --json number,title,body,author --sort created)
           ISSUE_COUNT=$(echo "$ISSUES_JSON" | jq '. | length')
-          if [ "$ISSUE_COUNT" -eq 0 ]; then exit 0; fi
-          echo "$ISSUES_JSON" | jq -c '.[]' | while read -r issue; do
+          
+          if [ "$ISSUE_COUNT" -eq 0 ]; then
+            echo "No issues with 'auto-fix' label found."
+            exit 0
+          fi
+          
+          echo "Found $ISSUE_COUNT issue(s) to process."
+          
+          # Process each issue sequentially, not in a subshell
+          FAILED_ISSUES=()
+          PROCESSED_ISSUES=()
+          
+          while IFS= read -r issue; do
             ISSUE_NUMBER=$(echo "$issue" | jq -r '.number')
+            ISSUE_TITLE=$(echo "$issue" | jq -r '.title')
             BRANCH_NAME="auto-fix/issue-${ISSUE_NUMBER}"
-            gh issue edit "$ISSUE_NUMBER" --add-assignee "app/github-actions" || true
-            git checkout -b "$BRANCH_NAME" "origin/${{ github.event.repository.default_branch }}"
-            if [ -f "package.json" ]; then npm ci || true; npm run lint:fix || true; fi
-            if git diff --quiet; then git checkout "${{ github.event.repository.default_branch }}"; git branch -D "$BRANCH_NAME"; continue; fi
-            if [ -f "package.json" ] && grep -q '"test"' package.json; then npm test || exit 1; fi
+            
+            echo ""
+            echo "=========================================="
+            echo "Processing Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE}"
+            echo "=========================================="
+            
+            # Ensure we're on the default branch before creating a new branch
+            git checkout "${{ github.event.repository.default_branch }}" || {
+              echo "ERROR: Failed to checkout default branch for issue #${ISSUE_NUMBER}"
+              FAILED_ISSUES+=("$ISSUE_NUMBER")
+              continue
+            }
+            
+            # Clean up any leftover branches from previous failures
+            git branch -D "$BRANCH_NAME" 2>/dev/null || true
+            
+            # Assign the issue to github-actions bot
+            gh issue edit "$ISSUE_NUMBER" --add-assignee "app/github-actions" || {
+              echo "WARNING: Could not assign issue #${ISSUE_NUMBER}, but continuing..."
+            }
+            
+            # Create and checkout feature branch
+            if ! git checkout -b "$BRANCH_NAME" "origin/${{ github.event.repository.default_branch }}"; then
+              echo "ERROR: Failed to create branch for issue #${ISSUE_NUMBER}"
+              FAILED_ISSUES+=("$ISSUE_NUMBER")
+              git checkout "${{ github.event.repository.default_branch }}" || true
+              continue
+            fi
+            
+            # Run linting fixes if package.json exists
+            if [ -f "package.json" ]; then
+              echo "Running npm ci..."
+              npm ci || {
+                echo "WARNING: npm ci failed, attempting to continue..."
+              }
+              
+              echo "Running lint:fix..."
+              npm run lint:fix || {
+                echo "WARNING: npm run lint:fix failed, attempting to continue..."
+              }
+            fi
+            
+            # Check if there are actual changes
+            if git diff --quiet; then
+              echo "No changes detected for issue #${ISSUE_NUMBER}. Skipping."
+              git checkout "${{ github.event.repository.default_branch }}" || true
+              git branch -D "$BRANCH_NAME" || true
+              PROCESSED_ISSUES+=("$ISSUE_NUMBER (no changes)")
+              continue
+            fi
+            
+            # Run tests if they exist
+            if [ -f "package.json" ] && grep -q '"test"' package.json; then
+              echo "Running tests for issue #${ISSUE_NUMBER}..."
+              if ! npm test; then
+                echo "ERROR: Tests failed for issue #${ISSUE_NUMBER}. Rolling back changes."
+                git reset --hard "origin/${{ github.event.repository.default_branch }}" || true
+                git checkout "${{ github.event.repository.default_branch }}" || true
+                git branch -D "$BRANCH_NAME" || true
+                FAILED_ISSUES+=("$ISSUE_NUMBER")
+                continue
+              fi
+            fi
+            
+            # Commit changes
             git add -A
-            git commit -m "fix: automated resolution for issue #${ISSUE_NUMBER}"
-            [ "${{ github.event.inputs.dry_run }}" != "true" ] && git push origin "${{ github.event.repository.default_branch }}" && gh issue close "$ISSUE_NUMBER" --reason "completed"
-            git checkout "${{ github.event.repository.default_branch }}"
+            git commit -m "fix: automated resolution for issue #${ISSUE_NUMBER}" || {
+              echo "ERROR: Failed to commit changes for issue #${ISSUE_NUMBER}"
+              git reset --hard || true
+              git checkout "${{ github.event.repository.default_branch }}" || true
+              git branch -D "$BRANCH_NAME" || true
+              FAILED_ISSUES+=("$ISSUE_NUMBER")
+              continue
+            }
+            
+            # Push changes and close issue (if not a dry run)
+            if [ "${{ github.event.inputs.dry_run }}" != "true" ]; then
+              if git push origin "$BRANCH_NAME"; then
+                if gh issue close "$ISSUE_NUMBER" --reason "completed"; then
+                  echo "Successfully closed issue #${ISSUE_NUMBER}"
+                  PROCESSED_ISSUES+=("$ISSUE_NUMBER")
+                else
+                  echo "WARNING: Could not close issue #${ISSUE_NUMBER}, but changes were pushed."
+                  PROCESSED_ISSUES+=("$ISSUE_NUMBER (not closed)")
+                fi
+              else
+                echo "ERROR: Failed to push changes for issue #${ISSUE_NUMBER}"
+                FAILED_ISSUES+=("$ISSUE_NUMBER")
+              fi
+            else
+              echo "DRY RUN: Would have pushed and closed issue #${ISSUE_NUMBER}"
+              PROCESSED_ISSUES+=("$ISSUE_NUMBER (dry run)")
+            fi
+            
+            # Cleanup
+            git checkout "${{ github.event.repository.default_branch }}" || true
             git branch -D "$BRANCH_NAME" || true
+            
+          done < <(echo "$ISSUES_JSON" | jq -c '.[]')
+          
+          # Summary
+          echo ""
+          echo "=========================================="
+          echo "WORKFLOW SUMMARY"
+          echo "=========================================="
+          echo "Processed: ${#PROCESSED_ISSUES[@]}"
+          for issue in "${PROCESSED_ISSUES[@]}"; do
+            echo "  ✓ Issue #${issue}"
           done
+          
+          if [ ${#FAILED_ISSUES[@]} -gt 0 ]; then
+            echo "Failed: ${#FAILED_ISSUES[@]}"
+            for issue in "${FAILED_ISSUES[@]}"; do
+              echo "  ✗ Issue #${issue}"
+            done
+            exit 1
+          fi
+          
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
