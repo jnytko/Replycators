@@ -161,19 +161,19 @@
         <div class="ts-tab-actions">
           <button class="rc-btn rc-btn--ghost rc-btn--sm ts-action-switch"
                   data-tab-id="${tab.id}" data-window-id="${tab.windowId || ''}"
-                  title="Switch to this tab" tabindex="-1">↗</button>
+                  title="Switch to this tab">↗</button>
           <button class="rc-btn rc-btn--ghost rc-btn--sm ts-action-copy-url"
                   data-url="${app().esc(urlText)}"
-                  title="Copy URL to clipboard" tabindex="-1" aria-label="Copy URL">⧉</button>
+                  title="Copy URL to clipboard" aria-label="Copy URL">⧉</button>
           <button class="rc-btn rc-btn--ghost rc-btn--sm ts-action-copy-title"
                   data-title="${app().esc(titleText)}"
-                  title="Copy page title to clipboard" tabindex="-1" aria-label="Copy title">T</button>
+                  title="Copy page title to clipboard" aria-label="Copy title">T</button>
           <button class="rc-btn rc-btn--ghost rc-btn--sm ts-action-new-window"
                   data-url="${app().esc(urlText)}"
-                  title="Open this tab in a new window" aria-label="Open this tab in a new window" tabindex="-1">↗</button>
+                  title="Open this tab in a new window" aria-label="Open this tab in a new window">↗</button>
           <button class="rc-btn rc-btn--ghost rc-btn--sm ts-action-close"
                   data-tab-id="${tab.id}"
-                  title="Close this tab" aria-label="Close this tab" tabindex="-1">×</button>
+                  title="Close this tab" aria-label="Close this tab">×</button>
         </div>
       </div>
     </div>`;
@@ -383,6 +383,7 @@
     // Keyboard: Enter on a row switches to tab
     resultsEl.addEventListener('keydown', e => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
+      if (e.target.closest('.ts-tab-actions button')) return;
       const row = e.target.closest('.ts-tab-row');
       if (row) { e.preventDefault(); switchToTab(row.dataset.tabId, row.dataset.windowId); }
     });
