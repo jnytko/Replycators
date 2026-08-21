@@ -1,0 +1,112 @@
+name: Copilot Agent Analysis
+
+on:
+  schedule:
+    # Run analysis at 4 PM UTC (1 hour before auto-fix at 5 PM)
+    - cron: '0 16 * * *'
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Specific issue number to analyze (optional)'
+        required: false
+        type: string
+      analysis_type:
+        description: 'Which analysis stages to run'
+        required: false
+        type: choice
+        options:
+          - all
+          - update-github-only
+          - work-on-issue-only
+          - implement-only
+        default: 'all'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: agent-analysis
+  cancel-in-progress: false
+
+jobs:
+  analyze-issues:
+    name: Run Sequential Agent Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Copilot Agent Analysis
+        uses: github/copilot-agent@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        with:
+          repository: ${{ github.repository }}
+          analysis_stages:
+            - name: "Update GitHub Issue Status"
+              role: "Senior Software Delivery Coordinator"
+              prompt_file: ".github/prompts/10-update-github.txt"
+              apply_updates: true
+
+            - name: "Analyze Issue and Dependencies"
+              role: "Senior Software Engineering Review Agent"
+              prompt_file: ".github/prompts/11-work-on-github-issue.txt"
+              apply_updates: true
+
+            - name: "Implementation Plan (No Changes)"
+              role: "Senior Software Engineer"
+              prompt_file: ".github/prompts/12-implement.txt"
+              apply_updates: false
+              comment_only: true
+
+          target_issues:
+            # Option 1: Analyze specific issue from dispatch input
+            - number: ${{ github.event.inputs.issue_number }}
+              if: ${{ github.event.inputs.issue_number != '' }}
+
+            # Option 2: Analyze all issues with 'needs-analysis' label
+            - label: needs-analysis
+              limit: 5
+              sort: created-asc
+
+            # Option 3: Analyze issues changed in last 24 hours
+            - created_or_updated_in_last: 24h
+              limit: 3
+              sort: updated-desc
+
+          output:
+            format: markdown
+            destination: issue_comments
+            include_summary: true
+            include_recommendations: true
+
+      - name: Create Summary Artifact
+        if: always()
+        run: |
+          echo "Agent Analysis Complete" > /tmp/analysis-summary.txt
+          echo "Time: $(date)" >> /tmp/analysis-summary.txt
+          echo "Issues Analyzed: ${{ env.ISSUES_ANALYZED }}" >> /tmp/analysis-summary.txt
+          echo "Findings Created: ${{ env.FINDINGS_COUNT }}" >> /tmp/analysis-summary.txt
+
+      - name: Upload Analysis Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-analysis-report
+          path: /tmp/analysis-summary.txt
+          retention-days: 30
+
+  coordinate-with-autofix:
+    name: Signal Auto-Fix Workflow
+    needs: analyze-issues
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Label issues ready for auto-fix
+        run: |
+          echo "Issues analyzed and ready for auto-fix workflow at 5 PM UTC"
+          # This allows the auto-fix workflow (5 PM) to pick up analysis findings
