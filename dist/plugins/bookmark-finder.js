@@ -344,8 +344,8 @@
                 '<div class="bm-result-url" title="' + app().esc(b.url) + '">' + app().esc(b.url) + '</div>' +
               '</div>' +
               '<div class="bm-result-actions">' +
-                '<button class="rc-btn rc-btn--ghost rc-btn--sm bm-open" data-url="' + app().esc(b.url) + '" title="Open in new tab" tabindex="-1" aria-label="Open ' + app().esc(b.title) + ' in new tab">↗</button>' +
-                '<button class="rc-btn rc-btn--ghost rc-btn--sm bm-copy" data-url="' + app().esc(b.url) + '" title="Copy URL" tabindex="-1" aria-label="Copy URL for ' + app().esc(b.title) + '">⧉</button>' +
+                '<button class="rc-btn rc-btn--ghost rc-btn--sm bm-open" data-url="' + app().esc(b.url) + '" title="Open in new tab" aria-label="Open ' + app().esc(b.title) + ' in new tab">↗</button>' +
+                '<button class="rc-btn rc-btn--ghost rc-btn--sm bm-copy" data-url="' + app().esc(b.url) + '" title="Copy URL" aria-label="Copy URL for ' + app().esc(b.title) + '">⧉</button>' +
               '</div>' +
             '</div>';
         } else {
@@ -381,7 +381,7 @@
           '<span class="bm-result-icon" aria-hidden="true"></span>' +
           '<span class="bm-recent-title" title="' + app().esc(b.title) + '">' + app().esc(b.title) + '</span>' +
           '<span class="bm-recent-date">' + (b.dateAdded ? new Date(b.dateAdded).toLocaleDateString() : '') + '</span>' +
-          '<button class="rc-btn rc-btn--ghost rc-btn--sm bm-recent-open" data-url="' + app().esc(b.url) + '" title="Open" tabindex="-1" aria-label="Open ' + app().esc(b.title) + '">↗</button>' +
+          '<button class="rc-btn rc-btn--ghost rc-btn--sm bm-recent-open" data-url="' + app().esc(b.url) + '" title="Open" aria-label="Open ' + app().esc(b.title) + '">↗</button>' +
           '</div>';
       }).join('');
     }
@@ -406,6 +406,7 @@
     });
     resultsEl.addEventListener('keydown', function(e) {
       if (e.key !== 'Enter' && e.key !== ' ') return;
+      if (e.target.closest('.bm-result-actions button')) return;
       const row = e.target.closest('.bm-result-row');
       if (row && row.dataset.url) { e.preventDefault(); bmOpenBookmark(row.dataset.url); }
     });
@@ -418,6 +419,7 @@
     });
     recentList.addEventListener('keydown', function(e) {
       if (e.key !== 'Enter' && e.key !== ' ') return;
+      if (e.target.closest('.bm-recent-open')) return;
       const row = e.target.closest('.bm-recent-row');
       if (row && row.dataset.url) { e.preventDefault(); bmOpenBookmark(row.dataset.url); }
     });

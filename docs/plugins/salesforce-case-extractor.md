@@ -23,7 +23,7 @@
 | | |
 |-|-|
 | Plugin ID | `com.replycators.salesforce-extractor` |
-| Version | 4.12.2 |
+| Version | 4.12.5 |
 | Category | CRM |
 | Status | Active |
 

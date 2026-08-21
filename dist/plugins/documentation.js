@@ -1010,7 +1010,7 @@
       ])}
 
       ${h3('Launching a Profile')}
-      ${p('Click the <strong>▶ Launch</strong> button on any profile card. All URLs open as new tabs in either tab-group or plain-tabs mode, depending on that profile\'s stored launch mode setting.')}
+      ${p('Click the <strong>▶ Launch</strong> button on any profile card. All URLs open as new tabs in either tab-group or plain-tabs mode, depending on that profile\'s stored launch mode setting. Workspace Starter records the launch only after at least one tab opens successfully, and it warns if any URLs fail.')}
 
       ${h3('Favorites')}
       ${p('Click the star icon on a profile card to mark it as a favourite. Favourited profiles appear above non-favourites and show as quick-launch shortcuts in the Dashboard widget.')}
