@@ -934,6 +934,15 @@
       "purpose": "Environment Dashboards Launcher plugin — custom icon (monitor + bar chart + launch arrow). Not a Streamline original; follows Streamline style conventions. CC BY 4.0 compatible.",
       "downloadDate": "2025-07-25",
       "sourcePack": "ReplyCators Custom (Streamline-style)"
+    },
+    {
+      "semanticId": "plugins.notepad",
+      "localPath": "content/note.svg",
+      "streamlineName": "sticky-note",
+      "category": "plugins",
+      "purpose": "Quick Note Pad plugin — sticky note icon represents persistent in-browser notepad",
+      "downloadDate": "2025-07-25",
+      "sourcePack": "Streamline Ultimate Colors Free"
     }
   ]
 }

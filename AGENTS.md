@@ -60,7 +60,7 @@
 | Property | Value |
 |----------|-------|
 | Working directory | `[root]\WatsonX\ReplyCators\` |
-| Extension version | **1.49.1** |
+| Extension version | **1.49.4** |
 | Release status | **Production** |
 
 ReplyCators is a plugin-hosting Microsoft Edge extension (Manifest V3). A single dashboard UI hosts multiple plugins. The platform provides shared navigation, settings, storage, notifications, logging, and plugin lifecycle management. Plugins provide business functionality.
@@ -494,7 +494,7 @@ All plugin logic is extracted from `dashboard.js` into self-contained modules un
 | Apptio Planning Upgrade Calculator | `plugin-apptio-upgrade-calc` | `com.replycators.apptio-planning-upgrade-calculator` | 1.0.3 | Enterprise |
 | Workspace Starter | `plugin-workspace-starter` | `com.replycators.workspace-starter` | 2.0.3 | Productivity |
 | Tab Search | `plugin-tab-search` | `com.replycators.tab-search` | 1.0.1 | Productivity |
-| Snake | `plugin-snake` | `com.replycators.snake` | 1.0.1 | Games |
+| Snake | `plugin-snake` | `com.replycators.snake` | 1.0.3 | Games |
 | Example Plugin | `plugin-example` | `com.replycators.example-plugin` | 1.0.2 | Template |
 | Apptio Documentation Finder | `plugin-apptio-docs-finder` | `com.replycators.apptio-docs-finder` | 1.0.3 | Productivity |
 | Quick Note Pad | `plugin-notepad` | `com.replycators.notepad` | 1.0.0 | Productivity |

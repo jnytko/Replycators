@@ -9,6 +9,32 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.49.4] - 2026-08-25
+### Snake - Responsive canvas in narrow side panels
+**Type:** Bug Fix
+**Summary:** Fixed the Snake game canvas clipping in Side Panel mode at widths below 620px. The canvas CSS display size is now scaled responsively to fit the available content area while maintaining the 400:220 aspect ratio. The backing buffer (DPR-aware) and all game-logic coordinates are unchanged.
+**Files changed:**
+- `plugins/snake.js` - Added `applyCanvasDisplaySize()` function; removed hardcoded CSS `style.width/height` from `initView()`; added responsive size call in `onNavigate()` with `window resize` listener; added listener cleanup in `onLeave()`
+- `styles/dashboard.css` - Updated comment on `#snk-canvas` rule to reflect the new responsive CSS size contract
+- `dist/plugins/snake.js` - Mirror of root
+- `dist/styles/dashboard.css` - Mirror of root
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.3
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.3
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
 ## [1.49.3] - 2026-08-25
 ### Docs - Align architecture, startup flow, plugin checklist, and Env Dashboard docs
 **Type:** Documentation

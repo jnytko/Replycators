@@ -2012,8 +2012,9 @@ body.rc-sidepanel .rc-toast-container {
 }
 
 /* ── Canvas (the actual game grid) ──────────────────────────────── */
-/* Score + high-score HUD is drawn directly onto the canvas — no HTML overlay needed. */
-/* width/height are set by JS (DPR-aware) — do not override with CSS percentages.     */
+/* Score + high-score HUD is drawn directly onto the canvas - no HTML overlay needed. */
+/* Backing buffer width/height are set by JS (DPR-aware).                              */
+/* CSS display size is also set by JS to min(400px, available width) with aspect ratio.*/
 #snk-canvas {
   display: block;
   image-rendering: pixelated;

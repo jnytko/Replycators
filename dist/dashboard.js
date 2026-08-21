@@ -1,6 +1,6 @@
 /**
  * ReplyCators — Dashboard Controller
- * v1.49.2
+ * v1.49.4
  *
  * Application shell and orchestrator for the ReplyCators plugin-based Edge extension.
  * Owns: startup coordination, session restoration, shared services (window.ReplyCatorsApp),
@@ -1471,7 +1471,7 @@ const PLUGINS = [
   {
     id: 'com.replycators.snake',
     name: 'Snake',
-    version: '1.0.2',
+    version: '1.0.3',
     description: 'Classic retro arcade Snake game faithfully recreated inside ReplyCators. Monochrome LCD screen, pixelated segments, classic movement mechanics, high score persistence.',
     author: 'ReplyCators Platform',
     category: 'general',

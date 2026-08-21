@@ -2,7 +2,7 @@
 
 > A plugin-based Microsoft Edge extension platform for intelligent reply creation and data extraction across enterprise tools.
 
-[![Version](https://img.shields.io/badge/version-1.49.2-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.49.4-blue.svg)](CHANGELOG.md)
 [![Manifest](https://img.shields.io/badge/manifest-v3-green.svg)](manifest.json)
 [![Platform](https://img.shields.io/badge/platform-Microsoft%20Edge-0078D4.svg)](https://microsoftedge.microsoft.com)
 [![License: Icons](https://img.shields.io/badge/icons-CC%20BY%204.0-lightgrey.svg)](ICON-LICENSE.md)
@@ -64,7 +64,7 @@ For the full setup guide including the IBM Bob Execute feature, see [docs/INSTAL
 | Apptio Planning Upgrade Calculator | 1.0.3 | Enterprise | Calculates Apptio Planning upgrade dates with dynamic release discovery |
 | Workspace Starter | 2.0.3 | Productivity | Launches named workspace profiles with optional tab grouping |
 | Tab Search | 1.0.1 | Productivity | Instant live search across all open browser tabs |
-| Snake | 1.0.2 | Games | Classic retro Snake game with high score persistence |
+| Snake | 1.0.3 | Games | Classic retro Snake game with high score persistence |
 | Apptio Documentation Finder | 1.0.3 | Productivity | IBM Docs search for Apptio products with favorites and quick links |
 | Quick Note Pad | 1.0.0 | Productivity | Persistent multi-tab notepad for case notes and scratch content |
 | Jira & Confluence Smart Search Hub | 1.0.0 | Productivity | Unified smart-search and navigation hub for Jira and Confluence |
