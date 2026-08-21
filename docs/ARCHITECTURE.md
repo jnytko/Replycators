@@ -179,7 +179,7 @@ The feedback workflow uses **no backend or direct email transport**.
 
 | Plugin | Version | Description |
 |--------|---------|-------------|
-| Salesforce Case Extractor | 4.12.4 | Extracts Salesforce case data from Lightning pages. Multi-signal detection, field cleanup, feed posts, content script: `sf-content.js` |
+| Salesforce Case Extractor | 4.12.5 | Extracts Salesforce case data from Lightning pages. Multi-signal detection, field cleanup, feed posts, content script: `sf-content.js` |
 | Cloudability OrgID | 4.0.5 | Background enrichment service. Resolves OrgID via proactive push (MAIN-world XHR intercept) or pull (SPA navigation). 24h TTL cache, exponential retry. No-erase policy on failure. |
 | Edge Bookmark Finder | 1.0.3 | Searches Microsoft Edge bookmarks. Recursive scan, real-time multi-word search, domain analytics, duplicate detection. |
 | Apptio Planning Upgrade Calculator | 1.0.3 | Calculates upgrade dates. Dynamic release discovery via IBM Community. Three-tier retrieval: live fetch, 24h cache, bundled fallback. |

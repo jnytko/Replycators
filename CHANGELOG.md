@@ -9,6 +9,39 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.49.6] - 2026-08-25
+### Salesforce Case Extractor - Reset connected state on non-Salesforce tab activation
+**Type:** Bug Fix
+**Summary:** Fixed the Side Panel Salesforce status getting stuck in a false Connected state after switching to a non-Salesforce tab. The tab-activation pre-filter now performs a cheap UI-only reset for non-Salesforce tabs while still skipping the expensive detection pipeline and preserving the last extracted result in storage.
+**Files changed:**
+- `plugins/salesforce-case-extractor.js` - Reset badge, widget status, and Extract button state immediately when the active tab is not Salesforce; keep the async detection pipeline filtered out for non-Salesforce tabs
+- `dashboard.js` - Salesforce Case Extractor version `4.12.4` -> `4.12.5`; platform version `1.49.5` -> `1.49.6`
+- `dashboard.html` - Salesforce plugin header version synced to `v4.12.5`; platform version display updated to `v1.49.6`
+- `manifest.json` - Version `1.49.5` -> `1.49.6`
+- `package.json` - Version `1.49.5` -> `1.49.6`
+- `README.md` - Version badge and Salesforce plugin version updated
+- `AGENTS.md` - Extension version and Salesforce plugin inventory version updated
+- `docs/ARCHITECTURE.md` - Salesforce plugin version table updated
+- `docs/plugins/salesforce-case-extractor.md` - Startup behavior note added for non-Salesforce tab activation in Side Panel mode
+- `plugins/documentation.js` - In-extension Salesforce workflow note added for the non-Salesforce tab reset behavior
+- `dist/` - Mirror sync of changed runtime files and versioned metadata
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.5
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.3
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.4
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
 ## [1.49.5] - 2026-08-25
 ### Snake - Scope hotkeys away from focused controls
 **Type:** Bug Fix

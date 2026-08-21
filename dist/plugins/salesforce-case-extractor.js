@@ -323,6 +323,19 @@
     // Intentionally no persistSfResult(null) - storage is restored immediately after
   }
 
+  function sfSetNoActiveTabUi(widgetText) {
+    const badgeEl        = document.getElementById('sf-status-badge');
+    const btnExtract     = document.getElementById('sf-btn-extract');
+    const widgetStatusEl = document.getElementById('sf-widget-status');
+    if (badgeEl) {
+      badgeEl.textContent = 'No active tab';
+      badgeEl.className = 'rc-badge rc-badge--red';
+      badgeEl.style.display = '';
+    }
+    if (widgetStatusEl) widgetStatusEl.textContent = widgetText || '\u274c No Salesforce tab open';
+    if (btnExtract) btnExtract.disabled = true;
+  }
+
   // ─── sfRefreshDetectionBanner ─────────────────────────────────────────────
   // Runs the full detection flow. bannerEl may be absent (e.g. when called from
   // the tab-change listeners while the Dashboard is shown instead of the SF
@@ -372,9 +385,7 @@
 
     const sfTab = await getActiveSalesforceTab();
     if (!sfTab) {
-      _setBadge('No active tab', 'error');
-      if (widgetStatusEl) widgetStatusEl.textContent = '\u274c No Salesforce tab open';
-      if (btnExtract) btnExtract.disabled = true;
+      sfSetNoActiveTabUi('\u274c No Salesforce tab open');
       return;
     }
 
@@ -442,16 +453,16 @@
 
     // Re-run detection whenever the active tab changes.
     // F-002: check the URL before triggering the full async detection pipeline.
-    // For non-SF tabs: skip the pipeline entirely (no injection, no case-page check).
+    // For non-SF tabs: reset the live UI state, then skip the expensive detection
+    // pipeline entirely (no injection, no case-page check, no storage changes).
     // For SF tabs: run the full detection so the banner and widget stay accurate.
-    // When the user switches away from a SF tab to a non-SF tab, the banner state
-    // is already cleared by the preceding sfRefreshDetectionBanner call on that
-    // SF tab's deactivation; no reset is needed here.
     chrome.tabs.onActivated.addListener(({ tabId }) => {
       chrome.tabs.get(tabId, tab => {
         if (chrome.runtime.lastError || !tab?.url) return;
-        // Only trigger the detection pipeline when switching to a Salesforce tab.
-        if (!isSalesforceUrl(tab.url)) return;
+        if (!isSalesforceUrl(tab.url)) {
+          sfSetNoActiveTabUi('\u274c No Salesforce tab open');
+          return;
+        }
         sfRefreshDetectionBanner();
       });
     });

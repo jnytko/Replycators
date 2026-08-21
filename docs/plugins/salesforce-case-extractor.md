@@ -158,7 +158,7 @@ Default prompts cannot be deleted. Custom prompts: add, edit, delete, duplicate,
 
 1. `init()` - restores SF settings and last extraction result, wires controls. No async I/O.
 2. First `onNavigate()` - calls `registerTabListeners()` (idempotent), then runs detection flow.
-3. `registerTabListeners()` attaches `chrome.tabs.onActivated` and `chrome.tabs.onUpdated` for auto-detection.
+3. `registerTabListeners()` attaches `chrome.tabs.onActivated` and `chrome.tabs.onUpdated` for auto-detection. In Side Panel mode, switching to a non-Salesforce tab immediately resets the live status badge, widget state, and Extract button without clearing the last extracted result.
 
 ---
 

@@ -2,7 +2,7 @@
 
 > A plugin-based Microsoft Edge extension platform for intelligent reply creation and data extraction across enterprise tools.
 
-[![Version](https://img.shields.io/badge/version-1.49.5-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.49.6-blue.svg)](CHANGELOG.md)
 [![Manifest](https://img.shields.io/badge/manifest-v3-green.svg)](manifest.json)
 [![Platform](https://img.shields.io/badge/platform-Microsoft%20Edge-0078D4.svg)](https://microsoftedge.microsoft.com)
 [![License: Icons](https://img.shields.io/badge/icons-CC%20BY%204.0-lightgrey.svg)](ICON-LICENSE.md)
@@ -58,7 +58,7 @@ For the full setup guide including the IBM Bob Execute feature, see [docs/INSTAL
 
 | Plugin | Version | Category | Description |
 |--------|---------|----------|-------------|
-| Salesforce Case Extractor | 4.12.4 | CRM | Extracts structured case data from Salesforce Lightning pages |
+| Salesforce Case Extractor | 4.12.5 | CRM | Extracts structured case data from Salesforce Lightning pages |
 | Cloudability OrgID | 4.0.5 | Cloud | Automatically resolves Cloudability Organisation ID with zero user interaction |
 | Edge Bookmark Finder | 1.0.3 | Productivity | Searches Microsoft Edge bookmarks with real-time multi-word filtering |
 | Apptio Planning Upgrade Calculator | 1.0.3 | Enterprise | Calculates Apptio Planning upgrade dates with dynamic release discovery |
