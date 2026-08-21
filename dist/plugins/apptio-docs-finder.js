@@ -866,7 +866,11 @@
 
     const body = li.querySelector('.adf-ic-body');
     body.addEventListener('click',   () => _openUrl(item.url));
-    body.addEventListener('keydown', e => { if (e.key === 'Enter') _openUrl(item.url); });
+    body.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      _openUrl(item.url);
+    });
     li.querySelector('.js-open').addEventListener('click', e => { e.stopPropagation(); _openUrl(item.url); });
     li.querySelector('.js-star').addEventListener('click', async e => {
       e.stopPropagation();
