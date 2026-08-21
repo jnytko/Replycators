@@ -1,6 +1,6 @@
 ﻿{
   "name": "replycators",
-  "version": "1.47.8",
+  "version": "1.49.2",
   "description": "ReplyCators — Plugin-based Microsoft Edge Extension Platform",
   "private": true,
   "scripts": {

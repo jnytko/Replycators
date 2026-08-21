@@ -9,6 +9,136 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.49.2] - 2026-08-22
+### Platform Audit - Backup & Restore + Notification gaps resolved
+**Type:** Bug Fix / Enhancement
+**Summary:** Comprehensive integration audit covering all plugins. Three gaps resolved: (1) Environment Dashboards Launcher (`com.replycators.env-dashboards` v1.4.0) was absent from `BR_PLUGIN_REGISTRY` despite owning a persistent `rc:plugin:com.replycators.env-dashboards:state` storage key - entry added with full validate/migrate/sanitize contract and `restoreStrategy: 'replace'`. (2) Edge Bookmark Finder had no success notification after a scan completed - `addNotification('success')` added after scan so the Notifications Center and toast system reflect the result. (3) Snake had no platform-visible milestone event when a new high score was achieved - `addNotification('success')` added in `gameOver()` guarded by `isNewHigh`. Backup & Restore plugin bumped to v1.0.5. Edge Bookmark Finder bumped to v1.0.3. Snake bumped to v1.0.2.
+**Files changed:**
+- `plugins/backup-restore.js` - `BR_PLUGIN_REGISTRY`: new entry for `com.replycators.env-dashboards` (exportable state, validate, sanitize, replace strategy); file header `v1.0.4` -> `v1.0.5`
+- `plugins/bookmark-finder.js` - Added `app().addNotification('success')` on scan complete with bookmark and folder count
+- `plugins/snake.js` - Added `isNewHigh` guard and `app().addNotification('success')` in `gameOver()` when a new high score is set
+- `dashboard.js` - Edge Bookmark Finder version `1.0.2` -> `1.0.3`; Snake version `1.0.1` -> `1.0.2`; file header `v1.49.1` -> `v1.49.2`
+- `dashboard.html` - Edge Bookmark Finder header `v1.0.2` -> `v1.0.3`; Snake header `v1.0.1` -> `v1.0.2`; platform version `v1.49.1` -> `v1.49.2`
+- `manifest.json` - Version `1.49.1` -> `1.49.2`
+- `package.json` - Version `1.49.1` -> `1.49.2`
+- `AGENTS.md` - §1 version updated; §8 plugin versions updated
+- `CHANGELOG.md` - This entry
+- `dist/` - Mirror sync of all changed root files
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.3
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.2
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
+## [1.49.1] - 2026-08-22
+### Quick Note Pad + Backup & Restore - Order fix, notifications, backup integration
+**Type:** Bug Fix / Enhancement
+**Summary:** Three corrections to the v1.49.0 Quick Note Pad release: (1) DEFAULT_PLUGIN_ORDER corrected - Apptio Docs Finder restored to #4, Quick Note Pad moved to #5, matching the user-confirmed plugin manager ordering. (2) Key notepad actions (create note, delete note, copy to clipboard, export .txt) now fire `addNotification()` so events appear in the Notifications Center and Activity Log - previously only `showToast()` was called. (3) Backup & Restore `BR_PLUGIN_REGISTRY` extended with full entries for Quick Note Pad (exportable notes + state, sanitize redacts body and title) and Jira & Confluence Smart Search Hub (exportable settings, optional recents, sanitize redacts recent labels). Backup & Restore plugin bumped to v1.0.4.
+**Files changed:**
+- `dashboard.js` - DEFAULT_PLUGIN_ORDER: notepad swapped #4 -> #5, apptio-docs-finder swapped #5 -> #4; version header `v1.49.0` -> `v1.49.1`
+- `plugins/notepad.js` - `addNotification()` added for: create note, delete note, copy (replaces showToast), export (replaces showToast); `deletedTitle` captured before splice for correct deletion message
+- `plugins/backup-restore.js` - BR_PLUGIN_REGISTRY: new entries for `com.replycators.notepad` (exportable notes + state, schema validate, sanitize) and `com.replycators.jira-confluence-hub` (exportable settings, optional recents, sanitize); file header `v1.0.3` -> `v1.0.4`
+- `manifest.json` - Version `1.49.0` -> `1.49.1`
+- `package.json` - Version `1.49.0` -> `1.49.1`
+- `AGENTS.md` - §1 version updated
+- `CHANGELOG.md` - This entry
+- `dist/` - Mirror sync of all changed root files
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
+## [1.49.0] - 2026-08-22
+### Quick Note Pad - New plugin (v1.0.0)
+**Type:** Feature
+**Summary:** Added the Quick Note Pad plugin (`com.replycators.notepad` v1.0.0). Provides a persistent multi-tab scratch pad with up to 5 named note tabs, 300 ms debounced auto-save on every keystroke, copy-to-clipboard, .txt export, monospace toggle, and a dashboard widget showing an active-note preview. Notes survive popup close, browser restart, and all session boundaries. Zero new Chrome permissions; pure `chrome.storage.local`.
+**Files changed:**
+- `plugins/notepad.js` - New plugin module (IIFE, self-registers on `window.ReplyCatorsPlugins.Notepad`); multi-note state, debounced save, tab switching, title editing, copy, export, mono toggle, widget update, full lifecycle (init/onNavigate/onLeave)
+- `plugins/shared/icon-helper.js` - Added `notepad` to `plugins:` section of `ICON_REGISTRY` pointing at existing `content/note.svg`
+- `assets/icons/streamline-ultimate-colors-free/icon-manifest.json` - Added `plugins.notepad` entry
+- `plugins/documentation.js` - Added `notepad` topic to NAV_GROUPS `plugins` array and `CONTENT_MAP`; topics count updated 23 -> 24
+- `dashboard.html` - Script tag for `plugins/notepad.js`; Quick Action button "Notes"; Dashboard widget card with preview and Open Notes button; plugin view `#view-plugin-notepad` (standard `.rc-plugin-page`); settings group (Notes Limit); activity log filter option; platform version `v1.48.0` -> `v1.49.0`
+- `dashboard.js` - New entry in `PLUGINS[]`; `PLUGIN_DOC_MAP` entry; `DEFAULT_PLUGIN_ORDER` slot #4 (renumbered #5-#12); `_safeInit('Notepad', ...)` call; file header version `v1.48.0` -> `v1.49.0`
+- `src/plugins/Notepad/index.ts` - TypeScript stub
+- `src/plugins/Notepad/manifest.ts` - Plugin manifest stub
+- `manifest.json` - Version `1.48.0` -> `1.49.0`
+- `package.json` - Version `1.48.0` -> `1.49.0`
+- `AGENTS.md` - §1 version, §5 Source of Truth Matrix, §8 Plugin Inventory + Plugin Source Locations + Notable Plugin Keys, §10 Active Views
+- `CHANGELOG.md` - This entry
+- `dist/` - Mirror sync of all changed root files
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
+## [1.48.0] - 2026-08-22
+### Jira & Confluence Smart Search Hub - New plugin (Phase 1)
+**Type:** Feature
+**Summary:** Added the Jira & Confluence Smart Search Hub plugin (`com.replycators.jira-confluence-hub` v1.0.0). Provides a unified smart search box that detects input type (Jira issue key, full Jira URL, full Confluence URL, Confluence path, or search phrase) and offers context-appropriate actions: Open Issue, Open Page, Search Jira, Search Confluence, Search Both. Stores recent Jira and Confluence navigations/searches with configurable retention (default 10 per type). All navigation opens the browser directly - no external API calls or new Chrome permissions required.
+**Files changed:**
+- `plugins/jira-confluence-hub.js` - New plugin module (IIFE, self-registers on `window.ReplyCatorsPlugins.JiraConfluenceHub`); smart input detection, URL builders, recent items, settings load/save, full lifecycle (init/render/onNavigate/onLeave)
+- `plugins/shared/icon-helper.js` - Added `jiraConfluenceHub` entry to `plugins:` section of `ICON_REGISTRY` pointing to existing `assets/icons/streamline-ultimate-colors-free/plugins/jira.svg`
+- `plugins/documentation.js` - Added `jira-confluence-hub` topic to NAV_GROUPS `plugins` array and `CONTENT_MAP`; topics count updated 22 -> 23
+- `dashboard.html` - Script tag for `plugins/jira-confluence-hub.js`; Quick Action button; Dashboard widget card; plugin view `#view-plugin-jira-confluence-hub` (standard `.rc-plugin-page` structure); settings group (Jira Base URL, Confluence Base URL, Recent Items Limit, Open Results In); activity log filter option; platform version display `v1.47.8` -> `v1.48.0`
+- `dashboard.js` - New entry in `PLUGINS[]`; `PLUGIN_DOC_MAP` entry; `DEFAULT_PLUGIN_ORDER` slot #3; `_safeInit('JiraConfluenceHub', ...)` call; file header version `v1.47.8` -> `v1.48.0`
+- `src/plugins/JiraConfluenceHub/index.ts` - TypeScript stub
+- `src/plugins/JiraConfluenceHub/manifest.ts` - Plugin manifest stub
+- `manifest.json` - Version `1.47.8` -> `1.48.0`
+- `package.json` - Version `1.47.8` -> `1.48.0`
+- `AGENTS.md` - §1 version, §5 Source of Truth Matrix, §8 Plugin Inventory + Plugin Source Locations + Notable Plugin Keys, §10 Active Views
+- `CHANGELOG.md` - This entry
+- `dist/` - Mirror sync of all changed root files
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
 ## [1.47.9] - 2026-08-22
 ### Cloudability OrgID - Fix enable/disable lifecycle reversibility without reload (Issue #28)
 **Type:** Bug Fix

@@ -1414,6 +1414,14 @@ body.rc-sidepanel .rc-marketplace-banner {
 }
 .sf-dt tr:last-child td { border-bottom: none; }
 .sf-dt tbody tr:hover td { background: var(--rc-surface-2); }
+
+/* AUC schedule table row/cell helpers (extend sf-dt) */
+.sf-dt-row   { border-bottom: 1px solid var(--rc-border); }
+.sf-dt-cell  { padding: 4px 6px; color: var(--rc-text); vertical-align: middle; }
+.sf-dt-cell--strong { font-weight: 600; }
+.sf-dt-empty-cell   { padding: 8px; text-align: center; color: var(--rc-text-muted); }
+.sf-dt-footer-note  { padding: 5px 6px; font-size: 11px; color: var(--rc-text-muted); font-style: italic; }
+
 .td-name    { font-weight: 500; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .td-default { text-align: center; }
 .td-order   { text-align: center; color: var(--rc-text-dim); }
@@ -1891,6 +1899,46 @@ body.rc-sidepanel .rc-toast-container {
 }
 .bm-cap-icon { font-size: 13px; flex-shrink: 0; color: var(--rc-amber); }
 
+/* Folder row (search results - folder type) */
+.bm-folder-row {
+  border-bottom: 1px solid var(--rc-border);
+  padding: 7px 4px;
+}
+.bm-folder-inner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bm-folder-icon { font-size: 14px; flex-shrink: 0; }
+.bm-folder-body { flex: 1; min-width: 0; }
+.bm-folder-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rc-text);
+}
+.bm-folder-meta {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  margin-top: 1px;
+}
+
+/* duplicate-badge is shared by both BM and Tab Search */
+.bm-duplicate-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--rc-amber) 15%, transparent);
+  color: var(--rc-amber);
+  margin-left: 4px;
+}
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .bm-duplicate-badge { background: var(--rc-surface-2); color: var(--rc-amber); }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    SNAKE PLUGIN — Retro Arcade LCD (visual polish pass)
    All classes prefixed with .snk- to avoid collisions.
@@ -2171,6 +2219,53 @@ body.rc-sidepanel .rc-toast-container {
   border-color: var(--rc-border-focus, var(--rc-accent));
 }
 
+/* Profile card sub-elements */
+.ws-profile-card__header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.ws-profile-card__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+.ws-profile-card__mode {
+  flex-shrink: 0;
+}
+.ws-profile-card__urls {
+  font-size: 11px;
+  margin: 4px 0 8px;
+  max-height: 48px;
+  overflow: hidden;
+  color: var(--rc-text-muted);
+}
+.ws-url-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ws-url-more {
+  font-size: 10px;
+  margin-top: 1px;
+}
+.ws-profile-card__footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ws-profile-card__meta {
+  font-size: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
 .ws-card-header {
   display: flex;
   align-items: baseline;
@@ -2294,6 +2389,19 @@ body.rc-sidepanel .rc-toast-container {
   flex-shrink: 0;
 }
 
+/* ── URLs section header ─────────────────────────────────────────────────── */
+.ws-urls-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.ws-urls-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rc-text);
+}
+
 /* ── URL rows ─────────────────────────────────────────────────────────────── */
 .ws-url-row {
   display: flex;
@@ -2394,6 +2502,12 @@ body.rc-sidepanel .rc-toast-container {
 .ws-profile-card--favorite {
   border-left: 3px solid var(--rc-accent);
 }
+
+/* Widget empty hint */
+.ws-widget-empty-hint { font-size: 11px; }
+
+/* Widget favorites quick-launch buttons */
+.ws-fav-launch-btn { margin: 0 4px 4px 0; }
 
 /* ── Favorite toggle button ────────────────────────────────────────────── */
 .ws-fav-btn {
@@ -2583,6 +2697,21 @@ body.rc-sidepanel .ws-toolbar {
 }
 .ts-group-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ts-group-count { flex-shrink: 0; margin-left: 8px; }
+
+/* Active tab badge */
+.ts-tab-active-badge {
+  color: var(--rc-success, #1a7f44);
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+/* Window ID badge */
+.ts-tab-win-id {
+  font-size: 10px;
+  color: var(--rc-text-muted);
+  margin-left: 4px;
+}
 
 /* ============================================================
    Documentation View — Help & Docs
@@ -4516,4 +4645,195 @@ body.rc-sidepanel .edl-card-grid {
   outline: 2px solid var(--rc-accent, #3b82d4);
 }
 
+
+
+/* ── rc-status-bar — Inline status message strip ────────────────────────────
+   Alias / companion for .rc-status used in dynamic plugin contexts.
+   Salesforce, Apptio Upgrade Calculator and other plugins write
+   el.className = 'rc-status-bar' or 'rc-status-bar ok/err/warn' dynamically.
+   Maps to the rc-status visual tokens so all status strips look identical.
+   Modifiers: ok, success, err, error, warn, warning                         */
+.rc-status-bar {
+  font-size: 12px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--rc-border);
+  background: var(--rc-surface-2);
+  color: var(--rc-text-muted);
+  line-height: 1.5;
+  display: block;
+}
+/* Salesforce uses class strings like 'rc-status-bar ok', 'rc-status-bar err' */
+.rc-status-bar.ok,
+.rc-status-bar.success    { background: var(--rc-green-bg);  color: var(--rc-green);  border-color: transparent; }
+.rc-status-bar.err,
+.rc-status-bar.error      { background: var(--rc-red-bg);    color: var(--rc-red);    border-color: transparent; }
+.rc-status-bar.warn,
+.rc-status-bar.warning    { background: var(--rc-amber-bg);  color: var(--rc-amber);  border-color: transparent; }
+.rc-status-bar.info       { background: var(--rc-accent-muted); color: var(--rc-accent); border-color: transparent; }
+
+/* rc-required — asterisk on mandatory form labels */
+.rc-required {
+  color: var(--rc-red);
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   QUICK NOTE PAD Plugin Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Root flex column fills the plugin body */
+.np-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Toolbar row - padded, bordered, non-shrinkable */
+.np-toolbar {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--rc-border);
+  flex-shrink: 0;
+}
+
+/* Title input fills remaining toolbar width */
+.np-title-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Char count - no bottom margin (overrides rc-results-meta default) */
+.np-char-count {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+/* Textarea wrapper fills remaining height */
+.np-body-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px 12px;
+  min-height: 0;
+}
+
+/* Textarea fills its wrapper */
+.np-textarea {
+  flex: 1;
+  resize: none;
+  min-height: 0;
+}
+
+/* Add-note tab button - larger "+" affordance, slightly wider than standard tabs */
+.np-add-tab-btn {
+  padding: 0 12px;
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--rc-text-dim);
+  letter-spacing: 0;
+}
+.np-add-tab-btn:hover {
+  color: var(--rc-accent);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   JIRA & CONFLUENCE SMART SEARCH HUB Plugin Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Outer body - fills rc-plugin-body container without padding (controls its own) */
+.jch-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  height: 100%;
+}
+
+/* Search hero section - top padding block with search input */
+.jch-search-hero {
+  padding: 14px 16px 10px;
+}
+
+/* Row containing the input and clear button */
+.jch-search-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Search input fills available width */
+.jch-search-input {
+  flex: 1;
+  font-size: 13px;
+}
+
+/* Clear button - matches input height visually */
+.jch-clear-btn {
+  flex-shrink: 0;
+}
+
+/* Type detection hint line below the input */
+.jch-type-hint {
+  min-height: 18px;
+  margin-top: 5px;
+  font-size: 11px;
+  color: var(--rc-text-muted);
+}
+
+/* Action buttons row - standard action bar with bottom border */
+.jch-actions {
+  padding: 0 16px 12px;
+  border-bottom: 1px solid var(--rc-border);
+}
+
+/* Quick links bar */
+.jch-quick-links {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--rc-border);
+}
+
+/* "Quick:" label */
+.jch-quick-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rc-text-muted);
+  flex-shrink: 0;
+}
+
+/* Recents section wrapper - fills remaining height */
+.jch-recents-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 12px 16px 0;
+}
+
+/* Individual tab panel */
+.jch-recents-panel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Recents list - constrained height */
+.jch-recents-list {
+  max-height: 200px;
+}
+
+/* Footer below recents list (Clear History) */
+.jch-recents-footer {
+  padding: 6px 0 10px;
+}
+
+/* Compact empty state variant - less padding than the default full empty state */
+.rc-plugin-empty--compact {
+  padding: 16px 0;
+}
 

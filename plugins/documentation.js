@@ -17,7 +17,7 @@
   //   PLUGIN DEV     - Example Plugin, Plugin SDK, AI Plugin Kit
   //   SUPPORT        - Troubleshooting, Release Notes
   //
-  // Topics: 22
+  // Topics: 24
 
   const PLUGIN_ID = 'com.replycators.documentation';
 
@@ -56,6 +56,8 @@
       id: 'plugins',
       label: 'Plugins',
       topics: [
+        { id: 'notepad',             label: 'Quick Note Pad',                       semanticId: 'plugins.notepad',                       keywords: 'notepad notes scratch pad clipboard copy export txt monospace tabs persistent' },
+        { id: 'jira-confluence-hub', label: 'Jira & Confluence Smart Search Hub', semanticId: 'plugins.jiraConfluenceHub',            keywords: 'jira confluence search issue ticket atlassian smart hub recent history' },
         { id: 'salesforce',         label: 'Salesforce Case Extractor',         semanticId: 'plugins.salesforceCaseExtractor',      keywords: 'sf extract case prompt execute bob' },
         { id: 'cloudability-orgid', label: 'Cloudability OrgID',                semanticId: 'plugins.cloudabilityOrgId',             keywords: 'orgid org id cloud refresh cache' },
         { id: 'env-dashboards',     label: 'Environment Dashboards Launcher',   semanticId: 'plugins.envDashboards',                 keywords: 'splunk grafana dashboard environment akp cluster namespace region monitoring' },
@@ -844,6 +846,92 @@
       )}
 
       ${infoBox('states.info', 'Privacy', 'The OrgID is stored only in your browser\'s local extension storage. It is never transmitted to any external service.')}
+    `,
+
+    'notepad': () => `
+      ${h2('Quick Note Pad')}
+      ${p('A persistent multi-tab scratch pad for capturing case notes, URLs, error messages, and working drafts directly inside ReplyCators. Notes survive popup close, browser restart, and session boundaries - nothing is lost between investigations.')}
+
+      ${h3('Quick Start')}
+      ${ul([
+        'Navigate to <strong>Quick Note Pad</strong> in the sidebar - your last note is immediately visible.',
+        'Start typing. Notes are saved automatically after every keystroke (300 ms debounce).',
+        'Click <strong>+</strong> in the tab bar to add a new note (up to 5 tabs).',
+        'Double-click a tab title or edit the title field at the top to rename a note.',
+        'Click <strong>Copy</strong> to copy the active note to the clipboard.',
+        'Click <strong>Export</strong> to download the active note as a .txt file.',
+      ])}
+
+      ${h3('Note Tabs')}
+      ${p('Up to 5 named note tabs. Each tab is independent with its own title and body. Tabs and their contents persist across sessions.')}
+      ${table(
+        ['Action', 'How to do it'],
+        [
+          ['Create a note',  'Click the <strong>+</strong> button in the tab bar'],
+          ['Switch note',    'Click the tab label'],
+          ['Rename a note',  'Edit the title field in the toolbar and press Enter or click away'],
+          ['Delete a note',  'Click the red <strong>Delete</strong> button in the toolbar (disabled when only one note remains)'],
+        ]
+      )}
+
+      ${h3('Toolbar Actions')}
+      ${table(
+        ['Button', 'Action'],
+        [
+          ['<strong>Copy</strong>',   'Copies the entire note body to the clipboard'],
+          ['<strong>Export</strong>', 'Downloads the note as a .txt file named after the note title'],
+          ['<strong>Mono</strong>',   'Toggles monospace font (Notepad++ style) for the text area'],
+          ['<strong>Delete</strong>', 'Deletes the current note tab'],
+        ]
+      )}
+
+      ${h3('Dashboard Widget')}
+      ${p('The Quick Note Pad widget on the Dashboard shows a one-line preview of your active note. Click <strong>Open Notes</strong> to jump directly to the plugin.')}
+
+      ${infoBox('states.info', 'Auto-Save', 'Every keystroke triggers a 300 ms debounced save to browser storage. Your notes are never lost by closing the popup or switching to another tool. Navigating away from the plugin also flushes any pending save immediately.')}
+    `,
+
+    'jira-confluence-hub': () => `
+      ${h2('Jira &amp; Confluence Smart Search Hub')}
+      ${p('Navigate to Jira issues, run Jira searches, open Confluence pages, and search Confluence - all from a single unified search box inside ReplyCators. No API credentials required.')}
+
+      ${h3('Smart Input Detection')}
+      ${p('Type or paste anything into the search box. The plugin automatically detects the input type and offers the appropriate actions:')}
+      ${table(
+        ['Input type', 'Example', 'Actions offered'],
+        [
+          ['Jira issue key',    '<code>VAN-46375</code>',                                'Open Jira Issue, Search Jira'],
+          ['Full Jira URL',     '<code>https://apptio.atlassian.net/browse/VAN-1</code>', 'Open directly'],
+          ['Full Confluence URL', '<code>https://apptio.atlassian.net/wiki/...</code>',  'Open directly'],
+          ['Confluence path',   '<code>DFRnD/pages/71957970/Digital+Fuel+documentation</code>', 'Open Confluence Page'],
+          ['Search phrase',     '<code>SAP connector</code>, <code>export failure</code>', 'Search Jira, Search Confluence, Search Both'],
+        ]
+      )}
+
+      ${h3('Quick Start')}
+      ${ul([
+        'Type a Jira issue key (e.g. <code>VAN-46375</code>) and click <strong>Open Issue</strong> to jump directly to that ticket.',
+        'Type any phrase and click <strong>Search Jira</strong>, <strong>Search Confluence</strong>, or <strong>Search Both</strong> to run a full-text search.',
+        'Paste a Jira or Confluence URL and click <strong>Open</strong> to navigate directly.',
+        'Each search or navigation is saved to <strong>Recent Items</strong> for quick replay.',
+      ])}
+
+      ${h3('Recent Items')}
+      ${p('The plugin keeps a history of your recent Jira and Confluence searches and navigations (configurable, default 10 per type). Click any recent item to replay it instantly. Use the <strong>Clear</strong> button to reset the history.')}
+
+      ${h3('Settings')}
+      ${table(
+        ['Setting', 'Default', 'Description'],
+        [
+          ['Jira Base URL',       '<code>https://apptio.atlassian.net</code>',       'Base URL of your Jira instance'],
+          ['Confluence Base URL', '<code>https://apptio.atlassian.net/wiki</code>',  'Base URL of your Confluence instance'],
+          ['Recent Items Limit',  '10',                                               'Maximum number of items kept in each recent history list'],
+          ['Open Results In',     'New Tab',                                          'Whether to open Jira and Confluence pages in a new tab or the current tab'],
+        ]
+      )}
+      ${p('Access settings via <strong>Settings</strong> in the sidebar, then scroll to the <strong>Jira &amp; Confluence Hub</strong> section.')}
+
+      ${infoBox('states.info', 'No Authentication Required', 'This plugin opens Jira and Confluence in the browser using standard URLs. You must already be signed in to your Atlassian account in the browser for the pages to load correctly.')}
     `,
 
     'env-dashboards': () => `

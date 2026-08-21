@@ -3,6 +3,10 @@
    Dark and Light mode, CSS custom properties.
    ============================================================ */
 
+/* Global: ensure the HTML `hidden` attribute always wins even when
+   author CSS sets display:flex/grid on the same element.          */
+[hidden] { display: none !important; }
+
 /* ── Font ───────────────────────────────────────────────────── */
 :root {
   font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
@@ -684,6 +688,7 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 /* ── Labels & Form ───────────────────────────────────────────── */
 .rc-form-group  { display: flex; flex-direction: column; gap: 6px; }
 .rc-label       { font-size: 12px; font-weight: 600; color: var(--rc-text); letter-spacing: 0.01em; }
+.rc-text-accent { color: var(--rc-accent); }
 .rc-helper-text { font-size: 11px; color: var(--rc-text-muted); line-height: 1.5; }
 .rc-muted       { color: var(--rc-text-muted); }
 
@@ -1466,6 +1471,8 @@ body.rc-sidepanel #bm-results {
 }
 .rc-plugin-body::-webkit-scrollbar       { width: 4px; }
 .rc-plugin-body::-webkit-scrollbar-thumb { background: var(--rc-border); border-radius: 3px; }
+/* --flush variant: plugin manages its own internal padding (e.g. JCH, Notepad) */
+.rc-plugin-body--flush { padding: 0; gap: 0; display: flex; flex-direction: column; flex: 1; min-height: 0; }
 
 /* ── rc-plugin-section — Standard section within a plugin body ──
    A titled content block. The heading row + content below it.
@@ -1706,6 +1713,7 @@ body.rc-sidepanel #bm-results {
   justify-content: center;
   gap: 8px;
 }
+.rc-plugin-loading[hidden] { display: none !important; }
 
 /* ── rc-plugin-status — Standard inline status strip ────────────
    Replaces: .rc-status-bar usage in plugin contexts.
@@ -1894,4 +1902,195 @@ body.rc-sidepanel .rc-plugin-header {
 }
 body.rc-sidepanel .rc-plugin-body {
   padding: 14px;
+}
+
+/* ── rc-plugin-toolbar — Standard inline toolbar within a plugin body ──────
+   Used for filter/search/action rows inside plugin content panels.
+   Consistent gap, wrap behavior, and vertical alignment.
+   Canonical structure:
+     <div class="rc-plugin-toolbar">
+       <input class="rc-input" ... />
+       <select class="rc-input rc-input--sm" ... />
+       <div class="rc-plugin-toolbar__spacer"></div>
+       <button class="rc-btn rc-btn--sm">...</button>
+     </div>                                                               */
+.rc-plugin-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.rc-plugin-toolbar__spacer { flex: 1; }
+
+/* ── rc-stats-bar — Inline key statistics strip ─────────────────────────
+   Compact surface bar showing a few stat tokens in a row.
+   Used by Bookmark Finder, Tab Search, and similar scan-result plugins.
+   Replaces ad-hoc inline-style stat bars.                               */
+.rc-stats-bar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+/* Ensure the hidden attribute correctly hides flex containers */
+.rc-stats-bar[hidden] { display: none !important; }
+.rc-stats-bar__item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--rc-text-muted);
+  white-space: nowrap;
+}
+/* Also hide individual items marked hidden */
+.rc-stats-bar__item[hidden] { display: none !important; }
+.rc-stats-bar__item strong {
+  color: var(--rc-text);
+  font-weight: 600;
+}
+.rc-stats-bar__spacer { flex: 1; }
+
+/* ── rc-results-meta — Small muted results count line ──────────────────
+   Shown below a toolbar / above a list, e.g. "Showing 23 results".     */
+.rc-results-meta {
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  margin-bottom: 6px;
+}
+
+/* ── rc-plugin-form-row — Horizontal label+control pair ────────────────
+   Consistent label-beside-input layout for plugin inline forms.
+   NOT for settings pages — use rc-settings-row there.                   */
+.rc-plugin-form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.rc-plugin-form-row__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--rc-text-muted);
+  flex-shrink: 0;
+  min-width: 60px;
+}
+.rc-plugin-form-row__control {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── rc-inline-filter — Search + type filter toolbar pattern ───────────
+   The standard two-element row: free-text input + type/sort select.
+   Used by Bookmark Finder, Tab Search, and similar listing plugins.     */
+.rc-inline-filter {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.rc-inline-filter__input  { flex: 1; min-width: 140px; }
+.rc-inline-filter__select { max-width: 140px; flex-shrink: 0; }
+
+/* ── rc-filter-toggles — Small checkbox toggle row ─────────────────────
+   Sits below an rc-inline-filter for secondary filters (include URL, etc.) */
+.rc-filter-toggles {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: var(--rc-text-muted);
+}
+.rc-filter-toggle {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* ── rc-scroll-list — Scrollable flat-list container ───────────────────
+   Standard max-height scrollable wrapper for result lists.
+   Replaces ad-hoc style="max-height:420px;overflow-y:auto" patterns.   */
+.rc-scroll-list {
+  max-height: 420px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.rc-scroll-list::-webkit-scrollbar       { width: 4px; }
+.rc-scroll-list::-webkit-scrollbar-thumb { background: var(--rc-border); border-radius: 3px; }
+
+/* Side panel: let scroll lists expand freely */
+body.rc-sidepanel .rc-scroll-list {
+  max-height: none;
+  overflow-y: visible;
+}
+
+/* ── rc-no-results — Centered no-results message ───────────────────────
+   Light alternative to rc-plugin-empty for inline "no match" states
+   inside a list container (not a full page empty state).               */
+.rc-no-results {
+  padding: 16px;
+  text-align: center;
+  color: var(--rc-text-muted);
+  font-size: 12px;
+}
+
+/* ── auc-stat / auc-stat-label / auc-stat-value — AUC stat tile ────────
+   Used inside rc-plugin-stats-row in the Apptio Upgrade Calculator.
+   Extends rc-plugin-stat with AUC-specific typography.
+   auc-stat--fill: stretch to fill its flexbox slot.                     */
+.auc-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 12px;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  min-width: 100px;
+}
+.auc-stat--fill {
+  min-width: 120px;
+  flex: 1;
+}
+.auc-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rc-text-dim);
+}
+.auc-stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rc-text);
+  line-height: 1.2;
+}
+
+/* ── rc-last-launched — "Last launched" info strip ─────────────────────
+   Used by Workspace Starter to show last-used profile.
+   Replaces ad-hoc inline-style bar.                                     */
+.rc-last-launched {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--rc-text-muted);
+  margin-bottom: 10px;
+}
+.rc-last-launched__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rc-text);
 }

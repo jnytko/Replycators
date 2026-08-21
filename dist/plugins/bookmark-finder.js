@@ -117,43 +117,43 @@
 
   function getHTML() {
     return `
-      <div id="bm-perm-error" class="rc-status rc-status--error" style="display:none;"></div>
-      <div id="bm-stats" style="display:none;margin-bottom:12px;background:var(--rc-surface);border:1px solid var(--rc-border);border-radius:6px;padding:10px;font-size:12px;">
-        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
-          <span id="bm-stat-total" title="Total bookmarks">0 bookmarks</span>
-          <span id="bm-stat-folders" title="Total folders">0 folders</span>
-          <span id="bm-stat-depth" title="Max depth">depth 0</span>
-          <span id="bm-stat-dupes" style="display:none;" title="Duplicate URLs"></span>
-          <span id="bm-stat-empty" style="display:none;" title="Empty folders"></span>
-          <div style="flex:1;"></div>
-          <button id="bm-scan-btn" class="rc-btn rc-btn--secondary rc-btn--sm" title="Re-scan bookmarks">Re-scan</button>
-          <button id="bm-toggle-analytics" class="rc-btn rc-btn--ghost rc-btn--sm" title="Show/hide analytics">Analytics</button>
-        </div>
+      <div id="bm-perm-error" class="rc-status rc-status--error" hidden></div>
+      <div id="bm-stats" class="rc-stats-bar" hidden>
+        <span id="bm-stat-total" class="rc-stats-bar__item" title="Total bookmarks">0 bookmarks</span>
+        <span id="bm-stat-folders" class="rc-stats-bar__item" title="Total folders">0 folders</span>
+        <span id="bm-stat-depth" class="rc-stats-bar__item" title="Max depth">depth 0</span>
+        <span id="bm-stat-dupes" class="rc-stats-bar__item" hidden title="Duplicate URLs"></span>
+        <span id="bm-stat-empty" class="rc-stats-bar__item" hidden title="Empty folders"></span>
+        <div class="rc-stats-bar__spacer"></div>
+        <button id="bm-scan-btn" class="rc-btn rc-btn--secondary rc-btn--sm" title="Re-scan bookmarks">Re-scan</button>
+        <button id="bm-toggle-analytics" class="rc-btn rc-btn--ghost rc-btn--sm" title="Show/hide analytics">Analytics</button>
       </div>
-      <div id="bm-analytics" style="display:none;background:var(--rc-surface);border:1px solid var(--rc-border);border-radius:6px;padding:12px;margin-bottom:12px;font-size:12px;"></div>
-      <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-        <input type="text" id="bm-search" class="rc-input" placeholder="Search by title, URL, domain, folder…" style="flex:1;" title="Multi-word search - all words must match" />
-        <select id="bm-filter" class="rc-input rc-input--sm" style="max-width:140px;" title="Type filter">
+      <div id="bm-analytics" class="rc-plugin-card" style="margin-bottom:12px;" hidden></div>
+      <div class="rc-inline-filter">
+        <input type="text" id="bm-search" class="rc-input rc-inline-filter__input" placeholder="Search by title, URL, domain, folder…" title="Multi-word search - all words must match" />
+        <select id="bm-filter" class="rc-input rc-input--sm rc-inline-filter__select" title="Type filter">
           <option value="all">All types</option>
           <option value="bookmarks">Bookmarks only</option>
           <option value="folders">Folders only</option>
           <option value="duplicates">Duplicates only</option>
         </select>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:10px;font-size:11px;color:var(--rc-text-muted);">
-        <label style="display:flex;gap:4px;align-items:center;cursor:pointer;" title="Include URLs in search">
+      <div class="rc-filter-toggles">
+        <label class="rc-filter-toggle" title="Include URLs in search">
           <input type="checkbox" id="bm-opt-urls" checked /> Search URLs
         </label>
-        <label style="display:flex;gap:4px;align-items:center;cursor:pointer;" title="Include folder names in search">
+        <label class="rc-filter-toggle" title="Include folder names in search">
           <input type="checkbox" id="bm-opt-folders" checked /> Search folders
         </label>
       </div>
-      <div id="bm-status" class="rc-status rc-status--neutral" style="display:none;"></div>
-      <div id="bm-results-count" style="font-size:11px;color:var(--rc-text-muted);margin-bottom:8px;"></div>
-      <div id="bm-loading" class="rc-status rc-status--neutral" style="display:none;">${window.ReplyCatorsIconHelper ? window.ReplyCatorsIconHelper.renderIcon('states.loading',{size:14,decorative:true}) : ''} Scanning bookmarks…</div>
-      <div id="bm-results" style="max-height:420px;overflow-y:auto;"></div>
-      <div id="bm-recent-section" style="display:none;margin-top:16px;">
-        <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--rc-text-muted);">Recently Added Bookmarks</div>
+      <div id="bm-status" class="rc-status rc-status--neutral" hidden></div>
+      <div id="bm-results-count" class="rc-results-meta"></div>
+      <div id="bm-loading" class="rc-plugin-loading" hidden>${window.ReplyCatorsIconHelper ? window.ReplyCatorsIconHelper.renderIcon('states.loading',{size:14,decorative:true}) : ''} Scanning bookmarks…</div>
+      <div id="bm-results" class="rc-scroll-list"></div>
+      <div id="bm-recent-section" style="margin-top:16px;" hidden>
+        <div class="rc-ops-section-header">
+          <span class="rc-ops-section-header__label">Recently Added Bookmarks</span>
+        </div>
         <div id="bm-recent-list"></div>
       </div>`;
   }
@@ -226,20 +226,20 @@
     const BM_QUOTA_BLOCK_AT = 4 * 1024 * 1024;  // 4 MB
 
     function runScan() {
-      loadingEl.style.display = 'block';
+      loadingEl.removeAttribute('hidden');
       scanBtn.disabled = true;
       resultsEl.innerHTML = '';
-      statsEl.style.display = 'none';
+      statsEl.setAttribute('hidden', '');
       bmScanBookmarks(function(s) {
-        loadingEl.style.display = 'none';
+        loadingEl.setAttribute('hidden', '');
         scanBtn.disabled = false;
         if (s.permissionError) {
           permError.textContent = s.permissionErrorMessage || 'Bookmark access denied. Ensure the "bookmarks" permission is granted.';
-          permError.style.display = 'block';
+          permError.removeAttribute('hidden');
           app().addLog('error', plugin.id, 'permission error: ' + s.permissionErrorMessage);
           return;
         }
-        permError.style.display = 'none';
+        permError.setAttribute('hidden', '');
         scan = s;
 
         // Quota pre-check before writing the scan cache to storage.
@@ -268,6 +268,7 @@
               }
             });
           }
+          app().addNotification('Edge Bookmark Finder', 'Scan complete - ' + s.totalBookmarks + ' bookmarks in ' + s.totalFolders + ' folders.', 'success', plugin.id);
           app().addLog('info', plugin.id, 'Scanned ' + s.totalBookmarks + ' bookmarks, ' + s.totalFolders + ' folders');
           updateStats();
           renderResults();
@@ -278,14 +279,16 @@
 
     function updateStats() {
       if (!scan) return;
-      statsEl.style.display   = 'block';
+      statsEl.removeAttribute('hidden');
       statTotal.textContent   = scan.totalBookmarks + ' bookmarks';
       statFolders.textContent = scan.totalFolders + ' folders';
       statDepth.textContent   = 'depth ' + scan.deepestLevel;
-      if (scan.duplicateCount > 0) { statDupes.textContent = scan.duplicateCount + ' duplicates'; statDupes.style.display = 'inline'; }
-      if (scan.emptyFolderCount > 0) { statEmpty.textContent = scan.emptyFolderCount + ' empty folders'; statEmpty.style.display = 'inline'; }
+      if (scan.duplicateCount > 0) { statDupes.textContent = scan.duplicateCount + ' duplicates'; statDupes.removeAttribute('hidden'); }
+      if (scan.emptyFolderCount > 0) { statEmpty.textContent = scan.emptyFolderCount + ' empty folders'; statEmpty.removeAttribute('hidden'); }
       if (scan.commonDomains.length > 0) {
-        analyticsEl.innerHTML = '<div style="font-weight:600;margin-bottom:8px;">Top Domains</div><div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+        analyticsEl.innerHTML =
+          '<div class="rc-plugin-section__header" style="margin-bottom:8px;">Top Domains</div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
           scan.commonDomains.map(function(d) {
             return '<span class="rc-badge rc-badge--blue" title="' + app().esc(d.domain) + ': ' + d.count + '">' + app().esc(d.domain) + ' <strong>' + d.count + '</strong></span>';
           }).join('') + '</div>';
@@ -318,7 +321,7 @@
       resultsEl.innerHTML = '';
 
       if (results.length === 0) {
-        resultsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--rc-text-muted);">No matching bookmarks.</div>';
+        resultsEl.innerHTML = '<div class="rc-no-results">No matching bookmarks.</div>';
         return;
       }
 
@@ -347,12 +350,15 @@
             '</div>';
         } else {
           const f = item;
-          el.style.cssText = 'border-bottom:1px solid var(--rc-border);padding:7px 4px;';
+          el.className = 'bm-folder-row';
           el.innerHTML =
-            '<div style="display:flex;align-items:center;gap:6px;">' +
-              '<span style="font-size:14px;" aria-hidden="true"></span>' +
-              '<div><span style="font-weight:600;font-size:12px;">' + app().esc(f.title) + '</span>' + (f.isEmpty ? ' <span style="color:#f59e0b;font-size:10px;">empty</span>' : '') +
-              '<div style="font-size:11px;color:var(--rc-text-muted);">' + (app().esc(f.path)||'(root)') + ' · ' + f.bookmarkCount + ' bookmarks</div></div>' +
+            '<div class="bm-folder-inner">' +
+              '<span class="bm-folder-icon" aria-hidden="true"></span>' +
+              '<div class="bm-folder-body">' +
+                '<span class="bm-folder-title">' + app().esc(f.title) + '</span>' +
+                (f.isEmpty ? ' <span class="rc-badge" style="font-size:10px;">empty</span>' : '') +
+                '<div class="bm-folder-meta">' + (app().esc(f.path)||'(root)') + ' · ' + f.bookmarkCount + ' bookmarks</div>' +
+              '</div>' +
             '</div>';
         }
         frag.appendChild(el);
@@ -369,7 +375,7 @@
 
     function renderRecent() {
       if (!scan || scan.recentBookmarks.length === 0) return;
-      recentSection.style.display = 'block';
+      recentSection.removeAttribute('hidden');
       recentList.innerHTML = scan.recentBookmarks.map(function(b) {
         return '<div class="bm-recent-row" role="button" tabindex="0" data-url="' + app().esc(b.url) + '" title="Open bookmark: ' + app().esc(b.title) + '">' +
           '<span class="bm-result-icon" aria-hidden="true"></span>' +
@@ -417,8 +423,8 @@
     });
 
     analyticsToggle.addEventListener('click', function() {
-      const vis = analyticsEl.style.display !== 'none';
-      analyticsEl.style.display = vis ? 'none' : 'block';
+      const vis = !analyticsEl.hasAttribute('hidden');
+      if (vis) { analyticsEl.setAttribute('hidden', ''); } else { analyticsEl.removeAttribute('hidden'); }
       analyticsToggle.textContent = vis ? 'Analytics' : 'Hide Analytics';
     });
 

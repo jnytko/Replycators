@@ -1,6 +1,6 @@
 /**
  * ReplyCators — Dashboard Controller
- * v1.47.8
+ * v1.49.2
  *
  * Application shell and orchestrator for the ReplyCators plugin-based Edge extension.
  * Owns: startup coordination, session restoration, shared services (window.ReplyCatorsApp),
@@ -1443,7 +1443,7 @@ const PLUGINS = [
   {
     id: 'com.replycators.edge-bookmark-finder',
     name: 'Edge Bookmark Finder',
-    version: '1.0.2',
+    version: '1.0.3',
     description: 'Search Microsoft Edge bookmarks across the complete bookmark hierarchy - Bookmark Bar, Other Bookmarks, nested folders. Real-time multi-word search by title, URL, domain, or folder. Duplicate detection and analytics included.',
     author: 'ReplyCators Platform',
     category: 'general',
@@ -1471,7 +1471,7 @@ const PLUGINS = [
   {
     id: 'com.replycators.snake',
     name: 'Snake',
-    version: '1.0.1',
+    version: '1.0.2',
     description: 'Classic retro arcade Snake game faithfully recreated inside ReplyCators. Monochrome LCD screen, pixelated segments, classic movement mechanics, high score persistence.',
     author: 'ReplyCators Platform',
     category: 'general',
@@ -1525,6 +1525,34 @@ const PLUGINS = [
     leaveHook: null,
   },
   {
+    id: 'com.replycators.notepad',
+    name: 'Quick Note Pad',
+    version: '1.0.0',
+    description: 'Persistent multi-tab notepad for jotting case notes, URLs, error messages, and partial drafts mid-investigation. Notes survive popup close and browser restarts. Supports up to 5 named tabs, copy to clipboard, .txt export, monospace mode, and 300 ms debounced auto-save.',
+    author: 'ReplyCators Platform',
+    category: 'productivity',
+    tags: ['notepad', 'notes', 'scratch pad', 'clipboard', 'productivity'],
+    icon: 'plugins.notepad',
+    viewId: 'plugin-notepad',
+    pluginKey: 'Notepad',
+    navHook: 'onNavigate',
+    leaveHook: 'onLeave',
+  },
+  {
+    id: 'com.replycators.jira-confluence-hub',
+    name: 'Jira & Confluence Smart Search Hub',
+    version: '1.0.0',
+    description: 'Unified smart-search and navigation hub for Jira and Confluence. Detects input type automatically - Jira issue keys, full URLs, Confluence paths, or search phrases - and offers one-click actions to open issues, search Jira, open Confluence pages, or search Confluence. Maintains recent-history lists for fast re-access.',
+    author: 'ReplyCators Platform',
+    category: 'apptione',
+    tags: ['jira', 'confluence', 'atlassian', 'search', 'support', 'navigation'],
+    icon: 'plugins.jiraConfluenceHub',
+    viewId: 'plugin-jira-confluence-hub',
+    pluginKey: 'JiraConfluenceHub',
+    navHook: 'onNavigate',
+    leaveHook: null,
+  },
+  {
     id: 'com.replycators.env-dashboards',
     name: 'Environment Dashboards Launcher',
     version: '1.4.0',
@@ -1566,6 +1594,8 @@ const MARKETPLACE_PLUGINS = [
 //
 // Missing entries cause navigateToPluginDoc() to open the root Documentation view.
 const PLUGIN_DOC_MAP = {
+  'plugin-notepad':             'notepad',
+  'plugin-jira-confluence-hub': 'jira-confluence-hub',
   'plugin-salesforce':          'salesforce',
   'plugin-cloudability-orgid':  'cloudability-orgid',
   'plugin-env-dashboards':      'env-dashboards',
@@ -1620,20 +1650,22 @@ function navigateToPluginDoc(viewId) {
 // Any plugin ID present in PLUGINS but absent from this list is appended at
 // the end (before Example Plugin) so new plugins never silently disappear.
 const DEFAULT_PLUGIN_ORDER = [
-  // #1 - #4: primary CRM, cloud, docs, and environment support tools
-  'com.replycators.salesforce-extractor',           // #1
-  'com.replycators.cloudability-orgid',             // #2
-  'com.replycators.apptio-docs-finder',             // #3
-  'com.replycators.env-dashboards',                 // #4
-  // #5 - #7: productivity and workspace tools
-  'com.replycators.workspace-starter',              // #5
-  'com.replycators.tab-search',                     // #6
-  'com.replycators.edge-bookmark-finder',           // #7
-  // #8: enterprise utilities
-  'com.replycators.apptio-planning-upgrade-calculator', // #8
-  // #9 - #10: games and reference
-  'com.replycators.snake',                          // #9
-  'com.replycators.example-plugin',                 // #10
+  // #1 - #6: primary support tools
+  'com.replycators.salesforce-extractor',               // #1
+  'com.replycators.cloudability-orgid',                 // #2
+  'com.replycators.jira-confluence-hub',                // #3
+  'com.replycators.apptio-docs-finder',                 // #4
+  'com.replycators.notepad',                            // #5
+  'com.replycators.env-dashboards',                     // #6
+  // #7 - #9: productivity and workspace tools
+  'com.replycators.workspace-starter',                  // #7
+  'com.replycators.tab-search',                         // #8
+  'com.replycators.edge-bookmark-finder',               // #9
+  // #10: enterprise utilities
+  'com.replycators.apptio-planning-upgrade-calculator', // #10
+  // #11 - #12: games and reference
+  'com.replycators.snake',                              // #11
+  'com.replycators.example-plugin',                     // #12
 ];
 
 // Dashboard widget display order — array of plugin IDs.
@@ -4799,6 +4831,8 @@ document.addEventListener('DOMContentLoaded', () => {
     _safeInit('Snake',                     () => window.ReplyCatorsPlugins?.Snake?.init?.(appSettings.snakeSpeed || 'classic'));
     _safeInit('WorkspaceStarter',          () => window.ReplyCatorsPlugins?.WorkspaceStarter?.init?.(currentView));
     _safeInit('TabSearch',                 () => window.ReplyCatorsPlugins?.TabSearch?.init?.());
+    _safeInit('Notepad',                      () => window.ReplyCatorsPlugins?.Notepad?.init?.());
+    _safeInit('JiraConfluenceHub',            () => window.ReplyCatorsPlugins?.JiraConfluenceHub?.init?.());
     _safeInit('ApptioDocsFinder',             () => window.ReplyCatorsPlugins?.ApptioDocsFinder?.init?.());
     _safeInit('EnvDashboards',                () => window.ReplyCatorsPlugins?.EnvDashboards?.init?.());
     _safeInit('BackupRestore',                () => window.ReplyCatorsPlugins?.BackupRestore?.init?.());

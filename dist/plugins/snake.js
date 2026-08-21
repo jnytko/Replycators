@@ -131,10 +131,14 @@
 
   function gameOver() {
     gameState = 'over';
+    const isNewHigh = score > 0 && score >= highScore;
     if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     draw();
     showOverlay('over');
     app().addLog('info', PLUGIN_ID, 'Game over - score: ' + score);
+    if (isNewHigh) {
+      app().addNotification('Snake', 'New high score: ' + score + '!', 'success', PLUGIN_ID);
+    }
   }
 
   // ── Rendering ──────────────────────────────────────────────────────────────

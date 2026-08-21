@@ -248,6 +248,8 @@
       examplePlugin:                _BASE + 'plugins/example-plugin.svg',            // App-Window-Code (code template window - distinct from Plugin Manager's Module-Puzzle)
       backupRestore:                _BASE + 'plugins/backup-restore.svg',            // Server-Refresh-1
       envDashboards:                _BASE + 'plugins/env-dashboards.svg',            // Monitor + bar chart + launch arrow (custom, Streamline-style)
+      jiraConfluenceHub:            _BASE + 'plugins/jira.svg',                      // Jira & Confluence Smart Search Hub
+      notepad:                      _BASE + 'content/note.svg',                      // Quick Note Pad (sticky note)
     },
 
     // ── Marketplace Plugins ───────────────────────────────────────────────────
