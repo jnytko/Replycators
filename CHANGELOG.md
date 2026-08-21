@@ -9,6 +9,34 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [1.49.3] - 2026-08-25
+### Docs - Align architecture, startup flow, plugin checklist, and Env Dashboard docs
+**Type:** Documentation
+**Summary:** Resolved six documentation drift issues identified in GitHub issue [DOCS][P3]. Corrected `initPlugins()` references to the actual `_safeInit()` / `DOMContentLoaded` pattern, removed the contradictory manual nav button checklist step, updated the navigation model to the grouped Notifications Center / Maintenance Center structure, aligned all plugin version numbers, added missing plugins (Quick Note Pad, Jira & Confluence Hub) to architecture and README tables, clarified which Environment Dashboards features are implemented vs. planned, added missing storage keys to `docs/STORAGE.md`, and created `docs/plugins/env-dashboards.md`.
+**Files changed:**
+- `AGENTS.md` - Plugin Release Checklist: removed manual nav button step; replaced `initPlugins()` with `_safeInit()` / DOMContentLoaded pattern
+- `docs/ARCHITECTURE.md` - Platform views table: grouped nav model (Notifications Center, Maintenance Center); Left navigation structure updated; plugin versions and descriptions updated; added Quick Note Pad and Jira & Confluence Hub; env-dashboards capabilities qualified
+- `docs/STARTUP-FLOW.md` - Boot sequence updated to current _safeInit() pattern and full plugin list; plugin load order updated to match current dashboard.html; init pattern note added
+- `docs/STORAGE.md` - Added Quick Note Pad, Jira & Confluence Smart Search Hub, and Environment Dashboards Launcher plugin key sections
+- `README.md` - Version badge updated to 1.49.2; Built-in Plugins table corrected (versions, added Quick Note Pad and Jira & Confluence Hub, env-dashboards description qualified); plugin doc table updated with env-dashboards link
+- `docs/plugins/env-dashboards.md` - Created; documents implemented features, planned features, storage schema, and known limitations
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.3
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.2
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
 ## [1.49.2] - 2026-08-22
 ### Platform Audit - Backup & Restore + Notification gaps resolved
 **Type:** Bug Fix / Enhancement

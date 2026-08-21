@@ -89,6 +89,27 @@ Backup & Restore never exports `rc:session:logs`, `rc:session:notifications`, `r
 |---|---|
 | `rc:plugin:com.replycators.snake:state` | `{ highScore }` |
 
+### Quick Note Pad
+
+| Key | Content |
+|---|---|
+| `rc:plugin:com.replycators.notepad:notes` | `NoteEntry[]` - up to 5 notes `{ id, title, body, updatedAt }` |
+| `rc:plugin:com.replycators.notepad:state` | `{ activeId, monoMode }` - active tab ID and monospace toggle |
+
+### Jira & Confluence Smart Search Hub
+
+| Key | Content |
+|---|---|
+| `rc:plugin:com.replycators.jira-confluence-hub:settings` | `{ jiraBase, confluenceBase, recentLimit, openIn }` |
+| `rc:plugin:com.replycators.jira-confluence-hub:jira-recents` | `{ type, label, url, ts }[]` - max `recentLimit` (default 10) |
+| `rc:plugin:com.replycators.jira-confluence-hub:confluence-recents` | `{ type, label, url, ts }[]` - max `recentLimit` (default 10) |
+
+### Environment Dashboards Launcher
+
+| Key | Content |
+|---|---|
+| `rc:plugin:com.replycators.env-dashboards:state` | `{ lastEnv: string\|null, favorites: string[], recents: string[] }` - `lastEnv` is actively used for auto-selection on load; `favorites` and `recents` are persisted but not yet surfaced in the UI (planned) |
+
 ### Workspace Starter
 
 | Key | Content |

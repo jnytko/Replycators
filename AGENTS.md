@@ -1365,9 +1365,8 @@ npm run sync:dry-run  # print what sync would copy without writing
   - [ ] Primary actions are visible without scrolling
   - [ ] Guidance / info cards are placed below the primary workflow
   - [ ] No additional interaction steps required to reach primary function vs. previous version
-- [ ] Plugin nav button added to `dashboard.html`
 - [ ] Dashboard widget card added to `dashboard.html` (`#rc-dashboard-widgets`)
-- [ ] Plugin init function added to `dashboard.js` and called from `initPlugins()`
+- [ ] Plugin init `_safeInit('PluginKey', () => ...)` wired in the `DOMContentLoaded` block in `dashboard.js`
 - [ ] Plugin Manager integration verified - plugin appears, toggle works
 - [ ] Plugin settings section added to `#view-settings` (if applicable)
 - [ ] Storage keys documented in Storage Schema (§ 9)
