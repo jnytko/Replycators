@@ -10,6 +10,18 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 ---
 
 ## [Unreleased]
+### Governance - Add evidence-based issue forms and lifecycle guidance
+**Type:** Governance
+**Summary:** Replaced the generic Markdown bug and feature templates with focused GitHub issue forms for defects and proposed work, retained a blank fallback, and added model-neutral guidance for validation, planning, implementation updates, and final verification.
+**Files changed:**
+- `.github/ISSUE_TEMPLATE/` - Added Bug report and Change proposal forms plus issue-template configuration
+- `docs/ISSUE-WORKFLOW.md` - Added the shared human and AI-agent issue lifecycle
+- `AGENTS.md` - Added mandatory issue-handling guidance and documentation routing
+- `docs/CONTRIBUTING.md` - Added issue selection and update instructions
+- `docs/CONTRIBUTOR-ONBOARDING.md` - Routed contributors and AI agents to the shared issue workflow
+- `SECURITY.md` - Updated the supported release and removed obsolete label instructions from vulnerability reporting guidance
+**Breaking changes:** None
+
 ### CI - Align scheduled remediation with current issue labels
 **Type:** Bug Fix
 **Summary:** Replaced the scheduled remediation workflow's obsolete governance, finding, source, severity, and lifecycle-label requirements with the repository's existing `auto-fix`, issue type, priority, area, and state conventions. Eligibility and state transitions now share one tested policy, and the tracked label inventory and directly affected governance documentation match the current repository.

@@ -1274,6 +1274,19 @@ npm run sync:dry-run  # print what sync would copy without writing
 
 ## 15. AI Agent Workflow
 
+### Issue Handling (required for new and existing issues)
+
+Follow [`docs/ISSUE-WORKFLOW.md`](docs/ISSUE-WORKFLOW.md) before creating, validating, planning, implementing, or updating an issue.
+
+- Search accessible open and closed issues and relevant pull requests before declaring work unique.
+- Use the Bug report form for incorrect existing behavior and the Change proposal form for features, documentation, maintenance, build/release, architecture, or governance work.
+- Use the blank issue path only when neither specialized form fits.
+- Distinguish facts, inferences, proposals, and unknowns. Do not invent requirements, impact, priority, or user intent.
+- Validate scope, dependencies, acceptance criteria, and an applicable validation plan before implementation.
+- Preserve history by adding chronological validation, implementation, and final-verification updates.
+- Update the issue when implementation findings change its scope, assumptions, risks, or acceptance criteria.
+- Do not apply `auto-fix` or `state:*` automation-control labels without intentional maintainer authorization and the required evidence.
+
 ### Runtime-First Pre-Check (required before ANY build, test, or tool invocation)
 
 - [ ] Check `[root]\Runtime\NodeJS` - does the required tool exist?
@@ -1550,6 +1563,7 @@ Complete record: `docs/TECH-DEBT-RESOLVED.md`
 | `docs/DEVELOPER_GUIDE.md` | Step-by-step plugin authoring guide. | On-demand |
 | `docs/CONTRIBUTING.md` | Contribution workflow, branching strategy, versioning, commit format. | On-demand |
 | `docs/CONTRIBUTOR-ONBOARDING.md` | Human contributor onboarding guide. First-week checklist, GitHub workflow, AI development expectations, Definition of Done. | On-demand (new contributors) |
+| `docs/ISSUE-WORKFLOW.md` | Issue selection, evidence, validation, planning, implementation updates, final verification, and label guidance. | On-demand (all issue work) |
 | `docs/PROMPT-CATALOG.md` | AI prompt governance catalog. Versioned, reviewed prompts for all common development workflows. | On-demand (AI-assisted tasks) |
 | `docs/governance/openai/README.md` | OpenAI and Codex continuous repository governance starter kit. Entry point for architecture, setup, implementation, security, validation, operations, and rollout documents. | On-demand (governance implementation tasks) |
 | `docs/STARTUP-FLOW.md` | Full boot sequence, plugin load order, service worker lifecycle. | On-demand |

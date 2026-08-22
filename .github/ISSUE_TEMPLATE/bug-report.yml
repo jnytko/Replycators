@@ -1,0 +1,135 @@
+name: Bug report
+description: Report incorrect or unexpected ReplyCators behavior
+title: "[BUG] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting, search open and closed issues for duplicates. Do not include secrets, API keys, customer data, or private case content. See [Issue Workflow](../../docs/ISSUE-WORKFLOW.md) for validation and update guidance.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is wrong, who is affected, and why does it matter?
+      placeholder: Describe the observed problem and its impact in a few sentences.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction or validation steps
+      description: Provide numbered user steps or a repository-based validation path with exact files, commands, or conditions.
+      placeholder: |
+        1. Open ...
+        2. Configure ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: State the intended behavior in verifiable terms.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: State exactly what happens, including error messages or incorrect outcomes.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      description: Select the closest affected area. Maintainers may refine the area label after validation.
+      options:
+        - Platform runtime or dashboard
+        - Cross-plugin behavior
+        - Salesforce Case Extractor
+        - Cloudability OrgID
+        - Workspace Starter
+        - Apptio plugins
+        - Snake
+        - Backup and Restore
+        - Bob Helper
+        - Build, CI, packaging, or release
+        - Governance or documentation
+        - Other or unknown
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: ReplyCators version
+      description: Use the version shown in the extension. Write "Unknown" for repository-only findings when no runtime version applies.
+      placeholder: e.g. 1.49.8 or Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include browser, browser version, OS, launch mode, and relevant settings. Write "Not applicable" for static repository defects.
+      placeholder: Microsoft Edge version, Windows version, Popup or Side Panel, relevant configuration
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Supporting evidence
+      description: Add sanitized logs, screenshots, timestamps, file paths, code references, or links. Distinguish confirmed facts from inferences.
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope, frequency, and workaround
+      description: State how often this occurs, what is affected, and whether a safe workaround exists.
+    validations:
+      required: true
+
+  - type: textarea
+    id: related
+    attributes:
+      label: Related issues, pull requests, or dependencies
+      description: Link related open and closed work, or write "None found" after searching.
+      placeholder: Related to #123; blocked by #456; no related pull request found.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List measurable conditions that demonstrate the defect is resolved without regression.
+      placeholder: |
+        - [ ] The failing scenario produces the expected result.
+        - [ ] The relevant negative and edge cases are verified.
+        - [ ] Required documentation is updated.
+    validations:
+      required: true
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks, constraints, and unresolved questions
+      description: Record known regression risks, missing evidence, constraints, or decisions still required. Write "None known" if applicable.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched open and closed issues for duplicates or related work.
+          required: true
+        - label: I removed secrets, credentials, customer data, and private case content from this report.
+          required: true
