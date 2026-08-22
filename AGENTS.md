@@ -1035,6 +1035,20 @@ Standard order: `[icon] [name] [version] [optional status badge] [doc icon]`
 5. New plugin UI code goes in a clearly delimited section using the existing banner comment style.
 6. If a new feature requires > ~200 lines, evaluate whether it belongs in a separate plugin.
 
+### Scheduled Remediation Label Contract
+
+The active scheduled remediation workflow uses the repository's existing labels. Do not reintroduce the superseded finding-label taxonomy as an eligibility requirement.
+
+- Queue: `auto-fix` is required and is the maintainer-controlled opt-in.
+- Issue type: exactly one of `bug`, `documentation`, or `enhancement`.
+- Priority: exactly one of `priority:p1`, `priority:p2`, `priority:p3`, or `priority:p4`.
+- Area: exactly one recognized `area:*` label defined in `.github/labels.json`.
+- State: zero or one of `state:validated`, `state:implementation`, or `state:blocked`.
+- Availability: `state:blocked`, `state:implementation`, `duplicate`, `invalid`, and `wontfix` make an issue ineligible.
+- Transitions: set `state:implementation` when work starts, set `state:blocked` on failure, and clear the managed state when closing a successful issue.
+
+The workflow does not require `governance:reviewed`, `finding:*`, `source:*`, `severity:*`, or any unregistered `state:*` label. Label constants and transitions belong in `.github/scripts/remediation-label-policy.js`; `.github/labels.json` must remain synchronized with the live repository label inventory.
+
 ### Important Implementation Decisions
 
 - **No ES module imports in `background.js`** - single-file IIFE bundle; no `import/export`.

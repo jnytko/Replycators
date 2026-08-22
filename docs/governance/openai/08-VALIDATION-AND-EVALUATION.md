@@ -69,12 +69,13 @@ Test every allowed and forbidden transition.
 
 Examples:
 
-- `state:new` to `state:triage` succeeds.
-- `state:triage` to `state:validated` requires complete evidence.
-- `state:new` directly to `state:implementation` fails.
+- An open issue with `auto-fix`, one issue type, one priority, one area, and no state is eligible.
+- The same issue with optional `state:validated` remains eligible.
+- An issue without `auto-fix`, a required classification, or sufficient evidence is rejected.
+- An issue with `state:blocked` or `state:implementation` is not selected for another run.
 - State transition removes the previous state label.
 - An issue never retains two `state:*` labels.
-- Repeated failure leads to `state:blocked` and escalation.
+- A failed remediation applies `state:blocked`; a successful remediation clears the managed state and closes the issue.
 
 ## Remediation validation
 

@@ -1,26 +1,33 @@
 [
-  { "name": "severity:critical", "color": "b60205", "description": "Critical governance finding requiring immediate action" },
-  { "name": "severity:high", "color": "d93f0b", "description": "High severity governance finding" },
-  { "name": "severity:medium", "color": "fbca04", "description": "Medium severity governance finding" },
-  { "name": "severity:low", "color": "0e8a16", "description": "Low severity governance finding" },
+  { "name": "area:apptio", "color": "0e8a16", "description": "Apptio Docs Finder or Apptio Upgrade Calculator" },
+  { "name": "area:backup-restore", "color": "bfdadc", "description": "Backup, restore, import, and export workflows" },
+  { "name": "area:bob-helper", "color": "d4c5f9", "description": "Bob Helper integration, diagnostics, and IPC" },
+  { "name": "area:build-release", "color": "0052cc", "description": "CI, packaging, distribution, and release automation" },
+  { "name": "area:cloudability", "color": "006b75", "description": "Cloudability OrgID and content-script integration" },
+  { "name": "area:governance", "color": "6f42c1", "description": "Repository governance, architecture records, and maintainer process" },
+  { "name": "area:platform", "color": "1d76db", "description": "Core runtime, dashboard, storage, or extension platform" },
+  { "name": "area:plugins", "color": "5319e7", "description": "Cross-plugin behavior or a plugin without a dedicated area" },
+  { "name": "area:salesforce", "color": "00a1e0", "description": "Salesforce Case Extractor and related data flows" },
+  { "name": "area:snake", "color": "e99695", "description": "Snake plugin behavior and accessibility" },
+  { "name": "area:workspace", "color": "7057ff", "description": "Workspace Starter profiles and launches" },
 
-  { "name": "state:new", "color": "ededed", "description": "New governance finding awaiting triage" },
-  { "name": "state:triage", "color": "c2e0c6", "description": "Finding is under triage" },
+  { "name": "auto-fix", "color": "de31ad", "description": "Flag issues you want our workflow to fix" },
+
+  { "name": "bug", "color": "d73a4a", "description": "Something isn't working" },
+  { "name": "documentation", "color": "0075ca", "description": "Improvements or additions to documentation" },
+  { "name": "enhancement", "color": "a2eeef", "description": "New feature or request" },
+
+  { "name": "priority:p1", "color": "b60205", "description": "Critical: security, data loss, or severe user impact" },
+  { "name": "priority:p2", "color": "d93f0b", "description": "High: significant user, privacy, or release impact" },
+  { "name": "priority:p3", "color": "fbca04", "description": "Medium: important but non-critical work" },
+  { "name": "priority:p4", "color": "c2e0c6", "description": "Low: polish, optimization, or deferred improvement" },
+
+  { "name": "state:blocked", "color": "ededed", "description": null },
+  { "name": "state:implementation", "color": "ededed", "description": null },
   { "name": "state:validated", "color": "bfdadc", "description": "Finding validated and ready for implementation" },
-  { "name": "state:implementation", "color": "d4c5f9", "description": "Finding is in implementation" },
-  { "name": "state:testing", "color": "fef2c0", "description": "Finding fix is under testing" },
-  { "name": "state:verification", "color": "f9d0c4", "description": "Finding fix is under verification" },
-  { "name": "state:done", "color": "0e8a16", "description": "Finding is completed" },
-  { "name": "state:deferred", "color": "5319e7", "description": "Finding is deferred" },
-  { "name": "state:blocked", "color": "e11d21", "description": "Finding is blocked" },
 
-  { "name": "source:architecture", "color": "1d76db", "description": "Finding originated from architecture audit" },
-  { "name": "source:security", "color": "0052cc", "description": "Finding originated from security audit" },
-  { "name": "source:performance", "color": "0366d6", "description": "Finding originated from performance audit" },
-  { "name": "source:qa", "color": "6f42c1", "description": "Finding originated from QA or regression verification" },
-  { "name": "source:documentation", "color": "5319e7", "description": "Finding originated from documentation audit" },
-  { "name": "source:release", "color": "bfd4f2", "description": "Finding originated from release readiness checks" },
-
-  { "name": "governance:escalation", "color": "b60205", "description": "Escalation required due to blocker risk" },
-  { "name": "governance:reviewed", "color": "0e8a16", "description": "Finding reviewed by governance automation" }
+  { "name": "duplicate", "color": "cfd3d7", "description": "This issue or pull request already exists" },
+  { "name": "good first issue", "color": "7057ff", "description": "Good for newcomers" },
+  { "name": "invalid", "color": "e4e669", "description": "This doesn't seem right" },
+  { "name": "wontfix", "color": "ffffff", "description": "This will not be worked on" }
 ]

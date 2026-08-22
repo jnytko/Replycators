@@ -10,6 +10,19 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 ---
 
 ## [Unreleased]
+### CI - Align scheduled remediation with current issue labels
+**Type:** Bug Fix
+**Summary:** Replaced the scheduled remediation workflow's obsolete governance, finding, source, severity, and lifecycle-label requirements with the repository's existing `auto-fix`, issue type, priority, area, and state conventions. Eligibility and state transitions now share one tested policy, and the tracked label inventory and directly affected governance documentation match the current repository.
+**Files changed:**
+- `.github/workflows/automated-issue-remediation.yaml` - Added a preflight policy test without changing the schedule, permissions, or remediation execution
+- `.github/scripts/remediate-issues.js` - Uses the current queue and state labels and accepts the issue-body sections used by existing issues
+- `.github/scripts/remediation-label-policy.js` - Centralized the current label inventory, eligibility rules, and state transitions
+- `.github/scripts/remediation-issue-policy.js` - Centralized and exposed issue-body eligibility validation
+- `.github/scripts/tests/remediation-label-policy.test.js` - Added current-label, transition, exclusion, and issue-template compatibility tests
+- `.github/labels.json` - Synchronized the tracked label schema with the repository's current labels
+- `README.md`, `AGENTS.md`, `docs/governance/openai/02-TARGET-ARCHITECTURE.md`, `docs/governance/openai/04-STEP-BY-STEP-IMPLEMENTATION.md`, `docs/governance/openai/08-VALIDATION-AND-EVALUATION.md` - Documented the active remediation contract
+**Breaking changes:** None
+
 ### CI - Restore deterministic dependency installation
 **Type:** Bug Fix
 **Summary:** Removed the unused `axios` and `dotenv` declarations that were absent from `package-lock.json` and synchronized the lockfile project version, allowing GitHub Actions to complete `npm ci --ignore-scripts` before remediation validation.

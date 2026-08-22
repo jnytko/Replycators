@@ -134,23 +134,17 @@ Pull requests enforce:
 ## Canonical issue lifecycle
 
 ```text
-state:new
-  -> state:triage
-  -> state:validated
+maintainer applies auto-fix
+  -> optional state:validated
   -> state:implementation
-  -> state:testing
-  -> state:verification
-  -> state:documentation
-  -> state:done
+  -> state:blocked on failure, or close the issue and clear state on success
 ```
 
-Alternative terminal outcomes are:
+Scheduled remediation requires exactly one current issue type, one `priority:p1` through `priority:p4`, and one recognized `area:*` label. The `auto-fix` label is the explicit queue and authorization signal. `state:validated` records an optional prior validation decision; it is not a duplicate queue gate.
 
-- `state:invalid`
-- `state:deferred`
-- `state:blocked` with `governance:escalation` when required
+Testing and verification status belongs in pull-request checks, workflow summaries, and issue comments rather than additional lifecycle labels. Issues carrying `duplicate`, `invalid`, or `wontfix` are excluded from remediation.
 
-Only one lifecycle state label may be present at a time.
+Only one recognized `state:*` label may be present at a time. The active state vocabulary is `state:validated`, `state:implementation`, and `state:blocked`.
 
 ## Execution boundaries
 

@@ -186,7 +186,7 @@ Running the same audit twice against the same commit must update or leave the ex
 
 ### Step 3.4: Keep triage human-controlled
 
-New issues begin at `state:new` and progress to `state:triage`. Do not allow automatic implementation yet.
+New issues remain outside automated remediation until a maintainer applies `auto-fix`. Maintainers may also apply `state:validated` to record a prior validation decision, but it is not required in addition to the explicit queue label.
 
 ## Phase 4: Implement deterministic prioritization and eligibility
 
@@ -226,14 +226,17 @@ Require:
 - Change within autonomous limits.
 - Change below configured size thresholds.
 
-### Step 4.4: Add missing lifecycle labels
+### Step 4.4: Use the existing repository labels
 
-Add or formally map:
+Do not create a parallel finding, source, severity, or lifecycle taxonomy. A queued issue must have:
 
-- `state:invalid`
-- `state:documentation`
+- `auto-fix`.
+- Exactly one issue type: `bug`, `documentation`, or `enhancement`.
+- Exactly one priority: `priority:p1` through `priority:p4`.
+- Exactly one recognized `area:*` label.
+- Zero or one recognized state: `state:validated`, `state:implementation`, or `state:blocked`.
 
-Use `state:blocked` plus `governance:escalation` for escalated work.
+Use the ordinary `invalid`, `duplicate`, and `wontfix` labels as exclusion signals. Do not require `governance:reviewed`, `finding:*`, `source:*`, or `severity:*` labels.
 
 ### Step 4.5: Centralize state transitions
 
@@ -242,8 +245,9 @@ Create one helper that:
 1. Reads current labels.
 2. Removes every `state:*` label.
 3. Validates the requested transition.
-4. Applies exactly one next-state label.
-5. Records the transition reason.
+4. Applies `state:implementation` or `state:blocked`, or clears state when closing a successful issue.
+5. Preserves the queue, type, priority, area, and unrelated labels.
+6. Records the transition reason.
 
 ## Phase 5: Introduce Codex remediation
 
