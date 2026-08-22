@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security policy
+    url: https://github.com/jnytko/Replycators/security/policy
+    about: Read the security policy before reporting a vulnerability. Never place secrets or sensitive exploit details in a public issue.

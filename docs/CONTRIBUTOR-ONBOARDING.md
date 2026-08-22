@@ -174,6 +174,7 @@ AI assistance is **expected and welcome**. The project is explicitly designed fo
 1. Load `AGENTS.md` into your AI agent's context — it is the authoritative briefing
 2. For plugin creation: also load `docs/AI-PLUGIN-KIT.md`
 3. Check `docs/PROMPT-CATALOG.md` for proven, tested prompts
+4. For new or existing issue work: load `docs/ISSUE-WORKFLOW.md` and search open and closed issues first
 
 ### What AI agents must NOT do (enforced via Forbidden Changes table)
 
@@ -455,7 +456,7 @@ Before starting independent work, confirm you can answer these without looking:
 
 ## Getting Help
 
-**GitHub Issues:** Ask technical questions by opening an issue with label `question`
+**GitHub Issues:** Use the Bug report or Change proposal form when it fits. Use a blank issue for a concrete question or task that fits neither form. Follow `docs/ISSUE-WORKFLOW.md` and do not apply workflow or automation labels unless a maintainer directs you to do so.
 
 **Code review:** Request review on your draft PR and ask specific questions in PR comments
 
@@ -466,6 +467,7 @@ Before starting independent work, confirm you can answer these without looking:
 - `docs/TROUBLESHOOTING.md` — Common runtime errors and fixes
 - `docs/AI-PLUGIN-KIT.md` — AI agent workflows for plugin tasks
 - `docs/CONTRIBUTING.md` — Contribution workflow and standards
+- `docs/ISSUE-WORKFLOW.md` - Issue creation, validation, implementation updates, and verification
 - `PLUGIN-SDK.md` — Plugin SDK standards and CSS class reference
 
 **Before asking:** Search `AGENTS.md`, `docs/CONTRIBUTING.md`, and `docs/TROUBLESHOOTING.md`. Most questions are already answered in the existing documentation.

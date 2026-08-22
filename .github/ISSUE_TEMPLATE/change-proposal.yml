@@ -1,0 +1,137 @@
+name: Change proposal
+description: Propose a feature, documentation task, maintenance change, or architectural improvement
+title: "[CHANGE] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for requested outcomes rather than observed broken behavior. Search open and closed issues first. See [Issue Workflow](../../docs/ISSUE-WORKFLOW.md) for planning and update guidance.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Change type
+      options:
+        - User-facing feature or enhancement
+        - Documentation
+        - Maintenance or refactoring
+        - Build, CI, packaging, or release
+        - Architecture or governance
+        - New plugin proposal
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Requested outcome
+      description: Describe the capability, result, or repository state that should exist when this work is complete.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Context and motivation
+      description: Explain the current limitation, affected users or maintainers, and why the change is useful now.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Platform runtime or dashboard
+        - Cross-plugin behavior
+        - Salesforce Case Extractor
+        - Cloudability OrgID
+        - Workspace Starter
+        - Apptio plugins
+        - Snake
+        - Backup and Restore
+        - Bob Helper
+        - Build, CI, packaging, or release
+        - Governance or documentation
+        - Other or unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Identify affected components, files, workflows, and any explicit out-of-scope work.
+      placeholder: |
+        In scope:
+        - ...
+
+        Out of scope:
+        - ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and current behavior
+      description: Link repository evidence, user feedback, metrics, screenshots, prior issues, or established requirements. Clearly mark inferences and unknowns.
+    validations:
+      required: true
+
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed approach
+      description: Optional. Describe a compatible approach without treating it as a fixed requirement before validation.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional. Note meaningful alternatives and why they may not meet the requested outcome.
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Related work and dependencies
+      description: Link related open and closed issues, pull requests, ADRs, or prerequisite decisions. Write "None found" after searching if applicable.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Define measurable, outcome-focused completion criteria.
+      placeholder: |
+        - [ ] The requested outcome is available in the affected workflow.
+        - [ ] Relevant edge cases and regressions are checked.
+        - [ ] Required documentation is updated.
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation requirements
+      description: Describe the repository checks and manual scenarios needed to verify the change.
+    validations:
+      required: true
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks, constraints, and unresolved questions
+      description: Record compatibility risks, product decisions, missing evidence, rollout constraints, or follow-up work.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched open and closed issues for duplicates or overlapping proposals.
+          required: true
+        - label: I separated verified requirements from proposals and unresolved questions.
+          required: true

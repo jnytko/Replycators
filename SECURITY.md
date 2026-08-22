@@ -6,8 +6,8 @@ Only the current production release is supported with security fixes.
 
 | Version | Supported |
 |---------|-----------|
-| 1.45.x (current) | Yes |
-| < 1.45 | No |
+| 1.49.x (current) | Yes |
+| < 1.49 | No |
 
 ---
 
@@ -78,6 +78,6 @@ No inline scripts, no eval, no remote script sources.
 
 ## Reporting a vulnerability
 
-Please open a GitHub Issue with the label `security`.
-For sensitive disclosures, contact the repository owner directly before opening a public issue.
-Do not include working exploit code in public issues.
+For non-sensitive security defects, use the Bug report issue form and describe the impact without including secrets, private data, or working exploit details. Maintainers will apply the supported issue labels during triage.
+
+For sensitive disclosures, contact the repository owner directly before opening a public issue. Do not include working exploit code or other sensitive details in public issues.

@@ -3,6 +3,7 @@
 ## Table of Contents
 
 - [Before you start](#before-you-start)
+- [Reporting and working on issues](#reporting-and-working-on-issues)
 - [Making a code change](#making-a-code-change)
 - [Adding a new plugin](#adding-a-new-plugin)
 - [Icon system rules](#icon-system-rules)
@@ -23,6 +24,22 @@ Key rules:
 - Never edit `dist/` files directly
 - Every change to root files must be mirrored to `dist/` via `npm run sync` or `npm run build`
 - Validation is manual QA only - see `AGENTS.md` §26
+
+---
+
+## Reporting and working on issues
+
+Use the GitHub **Bug report** form for incorrect existing behavior and the **Change proposal** form for features, documentation, maintenance, build/release, architecture, governance, or new-plugin work. A blank issue remains available for concrete work that fits neither form.
+
+Before creating or implementing an issue:
+
+1. Search open and closed issues and related pull requests.
+2. Read [`docs/ISSUE-WORKFLOW.md`](ISSUE-WORKFLOW.md).
+3. Verify repository claims against the current default branch.
+4. Separate confirmed facts, inferences, proposals, and unknowns.
+5. Define verifiable acceptance criteria and relevant validation steps.
+
+For existing issues, preserve history and add chronological validation, implementation, and final-verification comments using the formats in the workflow guide. Do not silently expand scope or apply automation-control labels such as `auto-fix` or `state:*` without maintainer authorization.
 
 ---
 
