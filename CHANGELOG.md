@@ -9,6 +9,17 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
+## [Unreleased]
+### CI - Restore deterministic dependency installation
+**Type:** Bug Fix
+**Summary:** Removed the unused `axios` and `dotenv` declarations that were absent from `package-lock.json` and synchronized the lockfile project version, allowing GitHub Actions to complete `npm ci --ignore-scripts` before remediation validation.
+**Files changed:**
+- `package.json` - Removed unused dependency declarations
+- `package-lock.json` - Synchronized project version metadata with `package.json`
+**Breaking changes:** None
+
+---
+
 ## [1.49.8] - 2026-08-21
 ### Cloudability OrgID - Stop detector from forwarding data when plugin is disabled
 **Type:** Bug Fix
