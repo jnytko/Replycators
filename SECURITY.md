@@ -72,12 +72,16 @@ No inline scripts, no eval, no remote script sources.
 | Cross-site request to Bob Helper | CORS restricted to extension origin only |
 | Malicious extension resource access | `web_accessible_resources` limited to 6 known host patterns |
 | Content script injection | Scripts run in ISOLATED world (except Cloudability interceptor in MAIN world for XHR interception) |
-| Manifest tampering | `manifest.json` is CODEOWNERS-protected; requires owner review on PRs |
+| Manifest tampering | `manifest.json` is CODEOWNERS-protected; requires `@jnytko` review on PRs (enforced when branch protection is enabled) |
 
 ---
 
 ## Reporting a vulnerability
 
-For non-sensitive security defects, use the Bug report issue form and describe the impact without including secrets, private data, or working exploit details. Maintainers will apply the supported issue labels during triage.
+To report a security vulnerability privately (preferred for sensitive disclosures):
 
-For sensitive disclosures, contact the repository owner directly before opening a public issue. Do not include working exploit code or other sensitive details in public issues.
+**[Report a vulnerability privately](https://github.com/jnytko/Replycators/security/advisories/new)**
+
+This uses GitHub Private Vulnerability Reporting. Your report will be visible only to the repository owner. We aim to acknowledge private reports within 5 business days.
+
+For non-sensitive security observations, open a GitHub Issue with the label `security`. Do not include working exploit code or other sensitive details in public issues.
