@@ -36,3 +36,10 @@ dist/background.js                 @jnytko
 # ── Security policy ───────────────────────────────────────────────────────────
 SECURITY.md                        @jnytko
 tools/bob-helper-server.js         @jnytko
+tools/bob-launcher-template.ps1    @jnytko
+tools/bob-helper.ps1               @jnytko
+
+# ── Security-sensitive content scripts ────────────────────────────────────────
+# sf-content.js handles PII (case data); interceptor patches MAIN world XHR/fetch.
+plugins/salesforce/content/        @jnytko
+plugins/cloudability/content/      @jnytko
