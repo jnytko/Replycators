@@ -6,10 +6,23 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Run workflow without committing changes or closing issues'
+        description: 'Validate an implementation without changing GitHub or pushing to main'
         required: false
         type: boolean
         default: false
+      issue_number:
+        description: 'Process one eligible issue number (optional)'
+        required: false
+        type: string
+      max_issues:
+        description: 'Maximum eligible issues to process'
+        required: false
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '3'
+        default: '1'
 
 permissions:
   contents: write
@@ -17,165 +30,44 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: issue-remediation
+  group: ${{ github.repository }}-daily-issue-remediation-main
   cancel-in-progress: false
 
 jobs:
-  analyze-issues:
-    name: Analyze Issues with Prompts
+  remediate:
+    name: Validate, implement, and integrate verified issues
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out main
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          ref: main
           fetch-depth: 0
+          persist-credentials: true
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
+          cache: npm
 
-      - name: Install dependencies
-        run: npm install axios
+      - name: Install locked dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
 
-      - name: Run sequential analysis on auto-fix issues
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: node .github/scripts/analyze-issues.js
-
-  remediate-issues:
-    name: Process and Resolve Open Issues
-    needs: analyze-issues
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: |
+      - name: Configure automation identity
+        run: |
           git config user.name "github-actions[bot]"
-          git config user.email "4189828+github-actions[bot]@users.noreply.github.com"
-      - run: |
-          set -euo pipefail
-          
-          ISSUES_JSON=$(gh issue list --state open --label "auto-fix" --limit 10 --json number,title,body,author)
-          ISSUE_COUNT=$(echo "$ISSUES_JSON" | jq '. | length')
-          
-          if [ "$ISSUE_COUNT" -eq 0 ]; then
-            echo "No issues with 'auto-fix' label found."
-            exit 0
-          fi
-          
-          echo "Found $ISSUE_COUNT issue(s) to process."
-          
-          FAILED_ISSUES=()
-          PROCESSED_ISSUES=()
-          
-          while IFS= read -r issue; do
-            ISSUE_NUMBER=$(echo "$issue" | jq -r '.number')
-            ISSUE_TITLE=$(echo "$issue" | jq -r '.title')
-            BRANCH_NAME="auto-fix/issue-${ISSUE_NUMBER}"
-            
-            echo ""
-            echo "=========================================="
-            echo "Processing Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE}"
-            echo "=========================================="
-            
-            git checkout "${{ github.event.repository.default_branch }}" || {
-              echo "ERROR: Failed to checkout default branch for issue #${ISSUE_NUMBER}"
-              FAILED_ISSUES+=("$ISSUE_NUMBER")
-              continue
-            }
-            
-            git branch -D "$BRANCH_NAME" 2>/dev/null || true
-            
-            gh issue edit "$ISSUE_NUMBER" --add-assignee "github-actions" || {
-              echo "WARNING: Could not assign issue #${ISSUE_NUMBER}, continuing..."
-            }
-            
-            if ! git checkout -b "$BRANCH_NAME" "origin/${{ github.event.repository.default_branch }}"; then
-              echo "ERROR: Failed to create branch for issue #${ISSUE_NUMBER}"
-              FAILED_ISSUES+=("$ISSUE_NUMBER")
-              git checkout "${{ github.event.repository.default_branch }}" || true
-              continue
-            fi
-            
-            if [ -f "package.json" ]; then
-              npm ci || true
-            fi
-            
-            if git diff --quiet; then
-              echo "No changes detected for issue #${ISSUE_NUMBER}. Skipping."
-              git checkout "${{ github.event.repository.default_branch }}" || true
-              git branch -D "$BRANCH_NAME" || true
-              PROCESSED_ISSUES+=("$ISSUE_NUMBER (no changes)")
-              continue
-            fi
-            
-            if [ -f "package.json" ] && grep -q '"test"' package.json; then
-              echo "Running tests for issue #${ISSUE_NUMBER}..."
-              if ! npm test; then
-                echo "ERROR: Tests failed for issue #${ISSUE_NUMBER}. Rolling back changes."
-                git reset --hard "origin/${{ github.event.repository.default_branch }}" || true
-                git checkout "${{ github.event.repository.default_branch }}" || true
-                git branch -D "$BRANCH_NAME" || true
-                FAILED_ISSUES+=("$ISSUE_NUMBER")
-                continue
-              fi
-            fi
-            
-            git add -A
-            git commit -m "fix: automated resolution for issue #${ISSUE_NUMBER}" || {
-              echo "ERROR: Failed to commit changes for issue #${ISSUE_NUMBER}"
-              git reset --hard || true
-              git checkout "${{ github.event.repository.default_branch }}" || true
-              git branch -D "$BRANCH_NAME" || true
-              FAILED_ISSUES+=("$ISSUE_NUMBER")
-              continue
-            }
-            
-            if [ "${{ github.event.inputs.dry_run }}" != "true" ]; then
-              if git push origin "$BRANCH_NAME"; then
-                if gh issue close "$ISSUE_NUMBER" --reason "completed"; then
-                  echo "Successfully closed issue #${ISSUE_NUMBER}"
-                  PROCESSED_ISSUES+=("$ISSUE_NUMBER")
-                else
-                  echo "WARNING: Could not close issue #${ISSUE_NUMBER}, but changes were pushed."
-                  PROCESSED_ISSUES+=("$ISSUE_NUMBER (not closed)")
-                fi
-              else
-                echo "ERROR: Failed to push changes for issue #${ISSUE_NUMBER}"
-                FAILED_ISSUES+=("$ISSUE_NUMBER")
-              fi
-            else
-              echo "DRY RUN: Would have pushed and closed issue #${ISSUE_NUMBER}"
-              PROCESSED_ISSUES+=("$ISSUE_NUMBER (dry run)")
-            fi
-            
-            git checkout "${{ github.event.repository.default_branch }}" || true
-            git branch -D "$BRANCH_NAME" || true
-            
-          done < <(echo "$ISSUES_JSON" | jq -c '.[]')
-          
-          echo ""
-          echo "=========================================="
-          echo "WORKFLOW SUMMARY"
-          echo "=========================================="
-          echo "Processed: ${#PROCESSED_ISSUES[@]}"
-          for issue in "${PROCESSED_ISSUES[@]}"; do
-            echo "  ✓ Issue #${issue}"
-          done
-          
-          if [ ${#FAILED_ISSUES[@]} -gt 0 ]; then
-            echo "Failed: ${#FAILED_ISSUES[@]}"
-            for issue in "${FAILED_ISSUES[@]}"; do
-              echo "  ✗ Issue #${issue}"
-            done
-            exit 1
-          fi
-          
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Process verified governance issues
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.REMEDIATION_MODEL || 'gpt-5.4' }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          DRY_RUN: ${{ inputs.dry_run || false }}
+          ISSUE_NUMBER: ${{ inputs.issue_number || '' }}
+          MAX_ISSUES: ${{ inputs.max_issues || '1' }}
+        run: node .github/scripts/remediate-issues.js
