@@ -18,7 +18,7 @@
 | | |
 |-|-|
 | Plugin ID | `com.replycators.workspace-starter` |
-| Version | 2.0.2 |
+| Version | 2.0.4 |
 | Category | Productivity |
 | Status | Active |
 
@@ -86,12 +86,12 @@ Stored in `appSettings.wsDefaultTabGroups` (platform settings).
 ## Launch Behavior
 
 On `wsLaunchProfile(id)`:
-1. Opens all URLs in the profile as new tabs.
-2. If `launchMode` is `tab-group`: groups tabs under a tab group named after the profile (via `chrome.tabGroups`).
+1. Attempts to open every URL in the profile as a new tab and checks each callback for `chrome.runtime.lastError`.
+2. If `launchMode` is `tab-group`: groups only successfully opened tabs under a tab group named after the profile (via `chrome.tabGroups`).
 3. If `launchMode` is `tabs`: opens as plain tabs with no grouping.
-4. Pushes profile ID to recents (max 5).
-5. Updates last launched.
-6. Persists the updated data object.
+4. If at least one tab opens successfully: focuses the first successful tab, updates recents (max 5), updates last launched, and persists the updated data object.
+5. If some tabs fail: logs each failed URL and shows a warning notification with opened/failed counts.
+6. If all tabs fail: shows an error notification and leaves recents / last-launched unchanged.
 
 ---
 

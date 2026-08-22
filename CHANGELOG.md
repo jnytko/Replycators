@@ -9,41 +9,288 @@ All notable changes to the ReplyCators platform and its plugins are recorded her
 
 ---
 
-## Unreleased
-### CI - Remove non-runnable governance workflows and harden supported automation
-**Type:** Maintenance
-**Summary:** Removed five agent-driven governance workflows that referenced the unavailable `github-copilot/agent@v1` action and would fail without producing actionable results. Retained the deterministic CI and manual release-readiness workflows, added least-privilege permissions, concurrency cancellation, job timeouts, shorter artifact retention, parallel root-to-`dist/` verification, and safe environment-based parsing of the optional issue number. Updated governance documentation so it no longer represents the OpenAI starter kit as active automation.
+## [1.49.8] - 2026-08-21
+### Cloudability OrgID - Stop detector from forwarding data when plugin is disabled
+**Type:** Bug Fix
+**Summary:** `cloudability-detector.js` now reads `rc:session:plugin-states` at startup and exits immediately if the Cloudability OrgID plugin is disabled, preventing any `RC_CLD_ORG_READY` messages and OrgID cache updates when the plugin is off. A tracking comment documenting the known MAIN-world interceptor limitation (Option B - dynamic registration) is added to `cloudability-interceptor.js`. The MAIN-world XHR/fetch patches remain on the page when the plugin is disabled - full suppression requires dynamic content script registration (Option B, separate ADR per AGENTS.md §6).
 **Files changed:**
-- `.github/workflows/ci.yml` - Added explicit permissions, concurrency, timeouts, artifact retention, and parallel sync verification
-- `.github/workflows/release-readiness.yml` - Removed unnecessary checkout, reduced permissions, and hardened issue-number validation
-- `.github/workflows/governance-orchestrator.yml`, `.github/workflows/issue-analysis.yml`, `.github/workflows/repository-audit.yml`, `.github/workflows/documentation-audit.yml`, `.github/workflows/defect-remediation.yml` - Removed non-runnable workflows
-- `README.md`, `docs/governance/openai/` - Corrected the active automation inventory and implementation baseline
+- `plugins/cloudability/content/cloudability-detector.js` - Added `rc:session:plugin-states` check at entry; all listeners and background push only run when the plugin is enabled
+- `plugins/cloudability/content/cloudability-interceptor.js` - Added tracking comment describing the MAIN-world limitation and Option B architectural work item
+- `dist/plugins/cloudability/content/cloudability-detector.js` - Mirror sync
+- `dist/plugins/cloudability/content/cloudability-interceptor.js` - Mirror sync
+- `dashboard.js` - Cloudability OrgID version `4.0.5` -> `4.0.6`; platform version `1.49.7` -> `1.49.8`
+- `dashboard.html` - Cloudability plugin header version synced to `v4.0.6`; platform version display updated to `v1.49.8`
+- `manifest.json`, `package.json` - Platform version `1.49.7` -> `1.49.8`
+- `AGENTS.md` - Extension version and Cloudability plugin inventory version updated
 **Breaking changes:** None
-
-### Documentation - Add OpenAI governance implementation starter kit
-**Type:** Governance
-**Summary:** Added a documentation-only implementation pack for introducing OpenAI Responses API analysis and Codex remediation into the existing GitHub governance scaffold. The pack separates purpose, architecture, prerequisites, phased implementation, data contracts, prompt design, security, validation, operations, and rollout guidance, with non-runtime copy-ready examples. No extension runtime behavior or version changed.
-**Files changed:**
-- `docs/governance/openai/` - Added the OpenAI governance starter kit and examples
-- `docs/index.md` - Added the starter kit to the Operations documentation index
-- `README.md` - Linked the starter kit from Continuous Governance Automation
-- `AGENTS.md` - Added the starter kit to the authoritative documentation map
-**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.5
+- Cloudability OrgID: 4.0.6
+- Edge Bookmark Finder: 1.0.3
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.4
 
 ---
 
-## [1.47.10] - 2026-08-21
-### TypeScript scaffold - Static safety and runtime-boundary hardening
+## [1.49.7] - 2026-08-21
+### Salesforce Case Extractor - Reset connected state on non-Salesforce tab activation
 **Type:** Bug Fix
-**Summary:** Corrected the audited TypeScript scaffold defects without promoting `src/` to the active runtime. Fixed namespaced settings enumeration, Chrome storage error propagation, rejected asynchronous event handlers, retryable platform initialization, transactional plugin enable/disable state, duplicate lifecycle events, Salesforce and Apptio packaged-asset paths, OrgID cache TTL and message timeout handling, concurrent OrgID request deduplication, calendar-date/version parsing, and attachment execution readiness. Added defensive validation for settings, stored prompts, cached schedules, cached bookmarks, OrgID messages, Salesforce extraction responses, notification events, and plugin toggle requests. Dashboard bootstrap and quick-action failures now surface through platform logging and notifications. Package and extension version metadata advanced to 1.47.10.
+**Summary:** Fixed the Side Panel Salesforce status getting stuck in a false Connected state after switching to a non-Salesforce tab. The tab-activation pre-filter now performs a cheap UI-only reset for non-Salesforce tabs while still skipping the expensive detection pipeline and preserving the last extracted result in storage.
 **Files changed:**
-- `src/core/`, `src/platform/`, `src/background/`, `src/popup/` - Core error containment, validation, lifecycle, and dashboard hardening
-- `src/plugins/ApptioUpgradeCalculator/`, `src/plugins/CloudabilityOrgId/`, `src/plugins/EdgeBookmarkFinder/`, `src/plugins/SalesforceExtractor/` - Plugin boundary, cache, concurrency, asset-path, and type fixes
-- `manifest.json`, `package.json`, `package-lock.json`, `dashboard.html`, `dashboard.js` - Platform version 1.47.8 -> 1.47.10
-- `dist/manifest.json`, `dist/package.json`, `dist/dashboard.html`, `dist/dashboard.js` - Root runtime mirror version sync
-- `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/PACKAGING.md` - Version and TypeScript scaffold documentation
+- `plugins/salesforce-case-extractor.js` - Reset badge, widget status, and Extract button state immediately when the active tab is not Salesforce; keep the async detection pipeline filtered out for non-Salesforce tabs
+- `dashboard.js` - Salesforce Case Extractor version `4.12.4` -> `4.12.5`; platform version `1.49.6` -> `1.49.7`
+- `dashboard.html` - Salesforce plugin header version synced to `v4.12.5`; platform version display updated to `v1.49.7`
+- `manifest.json` - Version `1.49.6` -> `1.49.7`
+- `package.json` - Version `1.49.6` -> `1.49.7`
+- `README.md` - Version badge and Salesforce plugin version updated
+- `AGENTS.md` - Extension version and Salesforce plugin inventory version updated
+- `docs/ARCHITECTURE.md` - Salesforce plugin version table updated
+- `docs/plugins/salesforce-case-extractor.md` - Startup behavior note added for non-Salesforce tab activation in Side Panel mode; version table synced to `4.12.5`
+- `plugins/documentation.js` - In-extension Salesforce workflow note added for the non-Salesforce tab reset behavior
+- `dist/` - Mirror sync of changed runtime files and versioned metadata
 **Breaking changes:** None
-**Runtime note:** Root JavaScript remains the active production implementation. This release hardens the inactive TypeScript scaffold for RC-015 Phase 2 and does not change the root plugin behavior.
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.5
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.3
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.4
+
+---
+
+## [1.49.6] - 2026-08-21
+### Workspace Starter - Defer launch success until tab creation completes
+**Type:** Bug Fix
+**Summary:** Fixed Workspace Starter so it records launch success only after Chrome tab-creation callbacks complete. Full failures now leave recents and last-launched untouched, partial failures show warning feedback with opened/failed counts, and each failed tab creation is logged for diagnostics.
+**Files changed:**
+- `plugins/workspace-starter.js` - Reworked `wsLaunchProfile()` to await tab creation callbacks, guard null/invalid tabs, group only successful tabs, and commit success state only after verified opens; plugin version `2.0.3` -> `2.0.4`
+- `dashboard.js` - Workspace Starter version `2.0.3` -> `2.0.4`; platform `1.49.5` -> `1.49.6`
+- `dashboard.html` - Platform version display `v1.49.5` -> `v1.49.6`; Workspace Starter header version `2.0.3` -> `2.0.4`
+- `manifest.json`, `package.json` - Platform version `1.49.5` -> `1.49.6`
+- `README.md`, `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/plugins/workspace-starter.md`, `plugins/documentation.js` - Updated Workspace Starter versions and launch-behavior documentation
+- `dist/manifest.json`, `dist/package.json`, `dist/dashboard.html`, `dist/dashboard.js`, `dist/plugins/workspace-starter.js` - Mirror of root after sync
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.3
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.4
+- Tab Search: 1.0.1
+- Snake: 1.0.4
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
+## [1.49.5] - 2026-08-25
+### Snake - Scope hotkeys away from focused controls
+**Type:** Bug Fix
+**Summary:** Fixed double state-transition when pressing Enter or Space on the Pause button (or any other focused interactive control). Added an early return in `handleKey()` when the event target is a BUTTON, SELECT, INPUT, A, or TEXTAREA so the document-level listener no longer intercepts keys already handled by a focused element.
+**Files changed:**
+- `plugins/snake.js` - Added interactive-control target guard at top of `handleKey()`; added explanatory comment on `attachKeys`/`detachKeys`
+- `dist/plugins/snake.js` - Mirror of root
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.3
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.4
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
+## [1.49.4] - 2026-08-25
+### Snake - Responsive canvas in narrow side panels
+**Type:** Bug Fix
+**Summary:** Fixed the Snake game canvas clipping in Side Panel mode at widths below 620px. The canvas CSS display size is now scaled responsively to fit the available content area while maintaining the 400:220 aspect ratio. The backing buffer (DPR-aware) and all game-logic coordinates are unchanged.
+**Files changed:**
+- `plugins/snake.js` - Added `applyCanvasDisplaySize()` function; removed hardcoded CSS `style.width/height` from `initView()`; added responsive size call in `onNavigate()` with `window resize` listener; added listener cleanup in `onLeave()`
+- `styles/dashboard.css` - Updated comment on `#snk-canvas` rule to reflect the new responsive CSS size contract
+- `dist/plugins/snake.js` - Mirror of root
+- `dist/styles/dashboard.css` - Mirror of root
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.3
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.3
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
+## [1.49.3] - 2026-08-25
+### Docs - Align architecture, startup flow, plugin checklist, and Env Dashboard docs
+**Type:** Documentation
+**Summary:** Resolved six documentation drift issues identified in GitHub issue [DOCS][P3]. Corrected `initPlugins()` references to the actual `_safeInit()` / `DOMContentLoaded` pattern, removed the contradictory manual nav button checklist step, updated the navigation model to the grouped Notifications Center / Maintenance Center structure, aligned all plugin version numbers, added missing plugins (Quick Note Pad, Jira & Confluence Hub) to architecture and README tables, clarified which Environment Dashboards features are implemented vs. planned, added missing storage keys to `docs/STORAGE.md`, and created `docs/plugins/env-dashboards.md`.
+**Files changed:**
+- `AGENTS.md` - Plugin Release Checklist: removed manual nav button step; replaced `initPlugins()` with `_safeInit()` / DOMContentLoaded pattern
+- `docs/ARCHITECTURE.md` - Platform views table: grouped nav model (Notifications Center, Maintenance Center); Left navigation structure updated; plugin versions and descriptions updated; added Quick Note Pad and Jira & Confluence Hub; env-dashboards capabilities qualified
+- `docs/STARTUP-FLOW.md` - Boot sequence updated to current _safeInit() pattern and full plugin list; plugin load order updated to match current dashboard.html; init pattern note added
+- `docs/STORAGE.md` - Added Quick Note Pad, Jira & Confluence Smart Search Hub, and Environment Dashboards Launcher plugin key sections
+- `README.md` - Version badge updated to 1.49.2; Built-in Plugins table corrected (versions, added Quick Note Pad and Jira & Confluence Hub, env-dashboards description qualified); plugin doc table updated with env-dashboards link
+- `docs/plugins/env-dashboards.md` - Created; documents implemented features, planned features, storage schema, and known limitations
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.3
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.2
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
+## [1.49.2] - 2026-08-22
+### Platform Audit - Backup & Restore + Notification gaps resolved
+**Type:** Bug Fix / Enhancement
+**Summary:** Comprehensive integration audit covering all plugins. Three gaps resolved: (1) Environment Dashboards Launcher (`com.replycators.env-dashboards` v1.4.0) was absent from `BR_PLUGIN_REGISTRY` despite owning a persistent `rc:plugin:com.replycators.env-dashboards:state` storage key - entry added with full validate/migrate/sanitize contract and `restoreStrategy: 'replace'`. (2) Edge Bookmark Finder had no success notification after a scan completed - `addNotification('success')` added after scan so the Notifications Center and toast system reflect the result. (3) Snake had no platform-visible milestone event when a new high score was achieved - `addNotification('success')` added in `gameOver()` guarded by `isNewHigh`. Backup & Restore plugin bumped to v1.0.5. Edge Bookmark Finder bumped to v1.0.3. Snake bumped to v1.0.2.
+**Files changed:**
+- `plugins/backup-restore.js` - `BR_PLUGIN_REGISTRY`: new entry for `com.replycators.env-dashboards` (exportable state, validate, sanitize, replace strategy); file header `v1.0.4` -> `v1.0.5`
+- `plugins/bookmark-finder.js` - Added `app().addNotification('success')` on scan complete with bookmark and folder count
+- `plugins/snake.js` - Added `isNewHigh` guard and `app().addNotification('success')` in `gameOver()` when a new high score is set
+- `dashboard.js` - Edge Bookmark Finder version `1.0.2` -> `1.0.3`; Snake version `1.0.1` -> `1.0.2`; file header `v1.49.1` -> `v1.49.2`
+- `dashboard.html` - Edge Bookmark Finder header `v1.0.2` -> `v1.0.3`; Snake header `v1.0.1` -> `v1.0.2`; platform version `v1.49.1` -> `v1.49.2`
+- `manifest.json` - Version `1.49.1` -> `1.49.2`
+- `package.json` - Version `1.49.1` -> `1.49.2`
+- `AGENTS.md` - §1 version updated; §8 plugin versions updated
+- `CHANGELOG.md` - This entry
+- `dist/` - Mirror sync of all changed root files
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.3
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.2
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
+## [1.49.1] - 2026-08-22
+### Quick Note Pad + Backup & Restore - Order fix, notifications, backup integration
+**Type:** Bug Fix / Enhancement
+**Summary:** Three corrections to the v1.49.0 Quick Note Pad release: (1) DEFAULT_PLUGIN_ORDER corrected - Apptio Docs Finder restored to #4, Quick Note Pad moved to #5, matching the user-confirmed plugin manager ordering. (2) Key notepad actions (create note, delete note, copy to clipboard, export .txt) now fire `addNotification()` so events appear in the Notifications Center and Activity Log - previously only `showToast()` was called. (3) Backup & Restore `BR_PLUGIN_REGISTRY` extended with full entries for Quick Note Pad (exportable notes + state, sanitize redacts body and title) and Jira & Confluence Smart Search Hub (exportable settings, optional recents, sanitize redacts recent labels). Backup & Restore plugin bumped to v1.0.4.
+**Files changed:**
+- `dashboard.js` - DEFAULT_PLUGIN_ORDER: notepad swapped #4 -> #5, apptio-docs-finder swapped #5 -> #4; version header `v1.49.0` -> `v1.49.1`
+- `plugins/notepad.js` - `addNotification()` added for: create note, delete note, copy (replaces showToast), export (replaces showToast); `deletedTitle` captured before splice for correct deletion message
+- `plugins/backup-restore.js` - BR_PLUGIN_REGISTRY: new entries for `com.replycators.notepad` (exportable notes + state, schema validate, sanitize) and `com.replycators.jira-confluence-hub` (exportable settings, optional recents, sanitize); file header `v1.0.3` -> `v1.0.4`
+- `manifest.json` - Version `1.49.0` -> `1.49.1`
+- `package.json` - Version `1.49.0` -> `1.49.1`
+- `AGENTS.md` - §1 version updated
+- `CHANGELOG.md` - This entry
+- `dist/` - Mirror sync of all changed root files
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
+## [1.49.0] - 2026-08-22
+### Quick Note Pad - New plugin (v1.0.0)
+**Type:** Feature
+**Summary:** Added the Quick Note Pad plugin (`com.replycators.notepad` v1.0.0). Provides a persistent multi-tab scratch pad with up to 5 named note tabs, 300 ms debounced auto-save on every keystroke, copy-to-clipboard, .txt export, monospace toggle, and a dashboard widget showing an active-note preview. Notes survive popup close, browser restart, and all session boundaries. Zero new Chrome permissions; pure `chrome.storage.local`.
+**Files changed:**
+- `plugins/notepad.js` - New plugin module (IIFE, self-registers on `window.ReplyCatorsPlugins.Notepad`); multi-note state, debounced save, tab switching, title editing, copy, export, mono toggle, widget update, full lifecycle (init/onNavigate/onLeave)
+- `plugins/shared/icon-helper.js` - Added `notepad` to `plugins:` section of `ICON_REGISTRY` pointing at existing `content/note.svg`
+- `assets/icons/streamline-ultimate-colors-free/icon-manifest.json` - Added `plugins.notepad` entry
+- `plugins/documentation.js` - Added `notepad` topic to NAV_GROUPS `plugins` array and `CONTENT_MAP`; topics count updated 23 -> 24
+- `dashboard.html` - Script tag for `plugins/notepad.js`; Quick Action button "Notes"; Dashboard widget card with preview and Open Notes button; plugin view `#view-plugin-notepad` (standard `.rc-plugin-page`); settings group (Notes Limit); activity log filter option; platform version `v1.48.0` -> `v1.49.0`
+- `dashboard.js` - New entry in `PLUGINS[]`; `PLUGIN_DOC_MAP` entry; `DEFAULT_PLUGIN_ORDER` slot #4 (renumbered #5-#12); `_safeInit('Notepad', ...)` call; file header version `v1.48.0` -> `v1.49.0`
+- `src/plugins/Notepad/index.ts` - TypeScript stub
+- `src/plugins/Notepad/manifest.ts` - Plugin manifest stub
+- `manifest.json` - Version `1.48.0` -> `1.49.0`
+- `package.json` - Version `1.48.0` -> `1.49.0`
+- `AGENTS.md` - §1 version, §5 Source of Truth Matrix, §8 Plugin Inventory + Plugin Source Locations + Notable Plugin Keys, §10 Active Views
+- `CHANGELOG.md` - This entry
+- `dist/` - Mirror sync of all changed root files
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Quick Note Pad: 1.0.0
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
+
+---
+
+## [1.48.0] - 2026-08-22
+### Jira & Confluence Smart Search Hub - New plugin (Phase 1)
+**Type:** Feature
+**Summary:** Added the Jira & Confluence Smart Search Hub plugin (`com.replycators.jira-confluence-hub` v1.0.0). Provides a unified smart search box that detects input type (Jira issue key, full Jira URL, full Confluence URL, Confluence path, or search phrase) and offers context-appropriate actions: Open Issue, Open Page, Search Jira, Search Confluence, Search Both. Stores recent Jira and Confluence navigations/searches with configurable retention (default 10 per type). All navigation opens the browser directly - no external API calls or new Chrome permissions required.
+**Files changed:**
+- `plugins/jira-confluence-hub.js` - New plugin module (IIFE, self-registers on `window.ReplyCatorsPlugins.JiraConfluenceHub`); smart input detection, URL builders, recent items, settings load/save, full lifecycle (init/render/onNavigate/onLeave)
+- `plugins/shared/icon-helper.js` - Added `jiraConfluenceHub` entry to `plugins:` section of `ICON_REGISTRY` pointing to existing `assets/icons/streamline-ultimate-colors-free/plugins/jira.svg`
+- `plugins/documentation.js` - Added `jira-confluence-hub` topic to NAV_GROUPS `plugins` array and `CONTENT_MAP`; topics count updated 22 -> 23
+- `dashboard.html` - Script tag for `plugins/jira-confluence-hub.js`; Quick Action button; Dashboard widget card; plugin view `#view-plugin-jira-confluence-hub` (standard `.rc-plugin-page` structure); settings group (Jira Base URL, Confluence Base URL, Recent Items Limit, Open Results In); activity log filter option; platform version display `v1.47.8` -> `v1.48.0`
+- `dashboard.js` - New entry in `PLUGINS[]`; `PLUGIN_DOC_MAP` entry; `DEFAULT_PLUGIN_ORDER` slot #3; `_safeInit('JiraConfluenceHub', ...)` call; file header version `v1.47.8` -> `v1.48.0`
+- `src/plugins/JiraConfluenceHub/index.ts` - TypeScript stub
+- `src/plugins/JiraConfluenceHub/manifest.ts` - Plugin manifest stub
+- `manifest.json` - Version `1.47.8` -> `1.48.0`
+- `package.json` - Version `1.47.8` -> `1.48.0`
+- `AGENTS.md` - §1 version, §5 Source of Truth Matrix, §8 Plugin Inventory + Plugin Source Locations + Notable Plugin Keys, §10 Active Views
+- `CHANGELOG.md` - This entry
+- `dist/` - Mirror sync of all changed root files
+**Breaking changes:** None
+**Plugin versions at this release:**
+- Salesforce Case Extractor: 4.12.4
+- Cloudability OrgID: 4.0.5
+- Edge Bookmark Finder: 1.0.2
+- Apptio Planning Upgrade Calculator: 1.0.3
+- Workspace Starter: 2.0.3
+- Tab Search: 1.0.1
+- Snake: 1.0.1
+- Example Plugin: 1.0.2
+- Apptio Documentation Finder: 1.0.3
+- Jira & Confluence Smart Search Hub: 1.0.0
+- Environment Dashboards Launcher: 1.4.0
 
 ---
 

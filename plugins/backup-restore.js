@@ -1,6 +1,6 @@
 /**
  * ReplyCators - Backup & Restore Plugin
- * v1.0.3
+ * v1.0.5
  *
  * Platform-wide, versioned, extensible backup and restore system.
  *
@@ -415,6 +415,134 @@
         }
         return copy;
       },
+      restoreStrategy: 'replace',
+      requiresReload: false,
+    },
+
+    // ── Quick Note Pad ────────────────────────────────────────────────────────
+    {
+      pluginId:        'com.replycators.notepad',
+      displayName:     'Quick Note Pad',
+      exportable: [
+        'rc:plugin:com.replycators.notepad:notes',
+        'rc:plugin:com.replycators.notepad:state',
+      ],
+      optional:        [],
+      neverExport:     [],
+      schemaVersion:   1,
+      sensitiveFields: [
+        'rc:plugin:com.replycators.notepad:notes[].body',  // may contain customer case details
+        'rc:plugin:com.replycators.notepad:notes[].title', // may contain case numbers
+      ],
+      validate(data) {
+        const errors = [];
+        const notes = data['rc:plugin:com.replycators.notepad:notes'];
+        if (notes !== undefined) {
+          if (!Array.isArray(notes)) {
+            errors.push('notepad:notes must be an array');
+          } else {
+            notes.forEach(function (n, i) {
+              if (typeof n !== 'object' || n === null) errors.push('notepad:notes[' + i + '] must be an object');
+              else if (typeof n.id !== 'string') errors.push('notepad:notes[' + i + '].id must be a string');
+              else if (typeof n.title !== 'string') errors.push('notepad:notes[' + i + '].title must be a string');
+              else if (typeof n.body !== 'string') errors.push('notepad:notes[' + i + '].body must be a string');
+            });
+          }
+        }
+        return { ok: errors.length === 0, errors };
+      },
+      migrate(data)    { return data; },
+      sanitize(data) {
+        const copy = _deepClone(data);
+        // Redact note content - may contain customer names, case numbers, error messages
+        const notes = copy['rc:plugin:com.replycators.notepad:notes'];
+        if (Array.isArray(notes)) {
+          copy['rc:plugin:com.replycators.notepad:notes'] = notes.map(function (n) {
+            return Object.assign({}, n, { title: '[REDACTED]', body: '[REDACTED]' });
+          });
+        }
+        return copy;
+      },
+      restoreStrategy: 'replace',
+      requiresReload: false,
+    },
+
+    // ── Jira & Confluence Smart Search Hub ────────────────────────────────────
+    {
+      pluginId:        'com.replycators.jira-confluence-hub',
+      displayName:     'Jira & Confluence Smart Search Hub',
+      exportable: [
+        'rc:plugin:com.replycators.jira-confluence-hub:settings',
+      ],
+      optional: [
+        'rc:plugin:com.replycators.jira-confluence-hub:jira-recents',
+        'rc:plugin:com.replycators.jira-confluence-hub:confluence-recents',
+      ],
+      neverExport:     [],
+      schemaVersion:   1,
+      sensitiveFields: [
+        'rc:plugin:com.replycators.jira-confluence-hub:jira-recents[].label',
+        'rc:plugin:com.replycators.jira-confluence-hub:confluence-recents[].label',
+      ],
+      validate(data) {
+        const errors = [];
+        const settings = data['rc:plugin:com.replycators.jira-confluence-hub:settings'];
+        if (settings !== undefined && (typeof settings !== 'object' || settings === null || Array.isArray(settings))) {
+          errors.push('jch:settings must be an object');
+        }
+        const jiraRecents = data['rc:plugin:com.replycators.jira-confluence-hub:jira-recents'];
+        if (jiraRecents !== undefined && !Array.isArray(jiraRecents)) {
+          errors.push('jch:jira-recents must be an array');
+        }
+        const confRecents = data['rc:plugin:com.replycators.jira-confluence-hub:confluence-recents'];
+        if (confRecents !== undefined && !Array.isArray(confRecents)) {
+          errors.push('jch:confluence-recents must be an array');
+        }
+        return { ok: errors.length === 0, errors };
+      },
+      migrate(data)    { return data; },
+      sanitize(data) {
+        const copy = _deepClone(data);
+        // Redact recent item labels - may contain customer-specific issue keys or page titles
+        const jr = copy['rc:plugin:com.replycators.jira-confluence-hub:jira-recents'];
+        if (Array.isArray(jr)) {
+          copy['rc:plugin:com.replycators.jira-confluence-hub:jira-recents'] = jr.map(function (r) {
+            return Object.assign({}, r, { label: '[REDACTED]' });
+          });
+        }
+        const cr = copy['rc:plugin:com.replycators.jira-confluence-hub:confluence-recents'];
+        if (Array.isArray(cr)) {
+          copy['rc:plugin:com.replycators.jira-confluence-hub:confluence-recents'] = cr.map(function (r) {
+            return Object.assign({}, r, { label: '[REDACTED]' });
+          });
+        }
+        return copy;
+      },
+      restoreStrategy: 'replace',
+      requiresReload: false,
+    },
+
+    // ── Environment Dashboards Launcher ───────────────────────────────────────
+    {
+      pluginId:        'com.replycators.env-dashboards',
+      displayName:     'Environment Dashboards Launcher',
+      exportable: [
+        'rc:plugin:com.replycators.env-dashboards:state',
+      ],
+      optional:        [],
+      neverExport:     [],
+      schemaVersion:   1,
+      sensitiveFields: [],
+      validate(data) {
+        const errors = [];
+        const st = data['rc:plugin:com.replycators.env-dashboards:state'];
+        if (st !== undefined && (typeof st !== 'object' || st === null || Array.isArray(st))) {
+          errors.push('env-dashboards:state must be an object');
+        }
+        return { ok: errors.length === 0, errors };
+      },
+      migrate(data)    { return data; },
+      sanitize(data)   { return _deepClone(data); },
       restoreStrategy: 'replace',
       requiresReload: false,
     },

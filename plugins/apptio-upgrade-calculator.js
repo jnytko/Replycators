@@ -530,22 +530,22 @@ function renderApptioUpgradeCalcView(container) {
 }
 
 const AUC_REFS_HTML = `
-    <div style="margin-top:14px;padding:10px 12px;background:var(--rc-surface);border:1px solid var(--rc-border);border-radius:6px;font-size:11px;">
-      <div style="font-weight:600;margin-bottom:5px;color:var(--rc-text-muted);">References &amp; Help</div>
-      <div style="color:var(--rc-text-muted);margin-bottom:6px;line-height:1.5;">
+    <div class="auc-refs-card">
+      <div class="auc-refs-title">References &amp; Help</div>
+      <div class="auc-refs-body">
         If schedule information appears inaccurate, unavailable, or does not match your environment,
         verify the latest information using the official IBM resources below.
       </div>
-      <ul style="margin:0;padding-left:16px;line-height:1.9;">
+      <ul class="auc-refs-list">
         <li><a href="https://www.ibm.com/support/pages/apptio-planning-upgrade-and-maintenance-schedule-overview?view=full"
                target="_blank" rel="noopener noreferrer"
-               style="color:var(--rc-accent,#3b82d4);text-decoration:none;"
+               class="auc-refs-link"
                title="Official IBM support page - Apptio Planning Upgrade and Maintenance Schedule Overview">
           Apptio Planning: Upgrade and Maintenance Schedule Overview
         </a></li>
         <li><a href="https://community.ibm.com/community/user/viewdocument/apptio-planning-whats-new-cumula?CommunityKey=4100dfb8-fc23-4203-83c7-019253cf7c0b&tab=librarydocuments"
                target="_blank" rel="noopener noreferrer"
-               style="color:var(--rc-accent,#3b82d4);text-decoration:none;"
+               class="auc-refs-link"
                title="IBM Community - Apptio Planning What's New / Cumulative Release Schedule">
           IBM Apptio Planning Release Schedule
         </a></li>
@@ -554,34 +554,36 @@ const AUC_REFS_HTML = `
 
 function aucGetHTML() {
   return `
-    <div id="auc-status-bar" class="rc-status rc-status--neutral" style="margin-bottom:10px;display:none;"></div>
-    <div role="tablist" aria-label="Apptio Planning Upgrade Calculator tabs"
-         style="display:flex;gap:6px;margin-bottom:12px;border-bottom:1px solid var(--rc-border);padding-bottom:8px;">
+    <div id="auc-status-bar" class="rc-status rc-status--neutral auc-status-bar"></div>
+
+    <!-- Tab bar: platform standard rc-plugin-tabs -->
+    <div class="rc-plugin-tabs auc-tab-bar" role="tablist" aria-label="Apptio Planning Upgrade Calculator tabs">
       <button id="auc-tab-next" role="tab" aria-selected="true" aria-controls="auc-tab-panel-next"
-              class="rc-btn rc-btn--primary rc-btn--sm rc-tab--active"
+              class="rc-plugin-tab rc-plugin-tab--active"
               title="Next Release - shows the latest released and next upcoming Apptio Planning release">Next Release</button>
       <button id="auc-tab-calc" role="tab" aria-selected="false" aria-controls="auc-tab-panel-calc"
-              class="rc-btn rc-btn--ghost rc-btn--sm"
+              class="rc-plugin-tab"
               title="Calculator - calculate upgrade dates for a specific release">Calculator</button>
       <button id="auc-tab-schedule" role="tab" aria-selected="false" aria-controls="auc-tab-panel-schedule"
-              class="rc-btn rc-btn--ghost rc-btn--sm"
+              class="rc-plugin-tab"
               title="Full Release Schedule - browse all releases with dates and status">Schedule</button>
-      <div style="flex:1;"></div>
+    </div>
+    <div class="auc-tab-refresh-row">
       <button id="auc-refresh-btn" class="rc-btn rc-btn--secondary rc-btn--sm"
               title="Force refresh - clears the cache and re-fetches the IBM Community schedule"
               aria-label="Force refresh schedule data">Refresh</button>
     </div>
-    <div id="auc-loading" class="rc-status rc-status--neutral">${window.ReplyCatorsIconHelper ? window.ReplyCatorsIconHelper.renderIcon('states.loading',{size:14,decorative:true}) : ''} Loading schedule…</div>
+    <div id="auc-loading" class="rc-plugin-loading">${window.ReplyCatorsIconHelper ? window.ReplyCatorsIconHelper.renderIcon('states.loading',{size:14,decorative:true}) : ''} Loading schedule…</div>
 
     <!-- Tab: Next Release -->
-    <div id="auc-tab-panel-next" style="display:none;">
-      <div id="auc-next-content" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
+    <div id="auc-tab-panel-next" class="auc-tab-panel" hidden>
+      <div id="auc-next-content" class="rc-plugin-stats-row"></div>
     </div>
 
     <!-- Tab: Calculator -->
-    <div id="auc-tab-panel-calc" style="display:none;">
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
-        <div style="flex:1;min-width:120px;">
+    <div id="auc-tab-panel-calc" class="auc-tab-panel" hidden>
+      <div class="auc-select-row">
+        <div class="rc-form-group auc-select-col">
           <label class="rc-label" for="auc-select-major"
                  title="Select the major Apptio Planning release series (e.g. 25.1, 25.2)">Major Release</label>
           <select id="auc-select-major" class="rc-input"
@@ -589,7 +591,7 @@ function aucGetHTML() {
             <option value="">- select major release -</option>
           </select>
         </div>
-        <div style="flex:1;min-width:120px;">
+        <div class="rc-form-group auc-select-col">
           <label class="rc-label" for="auc-select-minor"
                  title="Select the specific minor release within the chosen major series">Minor Release</label>
           <select id="auc-select-minor" class="rc-input" disabled
@@ -597,7 +599,7 @@ function aucGetHTML() {
             <option value="">- select minor release -</option>
           </select>
         </div>
-        <div style="flex:1;min-width:140px;">
+        <div class="rc-form-group auc-select-col">
           <label class="rc-label" for="auc-select-day"
                  title="The day of the week on which the customer's upgrade is scheduled, or Unknown if not known">Upgrade Day</label>
           <select id="auc-select-day" class="rc-input"
@@ -615,27 +617,31 @@ function aucGetHTML() {
       </div>
 
       <!-- Known day results -->
-      <div id="auc-results-known" style="display:none;background:var(--rc-surface);border:1px solid var(--rc-border);border-radius:6px;padding:12px;margin-bottom:10px;">
-        <div style="font-weight:600;font-size:12px;margin-bottom:8px;">Upgrade Timeline</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
-          <div class="auc-stat" title="Date the Apptio Planning sandbox will be upgraded to this release">
-            <span class="auc-stat-label">Sandbox Date</span>
-            <span class="auc-stat-value" id="auc-res-sandbox-date">-</span>
-          </div>
-          <div class="auc-stat" title="Date the Apptio Planning production environment will be upgraded to this release">
-            <span class="auc-stat-label">Production Date</span>
-            <span class="auc-stat-value" id="auc-res-prod-date">-</span>
-          </div>
-          <div class="auc-stat" title="Expected date this customer's environment will be upgraded (first occurrence of the upgrade day on or after the production date)">
-            <span class="auc-stat-label">Expected Upgrade</span>
-            <span class="auc-stat-value rc-text-accent" id="auc-res-upgrade-date">-</span>
-          </div>
-          <div class="auc-stat" title="Number of calendar days until the expected upgrade date">
-            <span class="auc-stat-label">Days Remaining</span>
-            <span class="auc-stat-value" id="auc-res-days-remaining">-</span>
+      <div id="auc-results-known" class="rc-plugin-card" hidden>
+        <div class="rc-plugin-card__header">
+          <span class="rc-plugin-card__title">Upgrade Timeline</span>
+        </div>
+        <div class="rc-plugin-card__body">
+          <div class="rc-plugin-stats-row">
+            <div class="auc-stat" title="Date the Apptio Planning sandbox will be upgraded to this release">
+              <span class="auc-stat-label">Sandbox Date</span>
+              <span class="auc-stat-value" id="auc-res-sandbox-date">-</span>
+            </div>
+            <div class="auc-stat" title="Date the Apptio Planning production environment will be upgraded to this release">
+              <span class="auc-stat-label">Production Date</span>
+              <span class="auc-stat-value" id="auc-res-prod-date">-</span>
+            </div>
+            <div class="auc-stat" title="Expected date this customer's environment will be upgraded (first occurrence of the upgrade day on or after the production date)">
+              <span class="auc-stat-label">Expected Upgrade</span>
+              <span class="auc-stat-value rc-text-accent" id="auc-res-upgrade-date">-</span>
+            </div>
+            <div class="auc-stat" title="Number of calendar days until the expected upgrade date">
+              <span class="auc-stat-label">Days Remaining</span>
+              <span class="auc-stat-value" id="auc-res-days-remaining">-</span>
+            </div>
           </div>
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <div class="rc-plugin-card__footer">
           <button id="auc-copy-summary-k" class="rc-btn rc-btn--secondary rc-btn--sm"
                   title="Copy a concise technical summary of the upgrade dates to the clipboard">Copy Summary</button>
           <button id="auc-copy-response-k" class="rc-btn rc-btn--secondary rc-btn--sm"
@@ -644,32 +650,36 @@ function aucGetHTML() {
       </div>
 
       <!-- Unknown day results -->
-      <div id="auc-results-unknown" style="display:none;background:var(--rc-surface);border:1px solid var(--rc-border);border-radius:6px;padding:12px;margin-bottom:10px;">
-        <div style="font-weight:600;font-size:12px;margin-bottom:8px;">Upgrade Window (Unknown Day)</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-          <div class="auc-stat" title="Date the Apptio Planning sandbox will be upgraded">
-            <span class="auc-stat-label">Sandbox Date</span>
-            <span class="auc-stat-value" id="auc-res-sandbox-date-u">-</span>
+      <div id="auc-results-unknown" class="rc-plugin-card" hidden>
+        <div class="rc-plugin-card__header">
+          <span class="rc-plugin-card__title">Upgrade Window (Unknown Day)</span>
+        </div>
+        <div class="rc-plugin-card__body">
+          <div class="rc-plugin-stats-row">
+            <div class="auc-stat" title="Date the Apptio Planning sandbox will be upgraded">
+              <span class="auc-stat-label">Sandbox Date</span>
+              <span class="auc-stat-value" id="auc-res-sandbox-date-u">-</span>
+            </div>
+            <div class="auc-stat" title="Date the Apptio Planning production environment will be upgraded">
+              <span class="auc-stat-label">Production Date</span>
+              <span class="auc-stat-value" id="auc-res-prod-date-u">-</span>
+            </div>
           </div>
-          <div class="auc-stat" title="Date the Apptio Planning production environment will be upgraded">
-            <span class="auc-stat-label">Production Date</span>
-            <span class="auc-stat-value" id="auc-res-prod-date-u">-</span>
+          <div class="auc-upgrade-window-section">
+            <div class="auc-upgrade-window-label"
+                 title="All possible upgrade days in the 7 days following the production release date">
+              Possible Upgrade Window (7 days from production):
+            </div>
+            <table id="auc-table-upgrade-window" class="sf-dt auc-window-table">
+              <thead><tr>
+                <th title="Day of week">Day</th>
+                <th title="Calendar date">Date</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
           </div>
         </div>
-        <div style="margin-bottom:10px;">
-          <div style="font-size:11px;font-weight:600;margin-bottom:4px;color:var(--rc-text-muted);"
-               title="All possible upgrade days in the 7 days following the production release date">
-            Possible Upgrade Window (7 days from production):
-          </div>
-          <table id="auc-table-upgrade-window" style="width:100%;font-size:11px;border-collapse:collapse;">
-            <thead><tr>
-              <th style="text-align:left;padding:3px 6px;border-bottom:1px solid var(--rc-border);">Day</th>
-              <th style="text-align:left;padding:3px 6px;border-bottom:1px solid var(--rc-border);">Date</th>
-            </tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <div class="rc-plugin-card__footer">
           <button id="auc-copy-summary-u" class="rc-btn rc-btn--secondary rc-btn--sm"
                   title="Copy a concise technical summary of the upgrade window to the clipboard">Copy Summary</button>
           <button id="auc-copy-response-u" class="rc-btn rc-btn--secondary rc-btn--sm"
@@ -677,33 +687,33 @@ function aucGetHTML() {
         </div>
       </div>
 
-      <div id="auc-calc-prompt" class="rc-status rc-status--neutral" style="display:none;">
+      <div id="auc-calc-prompt" class="rc-plugin-status auc-calc-prompt" hidden>
         Select a Major and Minor release above to see upgrade calculations.
       </div>
       ${AUC_REFS_HTML}
     </div><!-- /tab-calc -->
 
     <!-- Tab: Schedule -->
-    <div id="auc-tab-panel-schedule" style="display:none;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
-        <input type="text" id="auc-search-schedule" class="rc-input" style="flex:1;min-width:140px;"
+    <div id="auc-tab-panel-schedule" class="auc-tab-panel" hidden>
+      <div class="rc-inline-filter auc-schedule-filter">
+        <input type="text" id="auc-search-schedule" class="rc-input rc-inline-filter__input"
                placeholder="Filter releases…"
                title="Filter the schedule table by version number, sandbox date, or production date" />
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;white-space:nowrap;"
+        <label class="rc-filter-toggle auc-hist-toggle"
                title="When checked, all historical (released) entries are shown. When unchecked, only the 10 most recent releases are shown.">
-          <input type="checkbox" id="auc-show-historical" style="cursor:pointer;" />
+          <input type="checkbox" id="auc-show-historical" />
           <span>Show Historical Releases</span>
         </label>
       </div>
-      <div style="overflow-x:auto;">
-        <table style="width:100%;font-size:11px;border-collapse:collapse;">
+      <div class="auc-schedule-wrap">
+        <table class="sf-dt auc-schedule-table">
           <thead>
-            <tr style="border-bottom:1px solid var(--rc-border);">
-              <th style="text-align:left;padding:4px 6px;font-weight:600;" title="Release version">Version</th>
-              <th style="text-align:left;padding:4px 6px;font-weight:600;" title="Sandbox upgrade date">Sandbox</th>
-              <th style="text-align:left;padding:4px 6px;font-weight:600;" title="Production upgrade date">Production</th>
-              <th style="text-align:left;padding:4px 6px;font-weight:600;" title="Release status">Status</th>
-              <th style="text-align:left;padding:4px 6px;font-weight:600;" title="Days until production date">Days</th>
+            <tr>
+              <th title="Release version">Version</th>
+              <th title="Sandbox upgrade date">Sandbox</th>
+              <th title="Production upgrade date">Production</th>
+              <th title="Release status">Status</th>
+              <th title="Days until production date">Days</th>
             </tr>
           </thead>
           <tbody id="auc-schedule-tbody"></tbody>
@@ -740,18 +750,20 @@ function aucBindEvents(container) {
   // RC-UX008 fix: sync aria-selected for screen readers and apply a clear
   // active-tab style (bottom-border underline) in addition to the button state.
   function activateTab(tab) {
-    const active = 'rc-btn rc-btn--primary rc-btn--sm rc-tab--active';
-    const idle   = 'rc-btn rc-btn--ghost rc-btn--sm';
-    tabBtnNext.className  = tab === 'next'     ? active : idle;
-    tabBtnCalc.className  = tab === 'calc'     ? active : idle;
-    tabBtnSched.className = tab === 'schedule' ? active : idle;
+    // Switch active class on tab buttons (platform standard rc-plugin-tab)
+    [tabBtnNext, tabBtnCalc, tabBtnSched].forEach(function(btn) {
+      btn.classList.remove('rc-plugin-tab--active');
+    });
+    const activeBtn = tab === 'next' ? tabBtnNext : tab === 'calc' ? tabBtnCalc : tabBtnSched;
+    activeBtn.classList.add('rc-plugin-tab--active');
     // Sync ARIA state for screen readers
     tabBtnNext.setAttribute('aria-selected',  tab === 'next'     ? 'true' : 'false');
     tabBtnCalc.setAttribute('aria-selected',  tab === 'calc'     ? 'true' : 'false');
     tabBtnSched.setAttribute('aria-selected', tab === 'schedule' ? 'true' : 'false');
-    panelNext.style.display  = tab === 'next'     ? 'block' : 'none';
-    panelCalc.style.display  = tab === 'calc'     ? 'block' : 'none';
-    panelSched.style.display = tab === 'schedule' ? 'block' : 'none';
+    // Show/hide panels using hidden attribute
+    if (tab === 'next') { panelNext.removeAttribute('hidden'); panelCalc.setAttribute('hidden',''); panelSched.setAttribute('hidden',''); }
+    else if (tab === 'calc') { panelCalc.removeAttribute('hidden'); panelNext.setAttribute('hidden',''); panelSched.setAttribute('hidden',''); }
+    else { panelSched.removeAttribute('hidden'); panelNext.setAttribute('hidden',''); panelCalc.setAttribute('hidden',''); }
     aucPrefs.tab = tab;
     aucSavePrefs();
   }
@@ -761,9 +773,9 @@ function aucBindEvents(container) {
 
   // ── Status bar ──────────────────────────────────────────────────────────
   function setAucStatus(msg, type) {
-    statusBar.textContent   = msg;
-    statusBar.className     = 'rc-status rc-status--' + type;
-    statusBar.style.display = msg ? 'block' : 'none';
+    statusBar.textContent = msg;
+    statusBar.className   = 'rc-status rc-status--' + type + ' auc-status-bar';
+    if (msg) { statusBar.removeAttribute('hidden'); } else { statusBar.setAttribute('hidden',''); }
   }
 
   // ── Major/Minor dropdowns ───────────────────────────────────────────────
@@ -841,13 +853,13 @@ function aucBindEvents(container) {
   // ── Calculation ─────────────────────────────────────────────────────────
   function calculate() {
     const version = selMinor.value, dayVal = selDay.value;
-    resKnown.style.display   = 'none';
-    resUnknown.style.display = 'none';
-    calcPrompt.style.display = 'none';
-    if (!version || !aucSchedule) { calcPrompt.style.display = 'block'; return; }
+    resKnown.setAttribute('hidden','');
+    resUnknown.setAttribute('hidden','');
+    calcPrompt.setAttribute('hidden','');
+    if (!version || !aucSchedule) { calcPrompt.removeAttribute('hidden'); return; }
 
     const release = aucSchedule.releases.find(function(r){ return r.version === version; });
-    if (!release) { calcPrompt.style.display = 'block'; return; }
+    if (!release) { calcPrompt.removeAttribute('hidden'); return; }
 
     addLog('info', AUC_PLUGIN_ID, 'Calculating: version=' + version + ' upgradeDay=' + dayVal);
     const prodDate    = aucParseDate(release.productionDate);
@@ -863,12 +875,11 @@ function aucBindEvents(container) {
       for (let i = 0; i < 7; i++) {
         const d = aucAddDays(prodDate, i);
         const tr = document.createElement('tr');
-        tr.style.cssText = 'border-bottom:1px solid var(--rc-border);';
-        tr.innerHTML = '<td style="padding:3px 6px;">' + AUC_DAY_NAMES[d.getDay()] + '</td>' +
-                       '<td style="padding:3px 6px;">' + aucFormatDate(d) + '</td>';
+        tr.innerHTML = '<td>' + AUC_DAY_NAMES[d.getDay()] + '</td>' +
+                       '<td>' + aucFormatDate(d) + '</td>';
         upgradeWinTbody.appendChild(tr);
       }
-      resUnknown.style.display = 'block';
+      resUnknown.removeAttribute('hidden');
     } else {
       const upgradeDay    = parseInt(dayVal, 10);
       const upgradeDate   = aucFirstWeekdayOnOrAfter(prodDate, upgradeDay);
@@ -880,7 +891,7 @@ function aucBindEvents(container) {
         ? (Math.abs(daysRemaining) + ' days ago')
         : daysRemaining === 0 ? 'Today' : (daysRemaining + ' days');
       setAucEl('auc-res-days-remaining', dLabel);
-      resKnown.style.display = 'block';
+      resKnown.removeAttribute('hidden');
     }
   }
 
@@ -892,7 +903,7 @@ function aucBindEvents(container) {
     const upcoming = sorted.find(function(r){ return new Date(r.productionDate) > today; });
 
     function card(label, value, accent, tooltip) {
-      return '<div class="auc-stat" title="' + esc(tooltip) + '" style="min-width:120px;flex:1;">' +
+      return '<div class="auc-stat auc-stat--fill" title="' + esc(tooltip) + '">' +
         '<span class="auc-stat-label">' + esc(label) + '</span>' +
         '<span class="auc-stat-value' + (accent ? ' rc-text-accent' : '') + '">' + esc(value) + '</span>' +
         '</div>';
@@ -936,7 +947,7 @@ function aucBindEvents(container) {
     }
 
     if (visible.length === 0) {
-      scheduleTbody.innerHTML = '<tr><td colspan="5" style="padding:8px;text-align:center;color:var(--rc-text-muted);">No releases found.</td></tr>';
+      scheduleTbody.innerHTML = '<tr><td colspan="5" class="sf-dt-empty-cell">No releases found.</td></tr>';
       return;
     }
     const nextRelease = sorted.find(function(r){ return new Date(r.productionDate) > today; });
@@ -949,19 +960,19 @@ function aucBindEvents(container) {
       const isNext   = nextRelease && r.version === nextRelease.version;
       const daysUntil = aucDaysBetween(today, prod);
       const badge    = released
-        ? '<span class="rc-badge" style="background:#2ea043;color:#fff;">Released</span>'
+        ? '<span class="rc-badge rc-badge--green">Released</span>'
         : isNext
           ? '<span class="rc-badge rc-badge--blue">Next</span>'
-          : '<span class="rc-badge" style="background:var(--rc-surface);color:var(--rc-text-muted);">Upcoming</span>';
-      const daysCell = released ? '<span style="color:var(--rc-text-muted);">' + Math.abs(daysUntil) + 'd ago</span>' : daysUntil + 'd';
+          : '<span class="rc-badge">Upcoming</span>';
+      const daysCell = released ? '<span class="rc-muted">' + Math.abs(daysUntil) + 'd ago</span>' : daysUntil + 'd';
       const tr = document.createElement('tr');
-      tr.style.cssText = 'border-bottom:1px solid var(--rc-border);';
+      tr.className = 'sf-dt-row';
       tr.innerHTML =
-        '<td style="padding:4px 6px;font-weight:600;">v' + esc(r.version) + '</td>' +
-        '<td style="padding:4px 6px;">' + esc(aucFormatDate(sandbox)) + '</td>' +
-        '<td style="padding:4px 6px;">' + esc(aucFormatDate(prod)) + '</td>' +
-        '<td style="padding:4px 6px;">' + badge + '</td>' +
-        '<td style="padding:4px 6px;">' + daysCell + '</td>';
+        '<td class="sf-dt-cell sf-dt-cell--strong">v' + esc(r.version) + '</td>' +
+        '<td class="sf-dt-cell">' + esc(aucFormatDate(sandbox)) + '</td>' +
+        '<td class="sf-dt-cell">' + esc(aucFormatDate(prod)) + '</td>' +
+        '<td class="sf-dt-cell">' + badge + '</td>' +
+        '<td class="sf-dt-cell">' + daysCell + '</td>';
       scheduleTbody.appendChild(tr);
     });
 
@@ -970,7 +981,7 @@ function aucBindEvents(container) {
       const hiddenCount = releases.length - visible.length;
       if (hiddenCount > 0) {
         const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="5" style="padding:5px 6px;font-size:11px;color:var(--rc-text-muted);font-style:italic;">' +
+        tr.innerHTML = '<td colspan="5" class="sf-dt-footer-note">' +
           hiddenCount + ' older release' + (hiddenCount !== 1 ? 's' : '') + ' hidden - check "Show Historical Releases" to view all.' +
           '</td>';
         scheduleTbody.appendChild(tr);

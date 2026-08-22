@@ -85,40 +85,38 @@
 
   function getHTML() {
     return `
-      <div id="ts-stats-bar" style="display:none;margin-bottom:12px;background:var(--rc-surface);border:1px solid var(--rc-border);border-radius:6px;padding:10px 12px;">
-        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:12px;">
-          <span id="ts-stat-total"   title="Total open tabs across all windows">0 tabs</span>
-          <span id="ts-stat-active"  title="Currently active tabs (one per window)">0 active</span>
-          <span id="ts-stat-dupes"   title="Tabs sharing a URL with at least one other tab" style="display:none;"></span>
-          <span id="ts-stat-domains" title="Number of unique domains across all tabs">0 domains</span>
-          <div style="flex:1;"></div>
-          <button id="ts-refresh-btn" class="rc-btn rc-btn--secondary rc-btn--sm"
-                  title="Re-scan all open tabs to reflect the current browser state">Refresh</button>
-        </div>
+      <div id="ts-stats-bar" class="rc-stats-bar" hidden>
+        <span id="ts-stat-total"   class="rc-stats-bar__item" title="Total open tabs across all windows">0 tabs</span>
+        <span id="ts-stat-active"  class="rc-stats-bar__item" title="Currently active tabs (one per window)">0 active</span>
+        <span id="ts-stat-dupes"   class="rc-stats-bar__item" hidden title="Tabs sharing a URL with at least one other tab"></span>
+        <span id="ts-stat-domains" class="rc-stats-bar__item" title="Number of unique domains across all tabs">0 domains</span>
+        <div class="rc-stats-bar__spacer"></div>
+        <button id="ts-refresh-btn" class="rc-btn rc-btn--secondary rc-btn--sm"
+                title="Re-scan all open tabs to reflect the current browser state">Refresh</button>
       </div>
 
-      <div style="display:flex;gap:8px;margin-bottom:8px;">
-        <input type="text" id="ts-search" class="rc-input"
+      <div class="rc-inline-filter">
+        <input type="text" id="ts-search" class="rc-input rc-inline-filter__input"
                placeholder="Search by title, URL, or domain…"
                autocomplete="off" spellcheck="false"
-               title="Filter tabs instantly - matches title, full URL, and hostname" style="flex:1;" />
-        <select id="ts-sort" class="rc-input rc-input--sm" style="max-width:140px;"
+               title="Filter tabs instantly - matches title, full URL, and hostname" />
+        <select id="ts-sort" class="rc-input rc-input--sm rc-inline-filter__select"
                 title="Choose the order tabs are displayed">
           <option value="natural">Browser Order</option>
           <option value="title">Sort by Title</option>
           <option value="domain">Sort by Domain</option>
           <option value="recent">Recently Active</option>
         </select>
-        <select id="ts-group-mode" class="rc-input rc-input--sm" style="max-width:140px;"
+        <select id="ts-group-mode" class="rc-input rc-input--sm rc-inline-filter__select"
                 title="Group tabs by hostname, or show a flat list">
           <option value="flat">Flat List</option>
           <option value="grouped">Group by Domain</option>
         </select>
       </div>
 
-      <div id="ts-results-meta" style="font-size:11px;color:var(--rc-text-muted);margin-bottom:6px;"></div>
-      <div id="ts-loading" class="rc-status rc-status--neutral" style="display:none;">${window.ReplyCatorsIconHelper ? window.ReplyCatorsIconHelper.renderIcon('states.loading',{size:14,decorative:true}) : ''} Loading tabs…</div>
-      <div id="ts-results" style="max-height:420px;overflow-y:auto;"></div>`;
+      <div id="ts-results-meta" class="rc-results-meta"></div>
+      <div id="ts-loading" class="rc-plugin-loading" hidden>${window.ReplyCatorsIconHelper ? window.ReplyCatorsIconHelper.renderIcon('states.loading',{size:14,decorative:true}) : ''} Loading tabs…</div>
+      <div id="ts-results" class="rc-scroll-list"></div>`;
   }
 
   // ─── Render a single tab row ──────────────────────────────────────────────
@@ -131,7 +129,7 @@
       : 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" rx="3" fill="%23666"/></svg>';
 
     const activeIndicator = tab.active
-      ? '<span title="This tab is currently active" style="color:var(--rc-success,#22c55e);font-size:10px;font-weight:700;margin-left:4px;">● ACTIVE</span>'
+      ? '<span class="ts-tab-active-badge" title="This tab is currently active">● ACTIVE</span>'
       : '';
 
     const dupeIndicator = isDuplicate
@@ -139,7 +137,7 @@
       : '';
 
     const windowInfo = tab.windowId
-      ? `<span title="Window ID ${tab.windowId}" style="font-size:10px;color:var(--rc-text-muted);margin-left:4px;">[Win ${tab.windowId}]</span>`
+      ? `<span class="ts-tab-win-id" title="Window ID ${tab.windowId}">[Win ${tab.windowId}]</span>`
       : '';
 
     const titleText = tab.title || '(untitled)';
@@ -163,19 +161,19 @@
         <div class="ts-tab-actions">
           <button class="rc-btn rc-btn--ghost rc-btn--sm ts-action-switch"
                   data-tab-id="${tab.id}" data-window-id="${tab.windowId || ''}"
-                  title="Switch to this tab" tabindex="-1">↗</button>
+                  title="Switch to this tab">↗</button>
           <button class="rc-btn rc-btn--ghost rc-btn--sm ts-action-copy-url"
                   data-url="${app().esc(urlText)}"
-                  title="Copy URL to clipboard" tabindex="-1" aria-label="Copy URL">⧉</button>
+                  title="Copy URL to clipboard" aria-label="Copy URL">⧉</button>
           <button class="rc-btn rc-btn--ghost rc-btn--sm ts-action-copy-title"
                   data-title="${app().esc(titleText)}"
-                  title="Copy page title to clipboard" tabindex="-1" aria-label="Copy title">T</button>
+                  title="Copy page title to clipboard" aria-label="Copy title">T</button>
           <button class="rc-btn rc-btn--ghost rc-btn--sm ts-action-new-window"
                   data-url="${app().esc(urlText)}"
-                  title="Open this tab in a new window" aria-label="Open this tab in a new window" tabindex="-1">↗</button>
+                  title="Open this tab in a new window" aria-label="Open this tab in a new window">↗</button>
           <button class="rc-btn rc-btn--ghost rc-btn--sm ts-action-close"
                   data-tab-id="${tab.id}"
-                  title="Close this tab" aria-label="Close this tab" tabindex="-1">×</button>
+                  title="Close this tab" aria-label="Close this tab">×</button>
         </div>
       </div>
     </div>`;
@@ -194,15 +192,15 @@
 
     // Stats
     const stats = buildStats(allTabs);
-    statsBar.style.display = 'block';
+    statsBar.removeAttribute('hidden');
     statTotal.textContent  = `${stats.total} tab${stats.total !== 1 ? 's' : ''}`;
     statActive.textContent = `${stats.active} active`;
     statDoms.textContent   = `${stats.uniqueDomains} domain${stats.uniqueDomains !== 1 ? 's' : ''}`;
     if (stats.duplicates > 0) {
       statDupes.textContent = `${stats.duplicates} duplicate${stats.duplicates !== 1 ? 's' : ''}`;
-      statDupes.style.display = 'inline';
+      statDupes.removeAttribute('hidden');
     } else {
-      statDupes.style.display = 'none';
+      statDupes.setAttribute('hidden', '');
     }
 
     const urlCounts = findDuplicates(allTabs);
@@ -215,7 +213,7 @@
       : `${sorted.length} tab${sorted.length !== 1 ? 's' : ''}`;
 
     if (sorted.length === 0) {
-      resultsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--rc-text-muted);">No matching tabs.</div>';
+      resultsEl.innerHTML = '<div class="rc-no-results">No matching tabs.</div>';
       return;
     }
 
@@ -303,11 +301,11 @@
     const resultsEl   = container.querySelector('#ts-results');
 
     function loadAndRender() {
-      loadingEl.style.display = 'block';
+      loadingEl.removeAttribute('hidden');
       resultsEl.innerHTML = '';
       getAllTabs().then(tabs => {
         allTabs = tabs;
-        loadingEl.style.display = 'none';
+        loadingEl.setAttribute('hidden', '');
         renderResults(container, allTabs, query, sortBy, groupMode);
         app().addLog('info', plugin.id, 'Loaded ' + tabs.length + ' tabs');
       });
@@ -385,6 +383,7 @@
     // Keyboard: Enter on a row switches to tab
     resultsEl.addEventListener('keydown', e => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
+      if (e.target.closest('.ts-tab-actions button')) return;
       const row = e.target.closest('.ts-tab-row');
       if (row) { e.preventDefault(); switchToTab(row.dataset.tabId, row.dataset.windowId); }
     });

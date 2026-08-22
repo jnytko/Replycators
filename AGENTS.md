@@ -60,7 +60,7 @@
 | Property | Value |
 |----------|-------|
 | Working directory | `[root]\WatsonX\ReplyCators\` |
-| Extension version | **1.47.10** |
+| Extension version | **1.49.8** |
 | Release status | **Production** |
 
 ReplyCators is a plugin-hosting Microsoft Edge extension (Manifest V3). A single dashboard UI hosts multiple plugins. The platform provides shared navigation, settings, storage, notifications, logging, and plugin lifecycle management. Plugins provide business functionality.
@@ -361,6 +361,11 @@ All sub-views inside one feature area must share layout, interaction model, visu
 | Apptio Docs Finder last refresh | `chrome.storage.local` | `rc:plugin:com.replycators.apptio-docs-finder:last-refresh` |
 | Apptio Docs Finder diagnostics | `chrome.storage.local` | `rc:plugin:com.replycators.apptio-docs-finder:diag` |
 | Environment Dashboards state | `chrome.storage.local` | `rc:plugin:com.replycators.env-dashboards:state` |
+| Quick Note Pad notes | `chrome.storage.local` | `rc:plugin:com.replycators.notepad:notes` |
+| Quick Note Pad state | `chrome.storage.local` | `rc:plugin:com.replycators.notepad:state` |
+| Jira & Confluence Hub settings | `chrome.storage.local` | `rc:plugin:com.replycators.jira-confluence-hub:settings` |
+| Jira & Confluence Hub Jira recents | `chrome.storage.local` | `rc:plugin:com.replycators.jira-confluence-hub:jira-recents` (max configurable, default 10) |
+| Jira & Confluence Hub Confluence recents | `chrome.storage.local` | `rc:plugin:com.replycators.jira-confluence-hub:confluence-recents` (max configurable, default 10) |
 | Salesforce prompts | `chrome.storage.local` | `rc:plugin:com.replycators.salesforce-extractor:prompts` |
 | Salesforce last download | `chrome.storage.local` | `rc:plugin:com.replycators.salesforce-extractor:last-download` |
 | Salesforce selected prompt | `chrome.storage.local` | `rc:plugin:com.replycators.salesforce-extractor:selected-prompt` |
@@ -483,15 +488,17 @@ All plugin logic is extracted from `dashboard.js` into self-contained modules un
 
 | Plugin | View ID | Plugin ID | Version | Category |
 |--------|---------|-----------|---------|----------|
-| Salesforce Case Extractor | `plugin-salesforce` | `com.replycators.salesforce-extractor` | 4.12.4 | CRM |
-| Cloudability OrgID | `plugin-cloudability-orgid` | `com.replycators.cloudability-orgid` | 4.0.5 | Cloud |
-| Edge Bookmark Finder | `plugin-edge-bookmarks` | `com.replycators.edge-bookmark-finder` | 1.0.2 | Productivity |
+| Salesforce Case Extractor | `plugin-salesforce` | `com.replycators.salesforce-extractor` | 4.12.5 | CRM |
+| Cloudability OrgID | `plugin-cloudability-orgid` | `com.replycators.cloudability-orgid` | 4.0.6 | Cloud |
+| Edge Bookmark Finder | `plugin-edge-bookmarks` | `com.replycators.edge-bookmark-finder` | 1.0.3 | Productivity |
 | Apptio Planning Upgrade Calculator | `plugin-apptio-upgrade-calc` | `com.replycators.apptio-planning-upgrade-calculator` | 1.0.3 | Enterprise |
-| Workspace Starter | `plugin-workspace-starter` | `com.replycators.workspace-starter` | 2.0.3 | Productivity |
+| Workspace Starter | `plugin-workspace-starter` | `com.replycators.workspace-starter` | 2.0.4 | Productivity |
 | Tab Search | `plugin-tab-search` | `com.replycators.tab-search` | 1.0.1 | Productivity |
-| Snake | `plugin-snake` | `com.replycators.snake` | 1.0.1 | Games |
+| Snake | `plugin-snake` | `com.replycators.snake` | 1.0.4 | Games |
 | Example Plugin | `plugin-example` | `com.replycators.example-plugin` | 1.0.2 | Template |
 | Apptio Documentation Finder | `plugin-apptio-docs-finder` | `com.replycators.apptio-docs-finder` | 1.0.3 | Productivity |
+| Quick Note Pad | `plugin-notepad` | `com.replycators.notepad` | 1.0.0 | Productivity |
+| Jira & Confluence Smart Search Hub | `plugin-jira-confluence-hub` | `com.replycators.jira-confluence-hub` | 1.0.0 | Productivity |
 | Environment Dashboards Launcher | `plugin-env-dashboards` | `com.replycators.env-dashboards` | 1.4.0 | Support |
 
 ### Plugin Source Locations
@@ -507,6 +514,8 @@ All plugin logic is extracted from `dashboard.js` into self-contained modules un
 | Snake | `src/plugins/Snake/` (stub only) | None | None | `plugins/snake.js` |
 | Example Plugin | `src/plugins/ExamplePlugin/` | None | None | `plugins/example-plugin.js` |
 | Apptio Docs Finder | None | None | None | `plugins/apptio-docs-finder.js` |
+| Quick Note Pad | `src/plugins/Notepad/` (stub only) | None | None | `plugins/notepad.js` |
+| Jira & Confluence Hub | `src/plugins/JiraConfluenceHub/` (stub only) | None | None | `plugins/jira-confluence-hub.js` |
 | Environment Dashboards | None | None | None | `plugins/env-dashboards.js` |
 
 ### Plugin Lifecycle
@@ -622,6 +631,11 @@ interface WorkspaceStarterData {
 | `rc:plugin:com.replycators.apptio-docs-finder:last-refresh` | ISO timestamp |
 | `rc:plugin:com.replycators.apptio-docs-finder:diag` | Last refresh diagnostic record |
 | `rc:plugin:com.replycators.env-dashboards:state` | `{ lastEnv, favorites, recents }` |
+| `rc:plugin:com.replycators.notepad:notes` | `[{ id, title, body, updatedAt }]` max 5 entries |
+| `rc:plugin:com.replycators.notepad:state` | `{ activeId, monoMode }` |
+| `rc:plugin:com.replycators.jira-confluence-hub:settings` | `{ jiraBase, confluenceBase, recentLimit, openIn }` |
+| `rc:plugin:com.replycators.jira-confluence-hub:jira-recents` | `[{ type, label, url, ts }]` max `recentLimit` (default 10) |
+| `rc:plugin:com.replycators.jira-confluence-hub:confluence-recents` | `[{ type, label, url, ts }]` max `recentLimit` (default 10) |
 
 ### Storage Migration Rules
 
@@ -723,6 +737,8 @@ User clicks icon -> Chrome loads dashboard.html (root)
 | `view-plugin-tab-search` | `plugin-tab-search` | Tab Search |
 | `view-plugin-snake` | `plugin-snake` | Snake game |
 | `view-plugin-apptio-docs-finder` | `plugin-apptio-docs-finder` | Apptio Documentation Finder |
+| `view-plugin-notepad` | `plugin-notepad` | Quick Note Pad |
+| `view-plugin-jira-confluence-hub` | `plugin-jira-confluence-hub` | Jira & Confluence Smart Search Hub |
 | `view-plugin-env-dashboards` | `plugin-env-dashboards` | Environment Dashboards Launcher |
 
 > Compat redirects: `navigateTo('diagnostics')` -> `maintenance` (Diagnostics tab); `navigateTo('backup-restore')` -> `maintenance` (Backup & Restore tab).
@@ -1349,9 +1365,8 @@ npm run sync:dry-run  # print what sync would copy without writing
   - [ ] Primary actions are visible without scrolling
   - [ ] Guidance / info cards are placed below the primary workflow
   - [ ] No additional interaction steps required to reach primary function vs. previous version
-- [ ] Plugin nav button added to `dashboard.html`
 - [ ] Dashboard widget card added to `dashboard.html` (`#rc-dashboard-widgets`)
-- [ ] Plugin init function added to `dashboard.js` and called from `initPlugins()`
+- [ ] Plugin init `_safeInit('PluginKey', () => ...)` wired in the `DOMContentLoaded` block in `dashboard.js`
 - [ ] Plugin Manager integration verified - plugin appears, toggle works
 - [ ] Plugin settings section added to `#view-settings` (if applicable)
 - [ ] Storage keys documented in Storage Schema (§ 9)

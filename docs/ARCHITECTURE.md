@@ -119,11 +119,12 @@ CORE LAYER:      EventBus | StorageManager | Logger | NotificationCenter
 | Marketplace | `marketplace` | Plugins | Preview of planned future plugins |
 | Options | `settings` | Utility | Appearance, accessibility, notification, plugin options |
 | Send Feedback | `feedback` | Utility | Prepares a mailto draft; no direct email sending |
-| Diagnostics | `diagnostics` | Utility | Platform health snapshot |
-| Notifications | `notifications` | Utility | Notification history |
-| Activity | `activity` | Utility | Real-time activity log |
-| Backup & Restore | `backup-restore` | Utility | Export or import platform state |
+| Notifications Center | `notifications` | Utility | Grouped view: Notifications tab + Activity tab |
+| Maintenance Center | `maintenance` | Utility | Grouped view: Diagnostics tab + Backup & Restore tab |
 | Documentation | `documentation` | Utility | In-extension Help - `plugins/documentation.js` |
+
+> `navigateTo('diagnostics')` and `navigateTo('backup-restore')` are compat redirects that resolve to `maintenance` and activate the corresponding tab.
+> `navigateTo('activity')` resolves to `notifications` and activates the Activity tab.
 
 ---
 
@@ -142,12 +143,10 @@ CORE LAYER:      EventBus | StorageManager | Logger | NotificationCenter
 [ spacer ]
 
 [ Utility ]  (rc-nav__divider + "Utility" heading)
-  Options        (data-view="settings" - label renamed in v1.32.0)
+  Options              (data-view="settings" - label renamed in v1.32.0)
   Send Feedback
-  Diagnostics
-  Notifications
-  Activity
-  Backup & Restore
+  Notifications Center (tabs: Notifications, Activity)
+  Maintenance Center   (tabs: Diagnostics, Backup & Restore)
   Documentation
 ```
 
@@ -156,8 +155,9 @@ Nav rules:
 - Plugin management or functionality belongs in **Plugins**
 - Configuration, health, support, administration belongs in **Utility**
 - Plugin-contributed items always appear in `#rc-plugin-nav-items` - never in Utility
-- Options always precedes Diagnostics in Utility (canonical ordering rule)
+- Options always precedes Notifications Center in Utility (canonical ordering rule)
 - The "Options" nav label maps to `data-view="settings"` - do not change the route ID
+- **Information Architecture Grouping Rule:** features sharing the same user goal are grouped under one named destination. Diagnostics and Backup & Restore share a maintenance workflow - they are tabs in Maintenance Center, not separate top-level items. Adding a new administrative feature - evaluate Maintenance Center first.
 
 Sidebar right-edge divider (RC-NAV-BDR001 v3): `.rc-sidebar::after` is an absolutely positioned pseudo-element (`position:absolute; right:0; top:0; bottom:0; width:1px; background:var(--rc-border); z-index:9; pointer-events:none`). Do NOT restore `border-right` on `.rc-sidebar` - the pseudo-element replaced it because `border-right` was covered by the WebKit custom scrollbar track in popup collapsed mode.
 
@@ -179,16 +179,18 @@ The feedback workflow uses **no backend or direct email transport**.
 
 | Plugin | Version | Description |
 |--------|---------|-------------|
-| Salesforce Case Extractor | 4.12.2 | Extracts Salesforce case data from Lightning pages. Multi-signal detection, field cleanup, feed posts, content script: `sf-content.js` |
-| Cloudability OrgID | 4.0.3 | Background enrichment service. Resolves OrgID via proactive push (MAIN-world XHR intercept) or pull (SPA navigation). 24h TTL cache, exponential retry. No-erase policy on failure. |
-| Edge Bookmark Finder | 1.0.2 | Searches Microsoft Edge bookmarks. Recursive scan, real-time multi-word search, domain analytics, duplicate detection. |
+| Salesforce Case Extractor | 4.12.5 | Extracts Salesforce case data from Lightning pages. Multi-signal detection, field cleanup, feed posts, content script: `sf-content.js` |
+| Cloudability OrgID | 4.0.5 | Background enrichment service. Resolves OrgID via proactive push (MAIN-world XHR intercept) or pull (SPA navigation). 24h TTL cache, exponential retry. No-erase policy on failure. |
+| Edge Bookmark Finder | 1.0.3 | Searches Microsoft Edge bookmarks. Recursive scan, real-time multi-word search, domain analytics, duplicate detection. |
 | Apptio Planning Upgrade Calculator | 1.0.3 | Calculates upgrade dates. Dynamic release discovery via IBM Community. Three-tier retrieval: live fetch, 24h cache, bundled fallback. |
-| Workspace Starter | 2.0.2 | Named workspace profile launcher. Profile CRUD, favorites, categories, recents, tab grouping, import/export. |
+| Workspace Starter | 2.0.4 | Named workspace profile launcher. Profile CRUD, favorites, categories, recents, tab grouping, import/export. |
 | Tab Search | 1.0.1 | Instant browser tab search. Live query, search, sort, group-by-domain, duplicate detection, per-tab actions. No persistent storage. |
-| Snake | 1.0.1 | Classic retro Snake game. Plugin-owned rendering and high score persistence. |
+| Snake | 1.0.2 | Classic retro Snake game. Plugin-owned rendering and high score persistence. High score notification on new record. |
 | Example Plugin | 1.0.2 | Canonical reference implementation. Demonstrates complete plugin lifecycle. |
-| Apptio Documentation Finder | 1.0.2 | IBM Docs search for Apptio products. Fetches `ibm.com/docs/api/v1/products`. Favorites, recent searches, quick links. |
-| Environment Dashboards Launcher | 1.3.0 | Launches environment-specific dashboards. Active tab detection. Favorites and recents. |
+| Apptio Documentation Finder | 1.0.3 | IBM Docs search for Apptio products. Fetches `ibm.com/docs/api/v1/products`. Favorites, recent searches, quick links. |
+| Quick Note Pad | 1.0.0 | Persistent multi-tab notepad. Up to 5 named tabs, auto-save, copy, .txt export, monospace mode. |
+| Jira & Confluence Smart Search Hub | 1.0.0 | Unified smart-search hub. Detects Jira keys, URLs, Confluence paths, and free-text queries. Recent history per product. |
+| Environment Dashboards Launcher | 1.4.0 | Launches Splunk and Grafana dashboards for customer environments. Auto-resolves Namespace, Cluster, Region, and AWS datasource. Persists last-used environment across sessions. Favorites and recents fields exist in storage but are not yet surfaced in the UI (planned). |
 
 ---
 

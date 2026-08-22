@@ -25,6 +25,17 @@
   if (window.__rcCldInterceptor) return;
   window.__rcCldInterceptor = true;
 
+  // NOTE: This script runs at document_start in the MAIN world and cannot
+  // perform an async check of chrome.storage before patching XHR/fetch.
+  // As a result, the XHR and fetch patches below are applied even when the
+  // Cloudability OrgID plugin is disabled.  The ISOLATED-world detector
+  // (cloudability-detector.js) performs the enabled check and will not
+  // forward any captured data to the background when the plugin is disabled,
+  // which prevents storage updates and dashboard display.  Full suppression
+  // of the MAIN-world patch when the plugin is disabled requires dynamic
+  // content script registration (Option B) and a new ADR per AGENTS.md §6.
+  // Tracked as a separate architectural work item.
+
   /** Whether we have already captured org data for this session. */
   var orgDataCaptured = false;
 

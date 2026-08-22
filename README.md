@@ -2,7 +2,7 @@
 
 > A plugin-based Microsoft Edge extension platform for intelligent reply creation and data extraction across enterprise tools.
 
-[![Version](https://img.shields.io/badge/version-1.45.6-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.49.7-blue.svg)](CHANGELOG.md)
 [![Manifest](https://img.shields.io/badge/manifest-v3-green.svg)](manifest.json)
 [![Platform](https://img.shields.io/badge/platform-Microsoft%20Edge-0078D4.svg)](https://microsoftedge.microsoft.com)
 [![License: Icons](https://img.shields.io/badge/icons-CC%20BY%204.0-lightgrey.svg)](ICON-LICENSE.md)
@@ -58,15 +58,17 @@ For the full setup guide including the IBM Bob Execute feature, see [docs/INSTAL
 
 | Plugin | Version | Category | Description |
 |--------|---------|----------|-------------|
-| Salesforce Case Extractor | 4.12.4 | CRM | Extracts structured case data from Salesforce Lightning pages |
-| Cloudability OrgID | 4.0.3 | Cloud | Automatically resolves Cloudability Organisation ID with zero user interaction |
-| Edge Bookmark Finder | 1.0.2 | Productivity | Searches Microsoft Edge bookmarks with real-time multi-word filtering |
+| Salesforce Case Extractor | 4.12.5 | CRM | Extracts structured case data from Salesforce Lightning pages |
+| Cloudability OrgID | 4.0.5 | Cloud | Automatically resolves Cloudability Organisation ID with zero user interaction |
+| Edge Bookmark Finder | 1.0.3 | Productivity | Searches Microsoft Edge bookmarks with real-time multi-word filtering |
 | Apptio Planning Upgrade Calculator | 1.0.3 | Enterprise | Calculates Apptio Planning upgrade dates with dynamic release discovery |
-| Workspace Starter | 2.0.3 | Productivity | Launches named workspace profiles with optional tab grouping |
+| Workspace Starter | 2.0.4 | Productivity | Launches named workspace profiles with optional tab grouping |
 | Tab Search | 1.0.1 | Productivity | Instant live search across all open browser tabs |
-| Snake | 1.0.1 | Games | Classic retro Snake game with high score persistence |
+| Snake | 1.0.4 | Games | Classic retro Snake game with high score persistence |
 | Apptio Documentation Finder | 1.0.3 | Productivity | IBM Docs search for Apptio products with favorites and quick links |
-| Environment Dashboards Launcher | 1.3.0 | Support | Launches environment-specific dashboards with favorites and recents |
+| Quick Note Pad | 1.0.0 | Productivity | Persistent multi-tab notepad for case notes and scratch content |
+| Jira & Confluence Smart Search Hub | 1.0.0 | Productivity | Unified smart-search and navigation hub for Jira and Confluence |
+| Environment Dashboards Launcher | 1.4.0 | Support | Launches Splunk and Grafana dashboards for customer environments; persists last-used environment |
 | Example Plugin | 1.0.2 | Template | Canonical reference implementation for plugin developers |
 
 ---
@@ -171,6 +173,7 @@ For the phased OpenAI and Codex implementation plan, setup instructions, securit
 | Tab Search | [docs/plugins/tab-search.md](docs/plugins/tab-search.md) |
 | Snake | [docs/plugins/snake.md](docs/plugins/snake.md) |
 | Apptio Documentation Finder | [docs/plugins/apptio-docs-finder.md](docs/plugins/apptio-docs-finder.md) |
+| Environment Dashboards Launcher | [docs/plugins/env-dashboards.md](docs/plugins/env-dashboards.md) |
 | Backup & Restore | [docs/plugins/backup-restore.md](docs/plugins/backup-restore.md) |
 | Marketplace | [docs/plugins/marketplace.md](docs/plugins/marketplace.md) |
 

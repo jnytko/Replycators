@@ -531,7 +531,7 @@
         // data-action="open"       -> handleOpen()      (env-aware, params injected)
         // data-action="open-blank" -> handleOpenBlank() (base URL only, no params)
         container.addEventListener('click', function (e) {
-          var btn = e.target.closest('[data-dashboard-id]');
+          var btn = e.target.closest('.edl-open-btn[data-dashboard-id]');
           if (!btn) return;
           e.preventDefault();
           e.stopPropagation();

@@ -131,10 +131,14 @@
 
   function gameOver() {
     gameState = 'over';
+    const isNewHigh = score > 0 && score >= highScore;
     if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     draw();
     showOverlay('over');
     app().addLog('info', PLUGIN_ID, 'Game over - score: ' + score);
+    if (isNewHigh) {
+      app().addNotification('Snake', 'New high score: ' + score + '!', 'success', PLUGIN_ID);
+    }
   }
 
   // ── Rendering ──────────────────────────────────────────────────────────────
@@ -352,6 +356,14 @@
   // Only guards: no 180° reversal, ignore same-axis repeat.
 
   function handleKey(e) {
+    // Scope hotkeys away from interactive controls. When a button, select,
+    // input, link, or textarea has keyboard focus the browser synthesises a
+    // click event AND fires keydown on document, producing a double dispatch.
+    // Return early so only the element's own handler runs.
+    const tag = e.target && e.target.tagName;
+    if (tag === 'BUTTON' || tag === 'SELECT' || tag === 'INPUT' ||
+        tag === 'A'      || tag === 'TEXTAREA') return;
+
     const KEY_MAP = {
       ArrowUp:    {x:  0, y: -1},
       ArrowDown:  {x:  0, y:  1},
@@ -383,6 +395,9 @@
     nextDir = mapped;
   }
 
+  // handleKey guards against interactive-control targets, so document-level
+  // attachment is safe. Both functions use the same named reference so
+  // removeEventListener reliably unregisters the listener.
   function attachKeys() { document.addEventListener('keydown', handleKey); }
   function detachKeys()  { document.removeEventListener('keydown', handleKey); }
 
@@ -400,6 +415,24 @@
     app().addLog('info', PLUGIN_ID, 'Snake plugin ready');
   }
 
+  // Aspect ratio of the logical game grid (height / width = 220 / 400 = 0.55)
+  const ASPECT = C_H / C_W;
+
+  // Module-level handle so onLeave can remove the listener registered by onNavigate.
+  let _snkResizeHandler = null;
+
+  // Apply responsive CSS display size to the canvas.
+  // The backing buffer (DPR-aware) and all game-logic coordinates are unchanged.
+  // CSS display width is capped at C_W (400px) so the canvas never upscales.
+  function applyCanvasDisplaySize() {
+    if (!canvas) return;
+    const container = canvas.parentElement;
+    const availW = (container ? container.clientWidth : 0) || C_W;
+    const displayW = Math.min(C_W, availW);
+    canvas.style.width  = displayW + 'px';
+    canvas.style.height = Math.round(displayW * ASPECT) + 'px';
+  }
+
   function initView() {
     if (initialised) return;
     initialised = true;
@@ -410,16 +443,15 @@
 
     // HiDPI / Retina support:
     // Set the canvas backing buffer to physical pixels so text and lines are
-    // razor-sharp on high-density displays.  The CSS size stays at the logical
-    // grid size (C_W × C_H) and the context is pre-scaled by DPR so all draw
-    // calls continue to use the same logical-pixel coordinates unchanged.
+    // razor-sharp on high-density displays.  The context is pre-scaled by DPR
+    // so all draw calls continue to use the same logical-pixel coordinates.
+    // CSS display size is set responsively by applyCanvasDisplaySize().
     const dpr = window.devicePixelRatio || 1;
     canvas.width  = C_W * dpr;
     canvas.height = C_H * dpr;
-    canvas.style.width  = C_W + 'px';
-    canvas.style.height = C_H + 'px';
     ctx.scale(dpr, dpr);
     ctx.imageSmoothingEnabled = false;
+    applyCanvasDisplaySize();
 
     snkLoadHighScore(function() {
       snkUpdateWidget();
@@ -491,6 +523,12 @@
       initView();
       attachKeys();
       snkUpdateWidget();
+      // Apply responsive canvas size now and re-apply whenever the side panel is resized.
+      applyCanvasDisplaySize();
+      if (!_snkResizeHandler) {
+        _snkResizeHandler = applyCanvasDisplaySize;
+        window.addEventListener('resize', _snkResizeHandler);
+      }
       if (gameState === 'running') {
         if (rafId) cancelAnimationFrame(rafId);
         lastTick = -1;   // sentinel: re-anchor clock on first RAF frame
@@ -500,6 +538,10 @@
     onLeave: function() {
       detachKeys();
       stopLoop();
+      if (_snkResizeHandler) {
+        window.removeEventListener('resize', _snkResizeHandler);
+        _snkResizeHandler = null;
+      }
       if (gameState === 'running') {
         gameState = 'paused';
         if (canvas && ctx) draw();

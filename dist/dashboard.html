@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="styles/dashboard.css" />
   <!-- Icon System -->
   <script src="plugins/shared/icon-helper.js"></script>
+  <!-- Plugins — loaded before dashboard.js (ADR-008) -->
+  <script src="plugins/notepad.js"></script>
+  <script src="plugins/jira-confluence-hub.js"></script>
 </head>
 <body class="rc-app" data-theme="ibm-blue">
 
@@ -22,7 +25,7 @@
         <img src="assets/icons/icon48.png" class="rc-sidebar__logo" alt="ReplyCators" />
         <div class="rc-sidebar__brand-text">
           <span class="rc-sidebar__name">ReplyCators</span>
-          <span class="rc-sidebar__version" id="rc-platform-version">v1.47.10</span>
+          <span class="rc-sidebar__version" id="rc-platform-version">v1.49.8</span>
         </div>
       </div>
 
@@ -220,6 +223,18 @@
                       title="Search IBM Apptio documentation instantly">
                 <span class="rc-action-card__icon" aria-hidden="true"><span data-icon="plugins.apptioDocsFinder"></span></span>
                 <span class="rc-action-card__label">Search Docs</span>
+              </button>
+              <button class="rc-action-card" data-view="plugin-jira-confluence-hub"
+                      data-plugin-action="com.replycators.jira-confluence-hub"
+                      title="Open the Jira and Confluence Smart Search Hub to navigate tickets and pages instantly">
+                <span class="rc-action-card__icon" aria-hidden="true"><span data-icon="plugins.jiraConfluenceHub"></span></span>
+                <span class="rc-action-card__label">Jira / Confluence</span>
+              </button>
+              <button class="rc-action-card" data-view="plugin-notepad"
+                      data-plugin-action="com.replycators.notepad"
+                      title="Open Quick Note Pad - persistent scratch pad for case notes">
+                <span class="rc-action-card__icon" aria-hidden="true"><span data-icon="plugins.notepad"></span></span>
+                <span class="rc-action-card__label">Notes</span>
               </button>
               <button class="rc-action-card" data-view="plugin-env-dashboards"
                       data-plugin-action="com.replycators.env-dashboards"
@@ -470,6 +485,52 @@
               </div>
             </div>
 
+            <!-- Jira & Confluence Hub widget — DEFAULT ORDER #3 -->
+            <div class="rc-widget-card" data-plugin-widget="com.replycators.jira-confluence-hub">
+              <div class="rc-widget-card__header">
+                <div class="rc-widget-card__title-group">
+                  <span class="rc-widget-card__title"><span data-icon="plugins.jiraConfluenceHub" aria-hidden="true" class="rc-widget-icon"></span> Jira &amp; Confluence Hub</span>
+                  <button class="rc-doc-icon" data-doc-view="plugin-jira-confluence-hub"
+                          title="View Jira and Confluence Smart Search Hub documentation" aria-label="View Jira and Confluence Smart Search Hub documentation">
+                    <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+                  </button>
+                </div>
+                <button class="rc-widget-card__open" data-view="plugin-jira-confluence-hub"
+                        title="Open Jira and Confluence Smart Search Hub" aria-label="Open Jira and Confluence Smart Search Hub">
+                  <span aria-hidden="true" style="display:inline-block;font-size:12px;line-height:1;">↗</span>
+                </button>
+              </div>
+              <div class="rc-widget-card__body" style="padding:12px 14px 14px;">
+                <p class="rc-muted" style="font-size:12px;margin-bottom:10px;">Search Jira tickets and Confluence pages instantly.</p>
+                <button id="jch-widget-jira-btn" class="rc-btn rc-btn--primary rc-btn--sm"
+                        title="Open Jira - My Work dashboard (assigned issues)">Jira Dashboard</button>
+                <button id="jch-widget-open-btn" class="rc-btn rc-btn--secondary rc-btn--sm"
+                        title="Open Jira and Confluence Smart Search Hub">Search</button>
+              </div>
+            </div>
+
+            <!-- Quick Note Pad widget — DEFAULT ORDER #4 -->
+            <div class="rc-widget-card" data-plugin-widget="com.replycators.notepad">
+              <div class="rc-widget-card__header">
+                <div class="rc-widget-card__title-group">
+                  <span class="rc-widget-card__title"><span data-icon="plugins.notepad" aria-hidden="true" class="rc-widget-icon"></span> Quick Note Pad</span>
+                  <button class="rc-doc-icon" data-doc-view="plugin-notepad"
+                          title="View Quick Note Pad documentation" aria-label="View Quick Note Pad documentation">
+                    <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+                  </button>
+                </div>
+                <button class="rc-widget-card__open" data-view="plugin-notepad"
+                        title="Open Quick Note Pad" aria-label="Open Quick Note Pad">
+                  <span aria-hidden="true" style="display:inline-block;font-size:12px;line-height:1;">&#8599;</span>
+                </button>
+              </div>
+              <div class="rc-widget-card__body" style="padding:12px 14px 14px;">
+                <p id="np-widget-preview" class="rc-muted" style="font-size:12px;margin-bottom:10px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">No notes yet. Click Open to start.</p>
+                <button id="np-widget-open-btn" class="rc-btn rc-btn--primary rc-btn--sm"
+                        title="Open Quick Note Pad">Open Notes</button>
+              </div>
+            </div>
+
             <!-- Example Plugin widget — DEFAULT ORDER last (always last by default) -->
             <div class="rc-widget-card" data-plugin-widget="com.replycators.example-plugin">
               <div class="rc-widget-card__header">
@@ -638,6 +699,8 @@
                 <option value="com.replycators.tab-search">Tab Search</option>
                 <option value="com.replycators.apptio-docs-finder">Apptio Documentation Finder</option>
                 <option value="com.replycators.env-dashboards">Environment Dashboards Launcher</option>
+                <option value="com.replycators.notepad">Quick Note Pad</option>
+                <option value="com.replycators.jira-confluence-hub">Jira &amp; Confluence Hub</option>
               </select>
               <button id="activity-clear-btn" class="rc-btn rc-btn--ghost rc-btn--sm"
                       title="Clear all log entries from this session">Clear</button>
@@ -1314,17 +1377,101 @@
               </div>
             </div>
 
+            <!-- ── Jira & Confluence Smart Search Hub ──────────────── -->
+            <div class="rc-settings-group">
+              <div class="rc-settings-group__title">Jira &amp; Confluence Smart Search Hub</div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Jira Base URL</span>
+                  <span class="rc-settings-row__desc">Base URL for Jira issue and search links</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <input type="url" id="jch-settings-jira-url" class="rc-input"
+                         value="https://apptio.atlassian.net"
+                         placeholder="https://apptio.atlassian.net"
+                         title="Base URL for all Jira links generated by this plugin"
+                         autocomplete="off" spellcheck="false" />
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Confluence Base URL</span>
+                  <span class="rc-settings-row__desc">Base URL for Confluence page and search links</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <input type="url" id="jch-settings-conf-url" class="rc-input"
+                         value="https://apptio.atlassian.net/wiki"
+                         placeholder="https://apptio.atlassian.net/wiki"
+                         title="Base URL for all Confluence links generated by this plugin"
+                         autocomplete="off" spellcheck="false" />
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Recent Items Limit</span>
+                  <span class="rc-settings-row__desc">Maximum recent items shown per category (Jira and Confluence)</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="jch-settings-recent-limit" class="rc-input rc-input--sm"
+                          title="How many recent Jira and Confluence items are kept per category">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Open Results In</span>
+                  <span class="rc-settings-row__desc">How Jira and Confluence links are opened</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="jch-settings-open-in" class="rc-input rc-input--sm"
+                          title="Choose whether Jira and Confluence links open in a new tab or the current tab">
+                    <option value="new-tab" selected>New Tab</option>
+                    <option value="current-tab">Current Tab</option>
+                  </select>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ── Quick Note Pad ──────────────────────────────────── -->
+            <div class="rc-settings-group">
+              <div class="rc-settings-group__title">Quick Note Pad</div>
+
+              <div class="rc-settings-row">
+                <div class="rc-settings-row__info">
+                  <span class="rc-settings-row__label">Notes Limit</span>
+                  <span class="rc-settings-row__desc">Maximum number of note tabs (1-5)</span>
+                </div>
+                <div class="rc-settings-row__control">
+                  <select id="np-settings-max-notes" class="rc-input rc-input--sm"
+                          title="Maximum number of note tabs you can create">
+                    <option value="3">3 notes</option>
+                    <option value="5" selected>5 notes (default)</option>
+                  </select>
+                </div>
+              </div>
+
+            </div>
+
           </div><!-- /rc-settings-groups -->
         </div>
 
-        <!-- SALESFORCE PLUGIN VIEW — v4.12.3 tab-driven UI -->
+        <!-- SALESFORCE PLUGIN VIEW - v4.12.5 tab-driven UI -->
         <div class="rc-view rc-plugin-page" id="view-plugin-salesforce">
 
           <!-- Plugin header: standard header + standard tab bar -->
           <div class="rc-plugin-header">
             <span class="rc-plugin-header__icon"><span data-icon="plugins.salesforceCaseExtractor" aria-hidden="true" class="rc-widget-icon"></span></span>
             <span class="rc-plugin-header__name">Salesforce Case Extractor</span>
-            <span class="rc-plugin-header__version">v4.12.3</span>
+            <span class="rc-plugin-header__version">v4.12.5</span>
             <span id="sf-status-badge" class="rc-badge rc-badge--amber" style="display:none;"
                   title="Current Salesforce Case detection status"></span>
             <button class="rc-doc-icon" data-doc-view="plugin-salesforce"
@@ -1403,10 +1550,11 @@
                 <option value="desc">Newest first</option>
               </select>
               <label class="sf-extract-options__item" for="sf-privacy-mode"
-                     title="Hide customer-identifying information (contact name, emails)">
+                     title="Redacts contact names and emails in both the preview and storage. Raw data is kept in memory only for the current session and is used for Bob execution.">
                 <input type="checkbox" id="sf-privacy-mode" checked
-                       title="Hide customer-identifying information (contact name, emails)" />
+                       title="Redacts contact names and emails in both the preview and storage. Raw data is kept in memory only for the current session and is used for Bob execution." />
                 Privacy mode
+                <span class="rc-help-text">Redacts preview and storage</span>
               </label>
             </div>
 
@@ -1561,7 +1709,7 @@
           <div class="rc-plugin-header">
             <span class="rc-plugin-header__icon"><span data-icon="plugins.cloudabilityOrgId" aria-hidden="true" class="rc-widget-icon"></span></span>
             <span class="rc-plugin-header__name">Cloudability OrgID</span>
-            <span class="rc-plugin-header__version">v4.0.5</span>
+            <span class="rc-plugin-header__version">v4.0.6</span>
             <span id="cld-status-badge" class="rc-badge rc-badge--blue"
                   title="Current retrieval status: Retrieving (automatic), Cached, Live, or Failed">Retrieving…</span>
             <button class="rc-doc-icon" data-doc-view="plugin-cloudability-orgid"
@@ -1625,7 +1773,7 @@
           <div class="rc-plugin-header">
             <span class="rc-plugin-header__icon"><span data-icon="plugins.edgeBookmarkFinder" aria-hidden="true" class="rc-widget-icon"></span></span>
             <span class="rc-plugin-header__name">Edge Bookmark Finder</span>
-            <span class="rc-plugin-header__version">v1.0.2</span>
+            <span class="rc-plugin-header__version">v1.0.3</span>
             <button class="rc-doc-icon" data-doc-view="plugin-edge-bookmarks"
                     title="View Edge Bookmark Finder documentation" aria-label="View Edge Bookmark Finder documentation">
               <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
@@ -1711,7 +1859,7 @@
           <div class="rc-plugin-header">
             <span class="rc-plugin-header__icon"><span data-icon="plugins.snake" aria-hidden="true" class="rc-widget-icon"></span></span>
             <span class="rc-plugin-header__name">Snake</span>
-            <span class="rc-plugin-header__version">v1.0.1</span>
+            <span class="rc-plugin-header__version">v1.0.4</span>
             <button class="rc-doc-icon" data-doc-view="plugin-snake"
                     title="View Snake documentation" aria-label="View Snake documentation">
               <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
@@ -1782,7 +1930,7 @@
           <div class="rc-plugin-header">
             <span class="rc-plugin-header__icon"><span data-icon="plugins.workspaceStarter" aria-hidden="true" class="rc-widget-icon"></span></span>
             <span class="rc-plugin-header__name">Workspace Starter</span>
-            <span class="rc-plugin-header__version">v2.0.3</span>
+            <span class="rc-plugin-header__version">v2.0.4</span>
             <button class="rc-doc-icon" data-doc-view="plugin-workspace-starter"
                     title="View Workspace Starter documentation" aria-label="View Workspace Starter documentation">
               <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
@@ -1852,6 +2000,44 @@
           <!-- Dashboards content — no tab bar; Dashboards is the only view -->
           <div id="edl-container" class="rc-plugin-body">
             <!-- Populated synchronously by EnvDashboards.onNavigate() — no loading state -->
+          </div>
+
+        </div>
+
+        <!-- QUICK NOTE PAD PLUGIN VIEW -->
+        <div class="rc-view rc-plugin-page" id="view-plugin-notepad">
+          <div class="rc-plugin-header">
+            <span class="rc-plugin-header__icon"><span data-icon="plugins.notepad" aria-hidden="true" class="rc-widget-icon"></span></span>
+            <span class="rc-plugin-header__name">Quick Note Pad</span>
+            <span class="rc-plugin-header__version">v1.0.0</span>
+            <button class="rc-doc-icon" data-doc-view="plugin-notepad"
+                    title="View Quick Note Pad documentation" aria-label="View Quick Note Pad documentation">
+              <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+            </button>
+          </div>
+
+          <div id="np-container" class="rc-plugin-body rc-plugin-body--flush">
+            <!-- Populated by Notepad.onNavigate() -->
+            <div class="rc-plugin-loading">Loading notes...</div>
+          </div>
+
+        </div>
+
+        <!-- JIRA & CONFLUENCE SMART SEARCH HUB PLUGIN VIEW -->
+        <div class="rc-view rc-plugin-page" id="view-plugin-jira-confluence-hub">
+          <div class="rc-plugin-header">
+            <span class="rc-plugin-header__icon"><span data-icon="plugins.jiraConfluenceHub" aria-hidden="true" class="rc-widget-icon"></span></span>
+            <span class="rc-plugin-header__name">Jira &amp; Confluence Hub</span>
+            <span class="rc-plugin-header__version">v1.0.0</span>
+            <button class="rc-doc-icon" data-doc-view="plugin-jira-confluence-hub"
+                    title="View Jira and Confluence Smart Search Hub documentation" aria-label="View Jira and Confluence Smart Search Hub documentation">
+              <span data-icon="navigation.documentation" aria-hidden="true" style="display:block;width:16px;height:16px;"></span>
+            </button>
+          </div>
+
+          <div id="jch-container" class="rc-plugin-body rc-plugin-body--flush">
+            <!-- Populated by JiraConfluenceHub.onNavigate() -->
+            <div class="rc-plugin-loading">Loading...</div>
           </div>
 
         </div>
@@ -2015,4 +2201,3 @@
   <script src="dashboard.js"></script>
 </body>
 </html>
-

@@ -38,7 +38,7 @@ Managed exclusively by `dashboard.js`.
 |---|---|---|---|
 | `rc:session:logs` | array | 500 | Activity log entries `{ id, level, pluginId, message, timestamp }` |
 | `rc:session:notifications` | array | 100 | Notification history `{ id, title, message, type, pluginId, timestamp, read }` |
-| `rc:session:sf-last-result` | object | 1 | Last SF extraction `{ rawText, caseNumber, accountName, posts, extractedAt }` |
+| `rc:session:sf-last-result` | object | 1 | Last SF extraction `{ rawText, caseNumber, accountName, posts, extractedAt, _privacyRedacted? }`. When Privacy Mode is ON at extraction time, `rawText`, `accountName`, and `posts[].content`/`posts[].author` are redacted and `_privacyRedacted: true` is set. In-memory buffers retain raw data for the current session (Bob execution is unaffected). |
 | `rc:session:nav-view` | string | 1 | Last active view ID |
 | `rc:session:sf-settings` | object | 1 | SF plugin settings `{ outputFormat, postSort, autoFill, source, privacyMode, bobWorkingDir, bobApiKey, bobUseBob1, inclInternal, inclJiraEtl, inclDiag, diagnosticMode }` |
 | `rc:session:plugin-states` | object | 1 | Plugin enabled/disabled map `{ [pluginId]: { enabled } }` |
@@ -88,6 +88,27 @@ Backup & Restore never exports `rc:session:logs`, `rc:session:notifications`, `r
 | Key | Content |
 |---|---|
 | `rc:plugin:com.replycators.snake:state` | `{ highScore }` |
+
+### Quick Note Pad
+
+| Key | Content |
+|---|---|
+| `rc:plugin:com.replycators.notepad:notes` | `NoteEntry[]` - up to 5 notes `{ id, title, body, updatedAt }` |
+| `rc:plugin:com.replycators.notepad:state` | `{ activeId, monoMode }` - active tab ID and monospace toggle |
+
+### Jira & Confluence Smart Search Hub
+
+| Key | Content |
+|---|---|
+| `rc:plugin:com.replycators.jira-confluence-hub:settings` | `{ jiraBase, confluenceBase, recentLimit, openIn }` |
+| `rc:plugin:com.replycators.jira-confluence-hub:jira-recents` | `{ type, label, url, ts }[]` - max `recentLimit` (default 10) |
+| `rc:plugin:com.replycators.jira-confluence-hub:confluence-recents` | `{ type, label, url, ts }[]` - max `recentLimit` (default 10) |
+
+### Environment Dashboards Launcher
+
+| Key | Content |
+|---|---|
+| `rc:plugin:com.replycators.env-dashboards:state` | `{ lastEnv: string\|null, favorites: string[], recents: string[] }` - `lastEnv` is actively used for auto-selection on load; `favorites` and `recents` are persisted but not yet surfaced in the UI (planned) |
 
 ### Workspace Starter
 

@@ -23,29 +23,43 @@ The ReplyCators extension popup is a single HTML page (`dashboard.html` at root)
 ```
 Browser opens popup / side panel
   → dashboard.html loads (synchronous)
-      → plugins/salesforce-case-extractor.js  → self-registers on window.ReplyCatorsPlugins
+      → plugins/shared/icon-helper.js          → icon registry + renderer available
+      → plugins/notepad.js                     → self-registers on window.ReplyCatorsPlugins
+      → plugins/jira-confluence-hub.js         → self-registers
+      → plugins/apptio-docs-finder.js          → self-registers
+      → plugins/documentation.js              → self-registers
+      → plugins/salesforce-case-extractor.js  → self-registers
       → plugins/cloudability-orgid.js          → self-registers
       → plugins/example-plugin.js              → self-registers
-      → plugins/apptio-upgrade-calculator.js   → self-registers
       → plugins/bookmark-finder.js             → self-registers
-      → plugins/workspace-starter.js           → self-registers
+      → plugins/apptio-upgrade-calculator.js   → self-registers
       → plugins/snake.js                       → self-registers
+      → plugins/workspace-starter.js           → self-registers
       → plugins/tab-search.js                  → self-registers
+      → plugins/env-dashboards.js              → self-registers
       → plugins/marketplace.js                 → self-registers
+      → plugins/backup-restore.js              → self-registers
       → dashboard.js                           → DOMContentLoaded handler runs
           → restoreSession()                   (single chrome.storage.local.get for ALL keys)
           → applyAllSettings()                 (theme, font, density, accessibility)
           → initTheme()                        (binds sidebar toggle button)
           → applyPluginVisibility()            (injects nav items; updateStats() called here)
           → applyDashboardOrder()              (reorders widget cards + nav buttons)
-          → SalesforceCaseExtractor.init()     (wires widget button only - no tab I/O)
-          → CloudabilityOrgId.init()           (binds UI buttons only - no tab scan)
-          → ApptioUpgradeCalculator.init()     (wires widget; migration check deferred)
-          → EdgeBookmarkFinder.init()          (wires widget)
-          → WorkspaceStarter.init()            (loads profiles async; updates widget)
-          → TabSearch.init()                   (wires widget)
-          → Snake.init()                       (loads high score; wires widget)
-          → Marketplace.render()               (populates marketplace cards)
+          → _safeInit calls (each synchronous - bind UI only, no async I/O):
+              SalesforceCaseExtractor.init()   (wires widget button only - no tab I/O)
+              CloudabilityOrgId.init()         (binds UI buttons only - no tab scan)
+              ExamplePlugin.init()
+              EdgeBookmarkFinder.init()        (wires widget)
+              ApptioUpgradeCalculator.init()   (wires widget; migration check deferred)
+              Snake.init()                     (loads high score; wires widget)
+              WorkspaceStarter.init()          (loads profiles async; updates widget)
+              TabSearch.init()                 (wires widget)
+              Notepad.init()
+              JiraConfluenceHub.init()
+              ApptioDocsFinder.init()
+              EnvDashboards.init()
+              BackupRestore.init()
+              Marketplace.render()             (populates marketplace cards - synchronous)
           → initSettings() / syncSettingsUI()  (binds settings controls)
           → initActivityView()                 (binds activity log controls)
           → updateNotifBadge()                 (restores unread badge count)
@@ -59,7 +73,9 @@ Browser opens popup / side panel
               ApptioUpgradeCalculator migration check
 ```
 
-**Ordering contract:** `applyPluginVisibility()` MUST run before `applyDashboardOrder()`. `applyPluginVisibility()` creates the nav buttons; `applyDashboardOrder()` re-orders them.
+**Ordering contract:** `applyPluginVisibility()` MUST run before `applyDashboardOrder()`. `applyPluginVisibility()` creates the nav buttons; `applyDashboardOrder()` re-orders them. Reversing this order silently discards the saved nav order.
+
+**Init pattern:** Each plugin is initialized via `_safeInit('PluginKey', () => ...)` directly in the `DOMContentLoaded` block. There is no `initPlugins()` wrapper function.
 
 ---
 
@@ -69,15 +85,22 @@ Plugin scripts must be loaded **before** `dashboard.js` in `dashboard.html`. Thi
 
 Current load order in `dashboard.html`:
 ```html
+<script src="plugins/shared/icon-helper.js"></script>
+<script src="plugins/notepad.js"></script>
+<script src="plugins/jira-confluence-hub.js"></script>
+<script src="plugins/apptio-docs-finder.js"></script>
+<script src="plugins/documentation.js"></script>
 <script src="plugins/salesforce-case-extractor.js"></script>
 <script src="plugins/cloudability-orgid.js"></script>
 <script src="plugins/example-plugin.js"></script>
-<script src="plugins/apptio-upgrade-calculator.js"></script>
 <script src="plugins/bookmark-finder.js"></script>
-<script src="plugins/workspace-starter.js"></script>
+<script src="plugins/apptio-upgrade-calculator.js"></script>
 <script src="plugins/snake.js"></script>
+<script src="plugins/workspace-starter.js"></script>
 <script src="plugins/tab-search.js"></script>
+<script src="plugins/env-dashboards.js"></script>
 <script src="plugins/marketplace.js"></script>
+<script src="plugins/backup-restore.js"></script>
 <script src="dashboard.js"></script>
 ```
 

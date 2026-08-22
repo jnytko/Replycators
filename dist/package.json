@@ -1,7 +1,7 @@
 {
   "name": "replycators",
-  "version": "1.47.10",
-  "description": "ReplyCators - Plugin-based Microsoft Edge Extension Platform",
+  "version": "1.49.8",
+  "description": "ReplyCators — Plugin-based Microsoft Edge Extension Platform",
   "private": true,
   "scripts": {
     "build":          "webpack --config build/webpack.config.js --mode production",

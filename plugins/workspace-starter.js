@@ -228,7 +228,7 @@
 
   // ── Launch profile ─────────────────────────────────────────────────────────
 
-  function wsLaunchProfile(id) {
+  async function wsLaunchProfile(id) {
     const profile = wsProfiles.find(p => p.id === id);
     if (!profile) {
       app().addNotification('Workspace Starter', 'Profile not found.', 'error', PLUGIN_ID);
@@ -241,40 +241,109 @@
 
     const mode = profile.launchMode || 'tab-group';
 
-    if (mode === 'tab-group') {
-      // Create all tabs then group them
-      const createTabPromises = profile.urls.map(url =>
-        new Promise(resolve =>
-          chrome.tabs.create({ url, active: false }, tab => resolve(tab))
-        )
-      );
-      Promise.all(createTabPromises).then(tabs => {
-        const tabIds = tabs.map(t => t.id);
-        if (chrome.tabGroups && chrome.tabs.group) {
-          chrome.tabs.group({ tabIds }, groupId => {
-            if (!chrome.runtime.lastError && groupId !== undefined) {
-              chrome.tabGroups.update(groupId, { title: profile.name, collapsed: false });
-            }
-          });
-        }
-        // Bring focus to first tab
-        chrome.tabs.update(tabIds[0], { active: true });
-      });
-    } else {
-      // Plain tabs - open all, focus the first
-      profile.urls.forEach((url, i) => {
-        chrome.tabs.create({ url, active: i === 0 });
+    function createTabSafe(url, active) {
+      return new Promise(resolve => {
+        chrome.tabs.create({ url, active }, tab => {
+          const err = chrome.runtime.lastError;
+          if (err || !tab || typeof tab.id !== 'number') {
+            app().addLog(
+              'warn',
+              PLUGIN_ID,
+              'Workspace launch tab create failed for "' + profile.name + '" [' + url + ']: ' + (err ? err.message : 'null tab')
+            );
+            resolve(null);
+            return;
+          }
+          resolve(tab);
+        });
       });
     }
+
+    function groupTabsSafe(tabIds) {
+      if (mode !== 'tab-group' || !chrome.tabGroups || !chrome.tabs.group || tabIds.length === 0) {
+        return Promise.resolve();
+      }
+      return new Promise(resolve => {
+        chrome.tabs.group({ tabIds }, groupId => {
+          const groupErr = chrome.runtime.lastError;
+          if (groupErr || groupId === undefined) {
+            app().addLog(
+              'warn',
+              PLUGIN_ID,
+              'Workspace launch tab group failed for "' + profile.name + '": ' + (groupErr ? groupErr.message : 'invalid group ID')
+            );
+            resolve();
+            return;
+          }
+          chrome.tabGroups.update(groupId, { title: profile.name, collapsed: false }, () => {
+            const updateErr = chrome.runtime.lastError;
+            if (updateErr) {
+              app().addLog(
+                'warn',
+                PLUGIN_ID,
+                'Workspace launch tab group update failed for "' + profile.name + '": ' + updateErr.message
+              );
+            }
+            resolve();
+          });
+        });
+      });
+    }
+
+    function focusTabSafe(tabId) {
+      return new Promise(resolve => {
+        chrome.tabs.update(tabId, { active: true }, () => {
+          const err = chrome.runtime.lastError;
+          if (err) {
+            app().addLog('warn', PLUGIN_ID, 'Workspace launch focus failed for "' + profile.name + '": ' + err.message);
+          }
+          resolve();
+        });
+      });
+    }
+
+    const createdTabs = await Promise.all(
+      profile.urls.map((url, index) => createTabSafe(url, mode === 'tabs' ? index === 0 : false))
+    );
+    const openedTabs = createdTabs.filter(tab => tab && typeof tab.id === 'number');
+    const failedCount = createdTabs.length - openedTabs.length;
+
+    if (openedTabs.length === 0) {
+      app().addLog('error', PLUGIN_ID, 'Workspace launch failed for "' + profile.name + '" - 0 of ' + profile.urls.length + ' tab(s) opened');
+      app().addNotification(
+        'Workspace Launch Failed',
+        '"' + profile.name + '" - 0 tab(s) opened.',
+        'error', PLUGIN_ID
+      );
+      return;
+    }
+
+    const tabIds = openedTabs.map(tab => tab.id);
+    await groupTabsSafe(tabIds);
+    await focusTabSafe(tabIds[0]);
 
     wsSaveLastLaunched(id);
     wsPushRecent(id);
     wsUpdateWidget();
 
-    app().addLog('info', PLUGIN_ID, 'Launched profile "' + profile.name + '" (' + profile.urls.length + ' URL(s), mode: ' + mode + ')');
+    if (failedCount > 0) {
+      app().addLog(
+        'warn',
+        PLUGIN_ID,
+        'Workspace launch partially completed for "' + profile.name + '" (' + openedTabs.length + ' opened, ' + failedCount + ' failed, mode: ' + mode + ')'
+      );
+      app().addNotification(
+        'Workspace Partially Launched',
+        '"' + profile.name + '" - ' + openedTabs.length + ' tab(s) opened, ' + failedCount + ' failed.',
+        'warning', PLUGIN_ID
+      );
+      return;
+    }
+
+    app().addLog('info', PLUGIN_ID, 'Launched profile "' + profile.name + '" (' + openedTabs.length + ' URL(s), mode: ' + mode + ')');
     app().addNotification(
       'Workspace Launched',
-      '"' + profile.name + '" - ' + profile.urls.length + ' tab(s) opened.',
+      '"' + profile.name + '" - ' + openedTabs.length + ' tab(s) opened.',
       'success', PLUGIN_ID
     );
   }
@@ -400,15 +469,14 @@
     if (favDiv) {
       const favorites = wsProfiles.filter(p => p.favorite).slice(0, 3);
       if (favorites.length === 0) {
-        favDiv.innerHTML = '<span style="font-size:11px;color:var(--rc-text-muted);">No favorites yet - star a profile to see it here.</span>';
+        favDiv.innerHTML = '<span class="rc-muted ws-widget-empty-hint">No favorites yet - star a profile to see it here.</span>';
       } else {
         favDiv.innerHTML = favorites.map(p =>
-          `<button class="rc-btn rc-btn--ghost rc-btn--xs ws-fav-btn"
+          `<button class="rc-btn rc-btn--ghost rc-btn--xs ws-fav-launch-btn"
                    data-profile-id="${app().esc(p.id)}"
-                   title="Launch: ${app().esc(p.name)}"
-                   style="margin-right:4px;margin-bottom:4px;">${app().esc(p.name)}</button>`
+                   title="Launch: ${app().esc(p.name)}">${app().esc(p.name)}</button>`
         ).join('');
-        favDiv.querySelectorAll('.ws-fav-btn').forEach(btn => {
+        favDiv.querySelectorAll('.ws-fav-launch-btn').forEach(btn => {
           btn.addEventListener('click', () => wsLaunchProfile(btn.dataset.profileId));
         });
       }
@@ -425,12 +493,7 @@
 
   function wsCategoryBadge(category) {
     if (!category) return '';
-    const colors = {
-      Support: '#3b82f6', Cloud: '#06b6d4', Development: '#8b5cf6',
-      Finance: '#10b981', General: '#6b7280',
-    };
-    const color = colors[category] || '#6b7280';
-    return `<span class="ws-cat-badge" style="background:${color}20;color:${color};border:1px solid ${color}40;font-size:10px;padding:1px 6px;border-radius:3px;">${app().esc(category)}</span>`;
+    return `<span class="ws-cat-badge">${app().esc(category)}</span>`;
   }
 
   // ── Render: full plugin view ───────────────────────────────────────────────
@@ -457,7 +520,7 @@
         <button id="ws-capture-btn"       class="rc-btn rc-btn--secondary rc-btn--sm"  title="Save all open tabs in the current window as a new profile">Capture Window</button>
         <button id="ws-import-btn"        class="rc-btn rc-btn--ghost rc-btn--sm"      title="Import profile(s) from a .ws.json file">Import</button>
         <button id="ws-export-all-btn"    class="rc-btn rc-btn--ghost rc-btn--sm"      title="Export all profiles to a .ws.json file">Export All</button>
-        <input  id="ws-import-file"       type="file" accept=".json" style="display:none;" />
+        <input  id="ws-import-file"       type="file" accept=".json" hidden />
         <div class="ws-toolbar-spacer"></div>
         <select id="ws-filter-cat"        class="rc-input rc-input--sm" style="max-width:130px;" title="Filter profiles by category">
           <option value="">All categories</option>
@@ -467,9 +530,8 @@
       </div>
 
       ${lastProf ? `
-      <div class="ws-last-launched" style="margin-bottom:10px;padding:8px 12px;background:var(--rc-surface);border:1px solid var(--rc-border);border-radius:6px;display:flex;align-items:center;gap:10px;">
-        <span style="font-size:11px;color:var(--rc-text-muted);">Last launched:</span>
-        <strong style="font-size:12px;">${app().esc(lastProf.name)}</strong>
+      <div class="rc-last-launched">
+        <span class="rc-last-launched__name">${app().esc(lastProf.name)}</span>
         <button class="rc-btn rc-btn--primary rc-btn--xs ws-relaunch-btn" data-id="${app().esc(lastProf.id)}" title="Re-launch this profile">▶ Relaunch</button>
       </div>` : ''}
 
@@ -537,25 +599,25 @@
 
   function renderProfileCards(listEl, profiles) {
     if (profiles.length === 0) {
-      listEl.innerHTML = '<div class="rc-log-empty" style="padding:24px 0;text-align:center;">No profiles match the current filter.</div>';
+      listEl.innerHTML = '<div class="rc-plugin-empty rc-plugin-empty--compact"><p class="rc-plugin-empty__body">No profiles match the current filter.</p></div>';
       return;
     }
 
     listEl.innerHTML = profiles.map(p => `
       <div class="ws-profile-card" data-id="${app().esc(p.id)}">
         <div class="ws-profile-card__header">
-          <span class="ws-profile-card__fav ws-fav-toggle" data-id="${app().esc(p.id)}" title="${p.favorite ? 'Unstar' : 'Star'} this profile" aria-label="${p.favorite ? 'Unstar' : 'Star'} ${p.name}" style="font-size:14px;cursor:pointer;">${p.favorite ? '&#9733;' : '&#9734;'}</span>
+          <span class="ws-fav-toggle ws-fav-btn" data-id="${app().esc(p.id)}" title="${p.favorite ? 'Unstar' : 'Star'} this profile" aria-label="${p.favorite ? 'Unstar' : 'Star'} ${p.name}" role="button" tabindex="0">${p.favorite ? '&#9733;' : '&#9734;'}</span>
           <strong class="ws-profile-card__name">${app().esc(p.name)}</strong>
           ${wsCategoryBadge(p.category)}
-          <span class="ws-profile-card__mode rc-muted" style="font-size:10px;margin-left:auto;">${p.launchMode === 'tab-group' ? 'Group' : 'Tabs'}</span>
+          <span class="ws-profile-card__mode ws-mode-badge">${p.launchMode === 'tab-group' ? 'Group' : 'Tabs'}</span>
         </div>
-        <div class="ws-profile-card__urls rc-muted" style="font-size:11px;margin:4px 0 8px;max-height:48px;overflow:hidden;">
-          ${p.urls.slice(0, 4).map(u => `<div class="ws-url-line" title="${app().esc(u)}">${app().esc(u.replace(/^https?:\/\//, ''))}</div>`).join('')}
-          ${p.urls.length > 4 ? `<div class="rc-muted" style="font-size:10px;">…and ${p.urls.length - 4} more</div>` : ''}
+        <div class="ws-profile-card__urls">
+          ${p.urls.slice(0, 4).map(u => `<div class="ws-url-line rc-muted" title="${app().esc(u)}">${app().esc(u.replace(/^https?:\/\//, ''))}</div>`).join('')}
+          ${p.urls.length > 4 ? `<div class="ws-url-more rc-muted">...and ${p.urls.length - 4} more</div>` : ''}
         </div>
         <div class="ws-profile-card__footer">
-          <span class="rc-muted" style="font-size:10px;">Created ${wsFormatShortDate(p.createdAt)} · ${p.urls.length} URL${p.urls.length !== 1 ? 's' : ''}</span>
-          <div style="display:flex;gap:4px;margin-left:auto;">
+          <span class="ws-profile-card__meta rc-muted">Created ${wsFormatShortDate(p.createdAt)} · ${p.urls.length} URL${p.urls.length !== 1 ? 's' : ''}</span>
+          <div class="ws-card-actions">
             <button class="rc-btn rc-btn--primary rc-btn--xs ws-launch-btn"     data-id="${app().esc(p.id)}" title="Launch profile: open ${p.urls.length} tab(s)">▶ Launch</button>
             <button class="rc-btn rc-btn--ghost   rc-btn--xs ws-edit-btn"       data-id="${app().esc(p.id)}" title="Edit this profile">Edit</button>
             <button class="rc-btn rc-btn--ghost   rc-btn--xs ws-dup-btn"        data-id="${app().esc(p.id)}" title="Duplicate this profile">Dup</button>
@@ -620,57 +682,46 @@
     const urls      = editing ? editing.urls      : [''];
 
     container.innerHTML = `
-      <div class="ws-form-header" style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <div class="ws-form-header">
         <button id="ws-form-back" class="rc-btn rc-btn--ghost rc-btn--sm" title="Go back to the profile list">← Back</button>
-        <h2 style="margin:0;font-size:15px;">${isNew ? 'New Profile' : 'Edit: ' + app().esc(name)}</h2>
+        <h2 class="ws-form-title">${isNew ? 'New Profile' : 'Edit: ' + app().esc(name)}</h2>
       </div>
 
-      <div id="ws-form-error" class="rc-status rc-status--error" style="display:none;margin-bottom:10px;"></div>
+      <div id="ws-form-error" class="rc-status rc-status--error" hidden></div>
 
-      <div class="rc-settings-row" style="margin-bottom:10px;">
-        <div class="rc-settings-row__info"><span class="rc-settings-row__label">Profile Name</span></div>
-        <div class="rc-settings-row__control">
-          <input id="ws-form-name" class="rc-input" type="text" maxlength="80"
-                 value="${app().esc(name)}" placeholder="e.g. Support Morning"
-                 title="Name of this workspace profile" style="width:240px;" />
-        </div>
+      <div class="ws-form-group">
+        <label class="rc-label" for="ws-form-name">Profile Name</label>
+        <input id="ws-form-name" class="rc-input" type="text" maxlength="80"
+               value="${app().esc(name)}" placeholder="e.g. Support Morning"
+               title="Name of this workspace profile" />
       </div>
 
-      <div class="rc-settings-row" style="margin-bottom:10px;">
-        <div class="rc-settings-row__info"><span class="rc-settings-row__label">Category</span></div>
-        <div class="rc-settings-row__control">
-          <input id="ws-form-category" class="rc-input" type="text" maxlength="40"
-                 value="${app().esc(category)}" placeholder="e.g. Support, Cloud…"
-                 title="Optional category tag for grouping" style="width:160px;" />
-        </div>
+      <div class="ws-form-group">
+        <label class="rc-label" for="ws-form-category">Category</label>
+        <input id="ws-form-category" class="rc-input" type="text" maxlength="40"
+               value="${app().esc(category)}" placeholder="e.g. Support, Cloud…"
+               title="Optional category tag for grouping" />
       </div>
 
-      <div class="rc-settings-row" style="margin-bottom:10px;">
-        <div class="rc-settings-row__info">
-          <span class="rc-settings-row__label">Launch Mode</span>
-          <span class="rc-settings-row__desc">How tabs are opened when launching</span>
-        </div>
-        <div class="rc-settings-row__control">
-          <select id="ws-form-launchmode" class="rc-input rc-input--sm" title="How to open the tabs when launching this profile">
-            <option value="tab-group" ${launchMode === 'tab-group' ? 'selected' : ''}>Tab Group (grouped)</option>
-            <option value="tabs"      ${launchMode === 'tabs'      ? 'selected' : ''}>Plain Tabs</option>
-          </select>
-        </div>
+      <div class="ws-form-group">
+        <label class="rc-label" for="ws-form-launchmode">Launch Mode <span class="rc-muted" style="font-size:11px;font-weight:400;">- how tabs are opened when launching</span></label>
+        <select id="ws-form-launchmode" class="rc-input rc-input--sm" title="How to open the tabs when launching this profile">
+          <option value="tab-group" ${launchMode === 'tab-group' ? 'selected' : ''}>Tab Group (grouped)</option>
+          <option value="tabs"      ${launchMode === 'tabs'      ? 'selected' : ''}>Plain Tabs</option>
+        </select>
       </div>
 
-      <div class="rc-settings-row" style="margin-bottom:14px;">
-        <div class="rc-settings-row__info"><span class="rc-settings-row__label">Favorite</span></div>
-        <div class="rc-settings-row__control">
-          <label class="rc-toggle" title="Star this profile so it appears in widget quick-launch">
-            <input type="checkbox" class="rc-toggle__input" id="ws-form-favorite" ${favorite ? 'checked' : ''} />
-            <span class="rc-toggle__slider"></span>
-          </label>
-        </div>
+      <div class="ws-form-group">
+        <label class="rc-label">Favorite</label>
+        <label class="rc-toggle" title="Star this profile so it appears in widget quick-launch">
+          <input type="checkbox" class="rc-toggle__input" id="ws-form-favorite" ${favorite ? 'checked' : ''} />
+          <span class="rc-toggle__slider"></span>
+        </label>
       </div>
 
       <div class="ws-urls-section">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-          <span style="font-size:13px;font-weight:600;">URLs</span>
+        <div class="ws-urls-header">
+          <span class="ws-urls-title">URLs</span>
           <button id="ws-add-url-btn" class="rc-btn rc-btn--ghost rc-btn--xs" title="Add another URL to this profile">+ Add URL</button>
         </div>
         <div id="ws-url-rows">
@@ -678,7 +729,7 @@
         </div>
       </div>
 
-      <div style="display:flex;gap:8px;margin-top:16px;">
+      <div class="ws-form-footer">
         <button id="ws-form-save"   class="rc-btn rc-btn--primary"  title="${isNew ? 'Create' : 'Save'} this profile">${isNew ? 'Create' : 'Save'}</button>
         <button id="ws-form-cancel" class="rc-btn rc-btn--ghost"     title="Cancel and return to the profile list">Cancel</button>
       </div>
@@ -712,10 +763,10 @@
 
   function wsUrlRowHtml(url, idx) {
     return `
-      <div class="ws-url-row" style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+      <div class="ws-url-row">
         <input class="rc-input ws-url-input" type="url" value="${app().esc(url)}"
                placeholder="https://example.com"
-               data-idx="${idx}" style="flex:1;"
+               data-idx="${idx}"
                title="URL to open when launching this profile (must begin with https:// or http://)" />
         <button class="rc-btn rc-btn--ghost rc-btn--xs ws-url-remove" title="Remove this URL" aria-label="Remove this URL">×</button>
       </div>`;
@@ -781,9 +832,9 @@
 
   function wsShowFormError(errEl, msg) {
     if (!errEl) return;
-    errEl.textContent   = msg;
-    errEl.style.display = 'block';
-    setTimeout(() => { if (errEl) errEl.style.display = 'none'; }, 5000);
+    errEl.textContent = msg;
+    errEl.removeAttribute('hidden');
+    setTimeout(() => { if (errEl) errEl.setAttribute('hidden', ''); }, 5000);
   }
 
   // ── Public API ─────────────────────────────────────────────────────────────
